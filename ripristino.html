@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotta — ripristino</title>
+<style>
+  body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:24px;
+       background:#141C2E;color:#EDE8DE;font-family:system-ui,-apple-system,sans-serif}
+  .box{max-width:460px;width:100%}
+  h1{font-size:21px;margin:0 0 6px}
+  p{color:#8FA3B0;line-height:1.5;font-size:14.5px;margin:0 0 18px}
+  button{background:#FF6D66;color:#141C2E;border:0;border-radius:10px;
+         padding:13px 20px;font-size:15px;font-weight:700;cursor:pointer;width:100%}
+  a{display:block;text-align:center;margin-top:14px;color:#6DABFF;font-size:14px}
+  pre{background:#1B2536;border-radius:10px;padding:12px;font-size:12px;
+      white-space:pre-wrap;color:#8FA3B0;max-height:230px;overflow:auto;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>Ripristino di Rotta</h1>
+  <p>Rimuove i service worker registrati e svuota le cache. Serve quando l'app
+     resta bloccata su una versione vecchia o ripropone l'avviso di aggiornamento.
+     <strong>I tuoi dati di viaggio non vengono toccati</strong>: restano in IndexedDB.</p>
+  <button id="go">Pulisci tutto</button>
+  <a href="./index.html">← Torna all'app</a>
+  <pre id="log">Pronto.</pre>
+</div>
+<script>
+const log = m => { document.getElementById('log').textContent += '\n' + m; };
+document.getElementById('go').onclick = async () => {
+  document.getElementById('log').textContent = 'Avvio…';
+  try{
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      log('service worker trovati: ' + regs.length);
+      for(const r of regs){ await r.unregister(); log('  rimosso: ' + (r.scope||'')); }
+    }
+    if(window.caches){
+      const keys = await caches.keys();
+      log('cache trovate: ' + keys.length);
+      for(const k of keys){ await caches.delete(k); log('  svuotata: ' + k); }
+    }
+    log('\nFatto. I dati del viaggio sono intatti.');
+    log('Torna all\'app e ricaricala.');
+  }catch(e){
+    log('Errore: ' + (e && e.message));
+  }
+};
+</script>
+</body>
+</html>
