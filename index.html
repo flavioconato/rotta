@@ -1,0 +1,1957 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rotta — mappa di viaggio</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#12202B">
+<meta name="description" content="Itinerari su mappa con tappe, spese condivise e prenotazioni. Funziona offline.">
+<link rel="icon" href="./favicon.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rotta">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12202B;
+  --ink-2:#1B2E3C;
+  --ink-3:#2A4152;
+  --paper:#EDE8DE;
+  --paper-2:#DCD5C7;
+  --moss:#4C7A5A;
+  --ochre:#E0A32E;
+  --rust:#B8492C;
+  --fog:#8FA3B0;
+  --r:10px;
+  --rail:2px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:"Public Sans",system-ui,sans-serif;
+  background:var(--ink);
+  color:var(--paper);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.02em}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:390px 1fr;height:100dvh}
+/* Il pannello si ritira solo da desktop, dove sta ACCANTO alla mappa.
+   Sotto 880px il pannello è sovrapposto (grid-area 1/1): lì la colonna non va toccata,
+   altrimenti si azzera anche la cella della mappa. */
+@media (min-width:881px){
+  .app{transition:grid-template-columns .26s cubic-bezier(.3,.8,.4,1)}
+  body:not(.panel-open) .app{grid-template-columns:0 1fr}
+  body:not(.panel-open) .panel{overflow:hidden;border-right-color:transparent}
+}
+.panel{background:var(--ink);display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--ink-3);z-index:1200}
+#map{height:100%;width:100%;background:var(--paper-2)}
+
+/* ---------- header ---------- */
+.head{padding:16px 16px 12px;border-bottom:1px solid var(--ink-3)}
+.eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--fog)}
+.save-state{
+  font-size:10px;letter-spacing:.06em;color:var(--fog);
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap
+}
+.save-state::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--fog)}
+.save-state.ok{color:var(--moss)}
+.save-state.ok::before{background:var(--moss)}
+.save-state.warn{color:var(--ochre)}
+.save-state.warn::before{background:var(--ochre)}
+#tripTitle{
+  display:block;width:100%;background:none;border:0;padding:2px 0 0;
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:27px;line-height:1.05;
+  color:var(--paper);letter-spacing:-.02em;
+}
+#tripTitle::placeholder{color:var(--ink-3)}
+.head-row{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.chip{
+  border:1px solid var(--ink-3);border-radius:999px;padding:5px 11px;
+  font-size:12px;font-weight:500;color:var(--paper);background:var(--ink-2);
+  display:inline-flex;align-items:center;gap:6px;transition:.15s;
+}
+.chip:hover{border-color:var(--fog)}
+.chip.on{background:var(--ochre);border-color:var(--ochre);color:#20170A;font-weight:600}
+
+/* ---------- search ---------- */
+.search{position:relative;padding:12px 16px;border-bottom:1px solid var(--ink-3)}
+.search input{
+  width:100%;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);
+  padding:10px 12px;font-size:14px;
+}
+.search input::placeholder{color:var(--fog)}
+.results{
+  position:absolute;left:16px;right:16px;top:56px;z-index:20;
+  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);overflow:hidden;
+  box-shadow:0 18px 40px rgba(0,0,0,.45);max-height:280px;overflow-y:auto
+}
+.results button{display:block;width:100%;text-align:left;padding:10px 12px;font-size:13px;line-height:1.3;border-bottom:1px solid var(--ink-3)}
+.results button:last-child{border-bottom:0}
+.results button:hover{background:var(--ink-3)}
+.results .muted{display:block;color:var(--fog);font-size:11px;margin-top:2px}
+.hint{color:var(--fog);font-size:12px;padding:8px 12px}
+
+/* ---------- days ---------- */
+.scroll{flex:1;overflow-y:auto;padding:4px 0 90px;scrollbar-width:thin}
+.day{border-bottom:1px solid var(--ink-3)}
+.day-head{display:flex;align-items:center;gap:9px;padding:13px 16px 9px}
+.swatch{width:11px;height:11px;border-radius:3px;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.day-name{
+  flex:1;min-width:0;background:none;border:0;padding:0;
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15px;letter-spacing:-.01em
+}
+.day-stat{color:var(--fog);flex:none}
+.icon-btn{color:var(--fog);padding:4px 5px;border-radius:6px;font-size:13px;line-height:1}
+.icon-btn:hover{color:var(--paper);background:var(--ink-3)}
+
+/* ---------- il nastro (signature) ---------- */
+.rail{list-style:none;margin:0;padding:0 16px 14px 16px}
+.stop{position:relative;padding-left:34px;padding-bottom:4px}
+.stop::before{ /* filo del percorso */
+  content:"";position:absolute;left:11px;top:22px;bottom:-6px;width:var(--rail);
+  background:repeating-linear-gradient(to bottom,var(--c,var(--fog)) 0 5px,transparent 5px 10px);
+  opacity:.55;
+}
+.stop:last-child::before{display:none}
+.node{
+  position:absolute;left:0;top:2px;width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;
+  background:var(--c,var(--fog));
+}
+.node svg{width:15px;height:15px;fill:#0E1A22}
+.node-n{
+  position:absolute;top:-4px;right:-4px;min-width:15px;height:15px;padding:0 3px;
+  border-radius:8px;background:var(--ink);color:var(--paper);border:1px solid var(--ink-3);
+  font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:600;
+  display:grid;place-items:center
+}
+.stop-card{background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);padding:9px 11px}
+.stop-card:hover{border-color:var(--c,var(--fog))}
+.stop-top{display:flex;gap:8px;align-items:flex-start}
+.stop-name{flex:1;font-weight:600;font-size:14px;line-height:1.25;cursor:pointer;text-align:left}
+.stop-note{color:var(--fog);font-size:12.5px;line-height:1.4;margin:5px 0 0;white-space:pre-wrap}
+.links{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.links a{
+  font-size:11.5px;text-decoration:none;color:var(--ochre);
+  border:1px solid rgba(224,163,46,.35);border-radius:999px;padding:3px 8px
+}
+.links a:hover{background:rgba(224,163,46,.14)}
+.seg{display:flex;align-items:center;gap:7px;color:var(--fog);padding:6px 0 6px 0;margin-left:-34px;padding-left:34px}
+.seg::before{content:"";width:0}
+.empty{color:var(--fog);font-size:12.5px;padding:0 16px 14px 16px;line-height:1.45}
+
+/* etichetta col nome sotto il pin */
+.pin-lab{
+  position:absolute;top:36px;left:17px;
+  transform:translateX(-50%) scale(var(--lab-scale,1));transform-origin:top center;
+  max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:rgba(18,32,43,.88);color:var(--paper);
+  border:1px solid rgba(255,255,255,.14);border-radius:5px;padding:2px 6px;
+  font-family:"Public Sans",sans-serif;font-size:11px;font-weight:600;line-height:1.25;
+  text-shadow:0 1px 2px rgba(0,0,0,.5);box-shadow:0 2px 6px rgba(0,0,0,.35);
+  pointer-events:none;text-align:center
+}
+.pin-lab.dim{opacity:.72;font-weight:500}
+body.hide-labs .pin-lab,
+body.labs-off .pin-lab{display:none}
+/* modalità spostamento tappa */
+body.moving #map{cursor:crosshair}
+body.moving::after{
+  content:"Tocca la mappa per spostare la tappa";
+  position:fixed;z-index:1700;top:14px;left:50%;transform:translateX(-50%);
+  background:var(--ochre);color:#20170A;font-weight:700;font-size:12.5px;
+  padding:9px 15px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.4);
+  pointer-events:none;white-space:nowrap
+}
+/* ---------- installazione e aggiornamenti ---------- */
+.chip.install{background:var(--moss);border-color:var(--moss);color:#0E1A22;font-weight:700}
+#updateBar{
+  position:fixed;z-index:1800;left:50%;bottom:96px;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;white-space:nowrap;
+  background:var(--paper);color:var(--ink);border-radius:999px;
+  padding:9px 10px 9px 16px;font-size:12.5px;font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,.45)
+}
+#updateBar button{
+  background:var(--ink);color:var(--paper);border-radius:999px;
+  padding:6px 13px;font-size:12px;font-weight:700
+}
+/* ---------- prenotazioni ---------- */
+.bk{padding:11px 0;border-bottom:1px solid var(--ink-3)}
+.bk:last-child{border-bottom:0}
+.bk-top{display:flex;align-items:flex-start;gap:9px}
+.bk-ic{font-size:18px;line-height:1.2;flex:none}
+.bk-h{flex:1;min-width:0}
+.bk-t{display:block;font-size:14px;font-weight:600;line-height:1.25}
+.bk-s{display:block;color:var(--fog);font-size:10px;margin-top:1px}
+.bk-when{display:flex;flex-direction:column;gap:2px;margin:7px 0 0 27px;color:var(--fog);font-size:10.5px}
+.bk-when b{color:var(--paper);font-weight:600}
+.bk-ref{margin:5px 0 0 27px;color:var(--fog);font-size:10.5px}
+.bk-ref b{color:var(--ochre);font-weight:600;letter-spacing:.06em}
+.bk-flags{margin:7px 0 0 27px}
+.bk-flag{
+  display:inline-block;font-family:"JetBrains Mono",monospace;font-size:9.5px;font-weight:600;
+  padding:3px 8px;border-radius:999px;letter-spacing:.04em
+}
+.bk-flag.ok{background:rgba(76,122,90,.22);color:#7ec99a;border:1px solid rgba(76,122,90,.5)}
+.bk-flag.soon{background:rgba(224,163,46,.18);color:var(--ochre);border:1px solid rgba(224,163,46,.5)}
+.bk-flag.late{background:rgba(184,73,44,.16);color:#e08a72;border:1px solid rgba(184,73,44,.45)}
+.bk .stop-note{margin-left:27px}
+.bk .links{margin-left:27px}
+/* con quattro voci le etichette vanno strette */
+.tabs button{padding:8px 2px;font-size:11.5px}
+/* ---------- immagini ---------- */
+.pop-img{
+  display:block;width:calc(100% + 28px);margin:-12px -14px 8px;
+  height:130px;object-fit:cover;border-radius:12px 12px 0 0
+}
+.thumb{
+  display:block;width:100%;height:88px;object-fit:cover;
+  border-radius:7px;margin-top:7px;border:1px solid var(--ink-3)
+}
+.img-row{display:flex;gap:6px}
+.img-row .field{flex:1;font-size:12.5px}
+.img-row .act.ghost{flex:0 0 42px;padding:9px;font-size:14px}
+.img-prev{
+  display:block;width:100%;height:120px;object-fit:cover;
+  border-radius:var(--r);margin-top:7px;border:1px solid var(--ink-3)
+}
+/* ---------- pulsanti dei dialog ---------- */
+.btn{
+  flex:1;border-radius:var(--r);padding:11px;font-weight:600;font-size:13.5px;text-align:center;
+  background:var(--paper);color:var(--ink)
+}
+.btn.ghost{background:var(--ink-2);color:var(--paper);border:1px solid var(--ink-3);flex:0 0 auto;padding:11px 13px}
+
+/* ---------- editor ---------- */
+.veil{position:fixed;inset:0;background:rgba(9,16,21,.6);backdrop-filter:blur(2px);z-index:2000;display:grid;place-items:center;padding:16px}
+.veil[hidden]{display:none}
+.sheet{
+  width:min(460px,100%);max-height:88dvh;overflow-y:auto;background:var(--ink);
+  border:1px solid var(--ink-3);border-radius:16px;padding:18px
+}
+.sheet h2{font-family:"Bricolage Grotesque",sans-serif;font-size:19px;margin:0 0 14px;letter-spacing:-.01em}
+label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fog);margin:12px 0 5px;font-family:"JetBrains Mono",monospace}
+.field{width:100%;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);padding:9px 11px;font-size:14px}
+textarea.field{min-height:84px;resize:vertical;line-height:1.45}
+.type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.type-opt{
+  display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 4px;
+  border:1px solid var(--ink-3);border-radius:var(--r);background:var(--ink-2);
+  font-size:10.5px;line-height:1.15;text-align:center;color:var(--fog);transition:.14s
+}
+.type-opt svg{width:19px;height:19px;fill:var(--fog)}
+.type-opt:hover{border-color:var(--fog);color:var(--paper)}
+.type-opt.on{background:var(--ochre);border-color:var(--ochre);color:#20170A;font-weight:600}
+.type-opt.on svg{fill:#20170A}
+/* badge pioggia sul pin */
+.pin-r{
+  position:absolute;bottom:-2px;left:-6px;width:20px;height:20px;border-radius:50%;
+  background:#F2FBF4;border:1.5px solid #2F9E44;display:grid;place-items:center;
+  box-shadow:0 2px 5px rgba(0,0,0,.28)
+}
+.pin-r svg{width:12px;height:12px;fill:#6E8AA0;position:absolute;top:2px}
+.pin-r b{position:absolute;right:1px;bottom:0;font-size:9px;color:#2F9E44;font-weight:800;line-height:1}
+/* pin alternativo: contorno tratteggiato, niente numero */
+.pin.alt{border-style:dashed;border-color:rgba(255,255,255,.95);filter:saturate(.75)}
+.pin-a{
+  position:absolute;top:-5px;right:-8px;height:15px;padding:0 4px;border-radius:8px;
+  background:var(--ink);color:var(--ochre);border:1px solid var(--ochre);
+  font-family:"JetBrains Mono",monospace;font-size:8px;font-weight:700;letter-spacing:.06em;
+  display:grid;place-items:center
+}
+/* etichetta tempo sulla tratta */
+.leg-lab{
+  position:absolute;transform:translate(-50%,-50%) scale(var(--leg-scale,1));transform-origin:center;
+  white-space:nowrap;background:var(--ink);color:var(--paper);
+  border:1px solid var(--c,var(--fog));border-left:3px solid var(--c,var(--fog));
+  border-radius:5px;padding:2px 6px;
+  font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);pointer-events:none
+}
+body.hide-legs .leg-lab{display:none}
+/* tag pioggia in elenco */
+.rain-tag{font-style:normal;color:#4ec27a;margin-left:3px}
+/* blocco alternative */
+.alt-box{margin:0 16px 14px;border:1px dashed var(--ink-3);border-radius:var(--r);padding:9px 10px;background:rgba(255,255,255,.02)}
+.alt-head{color:var(--ochre);letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;margin-bottom:8px}
+.alt-item{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-top:1px solid var(--ink-3)}
+.alt-item:first-of-type{border-top:0}
+.alt-node{
+  flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:transparent;border:1.5px dashed var(--c,var(--fog))
+}
+.alt-node svg{width:13px;height:13px;fill:var(--c,var(--fog))}
+.alt-body{flex:1;min-width:0}
+.alt-body .stop-name{font-size:13.5px;font-weight:600;text-align:left;width:100%}
+/* interruttori meteo */
+.toggle{
+  display:flex;gap:9px;align-items:flex-start;width:100%;text-align:left;margin-bottom:6px;
+  border:1px solid var(--ink-3);border-radius:var(--r);background:var(--ink-2);padding:9px 10px
+}
+.toggle .tick{
+  flex:none;width:18px;height:18px;border-radius:5px;border:1.5px solid var(--ink-3);
+  display:grid;place-items:center;font-size:11px;color:transparent;margin-top:1px
+}
+.toggle b{display:block;font-size:13px;font-weight:600}
+.toggle i{display:block;font-style:normal;font-size:11.5px;color:var(--fog);line-height:1.3;margin-top:1px}
+.toggle.on{border-color:var(--moss);background:rgba(76,122,90,.14)}
+.toggle.on .tick{background:var(--moss);border-color:var(--moss);color:#0E1A22}
+/* segnaposto di servizio: pin più piccolo e sobrio, senza numero */
+.pin.poi{width:26px;height:26px;border-width:1.5px;opacity:.92}
+.pin.poi svg{width:14px;height:14px}
+.leg-lab.walk{border-style:dashed}
+.foot-km{display:inline-block;margin-left:6px;color:var(--moss);font-weight:600}
+/* contrassegno Francesco, in basso a destra del pin */
+.pin-k{
+  position:absolute;bottom:-2px;right:-6px;width:20px;height:20px;border-radius:50%;
+  background:#FFF6E8;border:1.5px solid var(--ochre);display:grid;place-items:center;
+  box-shadow:0 2px 5px rgba(0,0,0,.28)
+}
+.pin-k svg{width:12px;height:12px;fill:#8A5B12}
+.kid-tag{font-style:normal;margin-left:3px;font-size:11px}
+/* glifo del tipo sul pin alternativo */
+.pin-t{
+  position:absolute;bottom:-2px;left:-6px;width:19px;height:19px;border-radius:50%;
+  background:var(--ink);border:1.5px solid rgba(255,255,255,.85);display:grid;place-items:center;
+  box-shadow:0 2px 5px rgba(0,0,0,.3)
+}
+.pin-t svg{width:11px;height:11px;fill:var(--paper)}
+.pin.rainpin svg{fill:#0E1A22}
+/* commutatore viste */
+/* spese */
+.cost-sec{padding:14px 16px;border-bottom:1px solid var(--ink-3)}
+.who-list{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.who{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--ink-3)}
+.who:last-child{border-bottom:0}
+.who-n{flex:1;font-size:13.5px;font-weight:600}
+.who-b{font-family:"JetBrains Mono",monospace;font-size:11px;text-align:right;color:var(--fog)}
+.who-b i{display:block;font-style:normal;font-size:9px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.who-b.pos{color:var(--moss)}
+.who-b.neg{color:var(--rust)}
+.add-row{display:flex;gap:6px}
+.add-row .field{flex:1;font-size:13px;padding:8px 10px}
+.exp{padding:8px 0;border-bottom:1px solid var(--ink-3)}
+.exp:last-of-type{border-bottom:0}
+.exp-top{display:flex;align-items:baseline;gap:8px}
+.exp-d{flex:1;font-size:13.5px;font-weight:600}
+.exp-a{font-size:12.5px;font-weight:600;color:var(--ochre)}
+.exp-m{color:var(--fog);margin-top:2px;font-size:10px}
+.settle{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--ink-3);font-size:13px}
+.settle:last-child{border-bottom:0}
+.settle span{margin-left:auto;color:var(--ochre);font-weight:600}
+.who-picks{display:flex;flex-wrap:wrap;gap:5px}
+.who-pick{
+  border:1px solid var(--ink-3);border-radius:999px;padding:6px 11px;font-size:12.5px;
+  background:var(--ink-2);color:var(--fog)
+}
+.who-pick.on{background:var(--moss);border-color:var(--moss);color:#0E1A22;font-weight:600}
+.pick-row{display:flex;gap:6px;margin-top:8px}
+.link-row{display:flex;gap:6px;margin-bottom:6px}
+.link-row .field{font-size:13px}
+.link-row .field.lab{flex:0 0 34%}
+.sheet-actions{display:flex;gap:8px;margin-top:18px}
+.danger{color:var(--rust);border:1px solid rgba(184,73,44,.4);border-radius:var(--r);padding:11px 13px;font-weight:600;font-size:13.5px}
+.danger:hover{background:rgba(184,73,44,.12)}
+
+/* ---------- marker ---------- */
+.leaflet-marker-icon{position:absolute}
+.pin{
+  width:32px;height:32px;border-radius:50% 50% 50% 3px;transform:rotate(-45deg);
+  display:grid;place-items:center;border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 3px 9px rgba(0,0,0,.38);
+}
+.pin svg{width:17px;height:17px;transform:rotate(45deg);fill:#0E1A22}
+.pin-n{
+  position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 3px;
+  border-radius:9px;background:var(--ink);color:var(--paper);border:1.5px solid rgba(255,255,255,.85);
+  font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;
+  display:grid;place-items:center;box-shadow:0 2px 5px rgba(0,0,0,.3)
+}
+.leaflet-popup-content-wrapper{border-radius:12px;font-family:"Public Sans",sans-serif}
+.leaflet-popup-content{margin:12px 14px;font-size:13.5px;line-height:1.45}
+.pop-k{display:block;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#7d8b95;margin-bottom:2px}
+.pop-t{font-weight:700;font-size:15px;display:block;margin-bottom:3px}
+.pop-n{display:block;color:#4a5b66;white-space:pre-wrap;margin-top:4px}
+.pop-l{display:block;margin-top:6px;color:#0b5d8a}
+.pop-b{
+  display:block;margin-top:10px;padding-top:9px;border-top:1px solid #dfe4e8;
+  font-weight:600;color:#12202B;text-decoration:none
+}
+.pop-b:hover{text-decoration:underline}
+
+/* ---------- barra di comando ---------- */
+/* Ancorata in basso a sinistra, fuori dal pannello: non lo copre e non sparisce
+   quando il pannello si ritira. Due righe: viste sopra, azioni sotto. */
+.bar{
+  position:fixed;z-index:1600;bottom:0;left:0;width:390px;
+  display:flex;flex-direction:column;gap:7px;padding:10px 16px 14px;
+  background:linear-gradient(to top,var(--ink) 72%,rgba(18,32,43,0));
+  transition:width .26s cubic-bezier(.3,.8,.4,1)
+}
+.tabs{display:flex;gap:3px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:999px;padding:3px}
+.tabs button{flex:1;padding:8px 4px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--fog);white-space:nowrap}
+.tabs button.on{background:var(--paper);color:var(--ink)}
+.tabs button:hover:not(.on){color:var(--paper)}
+.bar-acts{display:flex;gap:7px}
+.act{
+  flex:1;border-radius:var(--r);padding:10px;font-weight:600;font-size:13px;text-align:center;
+  background:var(--paper);color:var(--ink);white-space:nowrap
+}
+.act.ghost{flex:0 0 46px;background:var(--ink-2);color:var(--paper);border:1px solid var(--ink-3);font-size:15px}
+.act.ghost:hover{border-color:var(--fog)}
+/* lo scorrimento finisce sopra la barra, così l'ultima tappa non ci va sotto */
+.scroll{padding-bottom:118px}
+@media (min-width:881px){
+  body:not(.panel-open) .bar{width:230px}
+}
+@media (max-width:880px){
+  .app{grid-template-columns:1fr;grid-template-rows:1fr}
+  #map{grid-area:1/1}
+  .panel{grid-area:1/1;transform:translateY(100%);transition:transform .28s cubic-bezier(.3,.8,.4,1);border-right:0;border-top:1px solid var(--ink-3);border-radius:16px 16px 0 0}
+  body.panel-open .panel{transform:translateY(0)}
+  .bar{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="panel">
+    <div class="head">
+      <div class="eyebrow-row">
+        <span class="eyebrow">Itinerario</span>
+        <span id="saveState" class="save-state mono"></span>
+      </div>
+      <input id="tripTitle" placeholder="Nome del viaggio" autocomplete="off">
+      <div class="head-row">
+        <button class="chip" id="btnPick">＋ Punto sulla mappa</button>
+        <button class="chip" id="btnRoad" title="Percorso reale su strada (richiede rete)">Strada</button>
+        <button class="chip" id="btnFit">Inquadra tutto</button>
+        <button class="chip on" id="btnLabs" title="Mostra o nascondi i nomi sulla mappa">Nomi</button>
+        <button class="chip install" id="btnInstall" hidden title="Installa Rotta sul dispositivo">⤓ Installa</button>
+      </div>
+    </div>
+
+    <div class="search">
+      <input id="q" placeholder="Cerca un luogo…" autocomplete="off">
+      <div class="results" id="results" hidden></div>
+    </div>
+
+    <div class="scroll" id="list"></div>
+    <div class="scroll" id="costs" hidden></div>
+    <div class="scroll" id="books" hidden></div>
+  </aside>
+  <div id="map"></div>
+</div>
+
+<!-- barra fissa: sempre visibile, in tutte e tre le viste -->
+<div class="bar">
+  <div class="tabs">
+    <button id="tabMap">Mappa</button>
+    <button id="tabList" class="on">Itinerario</button>
+    <button id="tabCost">Spese</button>
+    <button id="tabBook">Prenot.</button>
+  </div>
+  <div class="bar-acts">
+    <button class="act" id="btnDay" title="Aggiungi un giorno">＋ Giorno</button>
+    <button class="act" id="btnExpense" title="Registra una spesa" hidden>＋ Spesa</button>
+    <button class="act" id="btnBooking" title="Aggiungi una prenotazione" hidden>＋ Prenotazione</button>
+    <button class="act ghost" id="btnExport" title="Scarica il file del viaggio">↓</button>
+    <button class="act ghost" id="btnImport" title="Apri un file salvato">↑</button>
+    <input type="file" id="file" accept="application/json" hidden>
+  </div>
+</div>
+
+<div class="veil" id="veil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2 id="shTitle">Tappa</h2>
+    <label for="fName">Nome</label>
+    <input class="field" id="fName" autocomplete="off">
+    <label>Tipo di tappa</label>
+    <div class="type-grid" id="fType"></div>
+    <label for="fDay">Giorno</label>
+    <select class="field" id="fDay"></select>
+    <label>Percorso</label>
+    <button class="toggle" id="fChain" type="button">
+      <span class="tick">✓</span>
+      <span><b>Tappa in sequenza</b><i>Numerata e collegata dal percorso. Spenta: pin libero del giorno</i></span>
+    </button>
+    <label>Spostamenti</label>
+    <button class="toggle" id="fCity" type="button">
+      <span class="tick">✓</span>
+      <span><b>Tappa cittadina</b><i>Tra due tappe cittadine consecutive ci si muove a piedi</i></span>
+    </button>
+    <label>Contrassegni</label>
+    <button class="toggle" id="fRain" type="button">
+      <span class="tick">✓</span>
+      <span><b>Adatta con meteo avverso</b><i>Al coperto o comunque godibile sotto la pioggia</i></span>
+    </button>
+    <button class="toggle" id="fKid" type="button">
+      <span class="tick">✓</span>
+      <span><b>Adatta a Francesco</b><i>Accessibile col passeggino o comoda con lo zaino</i></span>
+    </button>
+    <button class="toggle" id="fAlt" type="button">
+      <span class="tick">✓</span>
+      <span><b>Tappa alternativa</b><i>Fuori dal percorso numerato: subentra solo se piove</i></span>
+    </button>
+    <label>Immagine</label>
+    <div class="img-row">
+      <input class="field" id="fImg" placeholder="Incolla il link di un'immagine…" autocomplete="off">
+      <button class="act ghost" id="fImgPick" type="button" title="Scegli dal dispositivo">📁</button>
+      <button class="act ghost" id="fImgClear" type="button" title="Rimuovi">✕</button>
+      <input type="file" id="fImgFile" accept="image/*" hidden>
+    </div>
+    <div id="fImgPrev"></div>
+    <label for="fNote">Note</label>
+    <textarea class="field" id="fNote" placeholder="Orari, prezzi, cosa vedere, promemoria…"></textarea>
+    <label>Link</label>
+    <div id="fLinks"></div>
+    <button class="chip" id="addLink" style="margin-top:6px">＋ Link</button>
+    <label>Coordinate</label>
+    <div class="mono" id="fCoord" style="color:var(--fog)"></div>
+    <button class="toggle" id="fMove" type="button" style="margin-top:7px">
+      <span class="tick">✛</span>
+      <span><b>Sposta sulla mappa</b><i>Chiude la scheda: il tocco successivo sposta qui la tappa</i></span>
+    </button>
+    <div class="sheet-actions">
+      <button class="btn" id="save">Salva</button>
+      <button class="btn ghost" id="cancel">Annulla</button>
+      <button class="danger" id="del">Elimina</button>
+    </div>
+  </div>
+</div>
+
+<div id="updateBar" hidden>
+  Nuova versione disponibile
+  <button id="updateNow">Aggiorna</button>
+</div>
+
+<div class="veil" id="bVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2 id="bSheetT">Nuova prenotazione</h2>
+    <label>Tipo</label>
+    <div class="type-grid" id="bType"></div>
+    <label for="bTitle">Titolo</label>
+    <input class="field" id="bTitle" placeholder="Es. Volo Roma–Edimburgo, B&amp;B Fort William…" autocomplete="off">
+    <label for="bWho">Fornitore o compagnia</label>
+    <input class="field" id="bWho" placeholder="Ryanair, ScotRail, Booking…" autocomplete="off">
+
+    <label id="bALab">Partenza</label>
+    <div class="img-row">
+      <input class="field" id="bAWhen" type="datetime-local">
+    </div>
+    <input class="field" id="bAPlace" placeholder="Luogo" autocomplete="off" style="margin-top:6px">
+
+    <div id="bLegB">
+      <label id="bBLab">Arrivo</label>
+      <div class="img-row">
+        <input class="field" id="bBWhen" type="datetime-local">
+      </div>
+      <input class="field" id="bBPlace" placeholder="Luogo" autocomplete="off" style="margin-top:6px">
+    </div>
+
+    <label id="bRefLab">Codice prenotazione</label>
+    <input class="field" id="bRef" placeholder="Es. XK7P2Q" autocomplete="off">
+
+    <label for="bCost">Costo</label>
+    <input class="field" id="bCost" type="text" inputmode="decimal" placeholder="0,00">
+
+    <label>Cancellazione</label>
+    <div class="who-picks" id="bRefund">
+      <button class="who-pick on" data-v="free">Gratuita</button>
+      <button class="who-pick" data-v="paid">Non rimborsabile</button>
+      <button class="who-pick" data-v="unknown">Da verificare</button>
+    </div>
+    <div id="bFreeRow">
+      <label for="bFreeUntil">Gratuita fino al</label>
+      <input class="field" id="bFreeUntil" type="date">
+    </div>
+
+    <label>Allegato PDF</label>
+    <div class="img-row">
+      <span class="field" id="bFileName" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.6">Nessun allegato</span>
+      <button class="act ghost" id="bFilePick" type="button" title="Carica un PDF">📄</button>
+      <button class="act ghost" id="bFileClear" type="button" title="Rimuovi" hidden>✕</button>
+      <input type="file" id="bFileInput" accept="application/pdf,image/*" hidden>
+    </div>
+
+    <label for="bUrl">Link di gestione o email</label>
+    <input class="field" id="bUrl" placeholder="https://… oppure mailto:…" autocomplete="off">
+
+    <label for="bNotes">Note</label>
+    <textarea class="field" id="bNotes" placeholder="Bagaglio incluso, seggiolino, orario reception, posti assegnati…"></textarea>
+
+    <div class="sheet-actions">
+      <button class="btn" id="bSave">Salva</button>
+      <button class="btn ghost" id="bCancel">Annulla</button>
+      <button class="danger" id="bDel" hidden>Elimina</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="xVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2>Nuova spesa</h2>
+    <label for="xDesc">Descrizione</label>
+    <input class="field" id="xDesc" placeholder="Cena, benzina, biglietti…" autocomplete="off">
+    <label for="xAmt">Importo</label>
+    <input class="field" id="xAmt" type="text" inputmode="decimal" placeholder="0,00">
+    <label for="xBy">Pagata da</label>
+    <select class="field" id="xBy"></select>
+    <label>Per chi</label>
+    <div class="who-picks" id="xFor"></div>
+    <div class="pick-row">
+      <button class="chip" id="xAll">Tutti</button>
+      <button class="chip" id="xNone">Nessuno</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn" id="xSave">Salva spesa</button>
+      <button class="btn ghost" id="xCancel">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="gmapsVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2 id="gmapsTitle">Su Google Maps</h2>
+    <div id="gmapsList"></div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="gmapsClose" style="flex:1">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ============ stato ============ */
+const PALETTE = ['#E0A32E','#4C9BB0','#8B6BB1','#4C7A5A','#B8492C','#5A78C4','#C2557E','#7E8B99'];
+const KEY = 'rotta:v1';
+let state = null, pickMode = false, road = false, editing = null, moving = null;
+const routeCache = new Map();
+
+const uid = () => Math.random().toString(36).slice(2,9);
+const fresh = () => ({
+  title:'Il mio viaggio',
+  days:[{id:uid(), name:'Giorno 1', color:PALETTE[0]}],
+  places:[],
+  people:[],
+  expenses:[],
+  currency:'€',
+  view:{lat:45.0, lng:9.0, z:5}
+});
+
+/* ============ mappa ============ */
+const map = L.map('map',{zoomControl:false}).setView([45,9],5);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  maxZoom:19, attribution:'© OpenStreetMap · © CARTO'
+}).addTo(map);
+const layer = L.layerGroup().addTo(map);
+
+map.on('click', e => {
+  /* modalità spostamento: riposiziona la tappa aperta e torna alla scheda */
+  if(moving){
+    const p = state.places.find(x => x.id === moving);
+    moving = null;
+    document.body.classList.remove('moving');
+    if(p){
+      p.lat = e.latlng.lat; p.lng = e.latlng.lng;
+      save(); render(); edit(p.id);
+    }
+    return;
+  }
+  if(!pickMode) return;
+  setPick(false);
+  addPlace({name:'Nuova tappa', lat:e.latlng.lat, lng:e.latlng.lng}, true);
+});
+map.on('moveend', () => { state.view = {lat:map.getCenter().lat, lng:map.getCenter().lng, z:map.getZoom()}; save(); });
+
+/* ============ persistenza ============ */
+/* IndexedDB sul dispositivo: i dati restano qui anche chiudendo l'app e non
+   dipendono da servizi esterni. Regge decine di MB, quindi foto e PDF delle
+   prenotazioni non sono un problema. */
+let t = null, dirty = false, storageOK = null, db = null;
+
+function openDB(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('rotta', 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore('kv'); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function dbGet(k){
+  return new Promise((res, rej) => {
+    const q = db.transaction('kv','readonly').objectStore('kv').get(k);
+    q.onsuccess = () => res(q.result);
+    q.onerror = () => rej(q.error);
+  });
+}
+function dbSet(k, v){
+  return new Promise((res, rej) => {
+    const q = db.transaction('kv','readwrite').objectStore('kv').put(v, k);
+    q.onsuccess = () => res(true);
+    q.onerror = () => rej(q.error);
+  });
+}
+
+function badge(mode){
+  const el = document.getElementById('saveState');
+  if(!el) return;
+  const map_ = {
+    saved:   ['Salvato',           'ok'],
+    saving:  ['Salvo…',            ''],
+    unsaved: ['Non salvato',       'warn'],
+    off:     ['Salva tu il file',  'warn']
+  };
+  const [txt, cls] = map_[mode];
+  el.textContent = txt;
+  el.className = 'save-state mono ' + cls;
+}
+
+function save(){
+  dirty = true;
+  badge(storageOK === false ? 'off' : 'saving');
+  clearTimeout(t);
+  t = setTimeout(write, 400);
+}
+
+async function write(){
+  if(!db){ storageOK = false; badge('off'); return; }
+  try{
+    /* structuredClone implicito: salvo l'oggetto, non una stringa */
+    await dbSet(KEY, JSON.parse(JSON.stringify(state)));
+    storageOK = true; dirty = false; badge('saved');
+  }catch(e){
+    console.warn('salvataggio non riuscito:', e && e.message);
+    storageOK = false;
+    badge('off');
+  }
+}
+
+async function boot(){
+  try{
+    db = await openDB();
+    const saved = await dbGet(KEY);
+    if(saved && saved.days){ state = saved; storageOK = true; }
+  }catch(e){ console.warn('IndexedDB non disponibile:', e && e.message); }
+  if(!state || !state.days) state = fresh();
+  normalize();
+  document.getElementById('tripTitle').value = state.title || '';
+  if(state.view) map.setView([state.view.lat, state.view.lng], state.view.z);
+  badge(storageOK ? 'saved' : 'unsaved');
+  render();
+  setView('list');
+}
+
+/* avviso se esci con modifiche non salvate su disco */
+window.addEventListener('beforeunload', e => {
+  if(dirty && storageOK !== true && state && state.places.length){
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+/* ============ tipi di tappa ============ */
+/* ogni glifo è un path 24x24, disegnato in bianco sopra il colore del giorno */
+const TYPES = {
+  place:   {label:'Tappa generica', d:'M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z'},
+  trek:    {label:'Trekking',       d:'M13 3.5a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4zM8.4 21l2.1-5.1-1.9-1.7-1.2 3.3-1.9-.7 1.9-5.2 3.4-1.4 1.6 3.4 3.1 1.5-.9 1.9-2.6-1.3.9 2.2 1.9 4.5-2 .8-2-4.8L10.4 21H8.4zM18.6 21V8.6l-1.5 1.5-.9-1 3-2.9V21h-.6z'},
+  walk:    {label:'Passeggiata',    d:'M13.5 3.2a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM9.8 21l2.3-5.4-1.7-2.3-1.6 3.6-1.9-.8 2.5-5.7 3.7-1.3 2.4 2.6 2.7 1.1-.8 1.9-3-1.2-1.2-1.3-.8 2.9 2.2 2.6 1.6 4.4-2 .7-1.6-4.2-2.1-2L11.9 21H9.8z'},
+  city:    {label:'Città',          d:'M3 21V9l5-3v3l5-3v4h6v11H3zm2-2h3v-3H5v3zm0-5h3v-3H5v3zm5 5h3v-3h-3v3zm0-5h3v-3h-3v3zm5 5h4v-3h-4v3zm0-5h4v-3h-4v3z'},
+  museum:  {label:'Museo',          d:'M12 2 2 7v2h20V7L12 2zM4 11v7H3v2h18v-2h-1v-7h-2v7h-3v-7h-2v7h-2v-7H9v7H6v-7H4z'},
+  castle:  {label:'Castello',       d:'M3 21V6h2.5v2.5H8V6h2.75v2.5h2.5V6H16v2.5h2.5V6H21v15h-7v-4.5a2 2 0 0 0-4 0V21H3zm2-2h3v-3H5v3zm11 0h3v-3h-3v3z'},
+  view:    {label:'Panorama',       d:'M3 19l5.5-8 3.5 5 2.5-3.5L21 19H3zm14.5-9.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4z'},
+  nature:  {label:'Natura / parco',  d:'M12 2 6.5 11h3L5 18h6v4h2v-4h6l-4.5-7h3L12 2z'},
+  beach:   {label:'Mare / spiaggia', d:'M2 20c1.6 0 1.6-1.2 3.2-1.2S6.8 20 8.4 20s1.6-1.2 3.2-1.2S13.2 20 14.8 20s1.6-1.2 3.2-1.2S19.6 20 22 20v2c-1.6 0-1.6-1.2-3.2-1.2S17.2 22 15.6 22 14 20.8 12.4 20.8 10.8 22 9.2 22 7.6 20.8 6 20.8 4.4 22 2 22v-2zM12 3a7 7 0 0 1 7 7H5a7 7 0 0 1 7-7zm-1 8h2v6h-2v-6z'},
+  food:    {label:'Mangiare',       d:'M7 2v8a3 3 0 0 0 2 2.8V22h2V12.8A3 3 0 0 0 13 10V2h-1.5v6h-1V2H9v6H8V2H7zm10 0c-1.7 0-3 2.2-3 5.5 0 2.4.9 4.3 2 5V22h2V2z'},
+  sleep:   {label:'Dormire',        d:'M3 6h2v6h7V8h5a4 4 0 0 1 4 4v6h-2v-3H5v3H3V6zm4.5 1.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4z'},
+  shop:    {label:'Acquisti',       d:'M6 7V6a6 6 0 0 1 12 0v1h3v14H3V7h3zm2 0h8V6a4 4 0 0 0-8 0v1z'},
+  transit: {label:'Trasporto',      d:'M5 3h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2l1.5 3h-2.2l-1-2H6.7l-1 2H3.5L5 17a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 3v5h14V6H5zm2 7.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm10 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z'}
+};
+/* glifo passeggino: contrassegno per le tappe adatte a Francesco */
+const KID_D = 'M13 3.2c3.6.5 6.4 3.5 6.7 7.2h-6.7V3.2zM11.4 4v6.4H4.7A7.7 7.7 0 0 1 11.4 4zM4.6 12h14.9a7.5 7.5 0 0 1-3.3 5.2l1.4 2.3-1.5.9-1.5-2.5c-.8.3-1.7.4-2.6.4s-1.8-.1-2.6-.4l-1.5 2.5-1.5-.9 1.4-2.3A7.5 7.5 0 0 1 4.6 12zm3.6 8.8a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2zm7.7 0a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2z';
+const typeOf = p => TYPES[p.type] || TYPES.place;
+/* tipi che sono segnaposto di servizio: non entrano mai nel percorso numerato */
+const POI = {food:1, sleep:1, shop:1, transit:1};
+const isPoi = p => !!POI[p.type||'place'];
+/* una tappa entra nel percorso numerato solo se è "in catena".
+   chain === false -> tappa libera del giorno: pin sulla mappa, nessun numero, nessun percorso.
+   I file salvati prima di questa versione non hanno il campo: valgono come in catena. */
+const inChain = p => p.chain !== false;
+const offRoute = p => !!p.alt || isPoi(p) || !inChain(p);
+
+/* ============ utilità ============ */
+const km = (a,b) => {
+  const R=6371, r=Math.PI/180;
+  const dLat=(b.lat-a.lat)*r, dLng=(b.lng-a.lng)*r;
+  const x=Math.sin(dLat/2)**2 + Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+};
+const fmt = d => d < 1 ? Math.round(d*1000)+' m' : d.toFixed(1).replace('.',',')+' km';
+const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dayOf = id => state.days.find(d=>d.id===id);
+const all = id => state.places.filter(p=>p.dayId===id);
+const stops = id => all(id).filter(p=>!offRoute(p));  // percorso numerato
+const alts  = id => all(id).filter(p=>offRoute(p));   // alternative meteo + segnaposti
+
+function addPlace(o, open){
+  const p = {id:uid(), name:o.name, lat:o.lat, lng:o.lng, dayId:o.dayId ?? state.days[0]?.id ?? null, notes:'', links:[], type:o.type || 'place', rain:false, alt:false, city:false, chain:true};
+  state.places.push(p); save(); render();
+  if(open) edit(p.id);
+  return p;
+}
+
+/* ============ ricerca ============ */
+const qEl = document.getElementById('q'), resEl = document.getElementById('results');
+let qt = null;
+qEl.addEventListener('input', () => {
+  clearTimeout(qt);
+  const v = qEl.value.trim();
+  if(v.length < 3){ resEl.hidden = true; return; }
+  qt = setTimeout(() => find(v), 450);
+});
+qEl.addEventListener('blur', () => setTimeout(()=>resEl.hidden=true, 200));
+
+async function find(v){
+  resEl.hidden = false;
+  resEl.innerHTML = '<div class="hint">Cerco…</div>';
+  try{
+    const b = map.getBounds();
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=6&accept-language=it&q='
+      + encodeURIComponent(v) + '&viewbox=' + [b.getWest(),b.getNorth(),b.getEast(),b.getSouth()].join(',');
+    const r = await fetch(url);
+    const j = await r.json();
+    if(!j.length){ resEl.innerHTML = '<div class="hint">Nessun risultato. Prova con il nome della città accanto, oppure tocca “Punto sulla mappa”.</div>'; return; }
+    resEl.innerHTML = '';
+    j.forEach(h => {
+      const short = h.display_name.split(',')[0];
+      const b2 = document.createElement('button');
+      b2.innerHTML = esc(short) + '<span class="muted">' + esc(h.display_name.split(',').slice(1,4).join(',').trim()) + '</span>';
+      b2.onclick = () => {
+        resEl.hidden = true; qEl.value = '';
+        const p = addPlace({name:short, lat:+h.lat, lng:+h.lon});
+        map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),13));
+        edit(p.id);
+      };
+      resEl.appendChild(b2);
+    });
+  }catch(e){
+    resEl.innerHTML = '<div class="hint">Ricerca non raggiungibile. Aggiungi la tappa con “＋ Punto sulla mappa”.</div>';
+  }
+}
+
+/* ============ percorsi su strada ============ */
+async function roadLine(list){
+  const key = list.map(p=>p.lat.toFixed(4)+','+p.lng.toFixed(4)).join(';');
+  if(routeCache.has(key)) return routeCache.get(key);
+  try{
+    const coords = list.map(p=>p.lng+','+p.lat).join(';');
+    const r = await fetch('https://router.project-osrm.org/route/v1/driving/'+coords+'?overview=full&geometries=geojson');
+    const j = await r.json();
+    if(!j.routes || !j.routes[0]) throw 0;
+    const out = {line:j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]), dist:j.routes[0].distance/1000};
+    routeCache.set(key,out); return out;
+  }catch(e){ routeCache.set(key,null); return null; }
+}
+
+/* ============ render ============ */
+function render(){
+  drawMap();
+  drawList();
+  refreshLegs();
+}
+
+/* velocità di riserva, usate solo finché non arriva il dato reale */
+const SPEED = {walking:4.5, driving:55};
+/* Regola cittadina: si va a piedi solo se ENTRAMBI gli estremi sono tappe cittadine.
+   Così la prima cittadina si raggiunge in auto, dentro il blocco ci si muove a piedi,
+   e dall'ultima cittadina si riparte in auto verso una tappa fuori città. */
+function legMode(a,b){ return (a.city && b.city) ? 'walking' : 'driving'; }
+function dur(mins){
+  mins = Math.max(1, Math.round(mins));
+  if(mins < 60) return mins+' min';
+  const h = Math.floor(mins/60), m = mins%60;
+  return m ? h+'h'+String(m).padStart(2,'0') : h+' h';
+}
+
+/* tempi/distanze reali via OSRM (routing su rete stradale e pedonale OpenStreetMap).
+   Google non consente chiamate dirette dal browser, quindi i numeri vengono da qui;
+   il pulsante ➔ apre comunque il giorno su Google Maps per il dato definitivo. */
+const legCache = new Map();
+function legKey(a,b,m){ return m+':'+a.lat.toFixed(4)+','+a.lng.toFixed(4)+'>'+b.lat.toFixed(4)+','+b.lng.toFixed(4); }
+
+function legTime(a,b){
+  const mode = legMode(a,b);
+  const hit = legCache.get(legKey(a,b,mode));
+  /* Anche col dato reale, un tempo pedonale resta indicativo: nessun router gratuito
+     tiene conto del dislivello, e con Francesco nello zaino va preso per difetto.
+     Perciò le tratte a piedi restano sempre marcate come stima. */
+  if(hit) return {mins:hit.mins, dist:hit.dist, mode, real: mode !== 'walking'};
+  const dist = km(a,b) * (mode==='walking' ? 1.3 : 1.35);
+  return {mins: dist / SPEED[mode] * 60, dist, mode, real:false};
+}
+
+async function fetchLeg(a,b){
+  const mode = legMode(a,b), k = legKey(a,b,mode);
+  if(legCache.has(k)) return legCache.get(k);
+  /* Il server demo OSRM espone SOLO il profilo driving: una richiesta "foot" verrebbe
+     servita lo stesso ma con tempi da automobile (13 min invece di 40 per Waverley →
+     Arthur's Seat). Uso quindi la distanza stradale reale e ricalcolo la durata a
+     velocità pedonale, senza fidarmi della durata restituita. */
+  try{
+    const r = await fetch('https://router.project-osrm.org/route/v1/driving/'
+      + a.lng+','+a.lat+';'+b.lng+','+b.lat+'?overview=false');
+    const j = await r.json();
+    if(!j.routes || !j.routes[0]) throw 0;
+    const distKm = j.routes[0].distance/1000;
+    const out = mode === 'walking'
+      ? {mins: distKm / SPEED.walking * 60, dist: distKm, walkCalc:true}
+      : {mins: j.routes[0].duration/60, dist: distKm, walkCalc:false};
+    legCache.set(k,out); return out;
+  }catch(e){ legCache.set(k,null); return null; }
+}
+
+/* aggiorna in background tutte le tratte, poi ridisegna una sola volta */
+let refreshing = false;
+async function refreshLegs(){
+  if(refreshing) return;
+  refreshing = true;
+  const jobs = [];
+  state.days.forEach(d => {
+    const l = stops(d.id);
+    for(let i=1;i<l.length;i++){
+      const a=l[i-1], b=l[i];
+      if(!legCache.has(legKey(a,b,legMode(a,b)))) jobs.push([a,b]);
+    }
+  });
+  if(jobs.length){
+    for(const [a,b] of jobs) await fetchLeg(a,b);
+    drawMap(); drawList();
+  }
+  refreshing = false;
+}
+
+/* Punto che sta a metà della LUNGHEZZA della traccia, non a metà dell'elenco di vertici:
+   OSRM infittisce i punti nelle curve, quindi prendere il vertice centrale sposterebbe
+   l'etichetta verso i tornanti. Qui accumulo la distanza e mi fermo al 50%. */
+function midOfLine(line){
+  if(!line || line.length < 2) return null;
+  let tot = 0;
+  const seg = [];
+  for(let i=1;i<line.length;i++){
+    const d = km({lat:line[i-1][0], lng:line[i-1][1]}, {lat:line[i][0], lng:line[i][1]});
+    seg.push(d); tot += d;
+  }
+  let run = 0;
+  for(let i=0;i<seg.length;i++){
+    if(run + seg[i] >= tot/2){
+      const f = seg[i] ? (tot/2 - run) / seg[i] : 0;
+      const A = line[i], B = line[i+1];
+      return L.latLng(A[0] + (B[0]-A[0])*f, A[1] + (B[1]-A[1])*f);
+    }
+    run += seg[i];
+  }
+  return L.latLng(line[line.length-1][0], line[line.length-1][1]);
+}
+
+function drawMap(){
+  layer.clearLayers();
+  state.days.forEach(d => {
+    const list = stops(d.id);
+
+    list.forEach((p,i) => layer.addLayer(marker(p, i+1, d.color)));
+    alts(d.id).forEach(p => layer.addLayer(marker(p, '', d.color)));
+
+    if(list.length > 1){
+      for(let i=1;i<list.length;i++){
+        const a = list[i-1], b = list[i];
+        const t = legTime(a,b);
+        const walk = t.mode === 'walking';
+        const seg = L.polyline([[a.lat,a.lng],[b.lat,b.lng]],{
+          color:d.color, weight: walk?3:3.5, opacity:.85,
+          dashArray: walk ? '2 7' : (road ? null : '9 7'),
+          lineCap: walk ? 'round' : 'butt'
+        });
+        layer.addLayer(seg);
+        const mid = L.latLng((a.lat+b.lat)/2, (a.lng+b.lng)/2);
+        const lab = L.marker(mid,{
+          interactive:false,
+          zIndexOffset:-200,
+          icon:L.divIcon({className:'', iconSize:[0,0], html:
+            '<span class="leg-lab'+(walk?' walk':'')+'" style="--c:'+d.color+'">'
+            + (walk?'🚶':'🚗') + ' ' + (t.real?'':'~') + dur(t.mins) + ' · ' + fmt(t.dist)
+            + '</span>'})
+        });
+        layer.addLayer(lab);
+
+        if(road && !walk) roadLine([a,b]).then(r => {
+          if(!r || !layer.hasLayer(seg)) return;
+          seg.setLatLngs(r.line);
+          /* l'etichetta va spostata sul punto a metà della traccia reale: con una
+             deviazione come Edimburgo-Glasgow-Loch Lomond il punto medio geometrico
+             cade lontano dalla strada, e il numero resta appeso nel vuoto */
+          if(layer.hasLayer(lab)) lab.setLatLng(midOfLine(r.line));
+        });
+      }
+    }
+  });
+  state.places.filter(p=>!p.dayId || !dayOf(p.dayId)).forEach(p => layer.addLayer(marker(p,'?', '#8FA3B0')));
+  scaleLabels();
+}
+
+/* le etichette si nascondono quando la mappa è troppo larga, e rimpiccioliscono con lo zoom */
+/* Etichette e tempi rimpiccioliscono con lo zoom e spariscono quando la mappa è
+   troppo larga, altrimenti a livello nazionale i nomi si accavallano illeggibili. */
+function scaleLabels(){
+  const z = map.getZoom();
+  const scale = z >= 13 ? 1 : z >= 11 ? .88 : .76;
+  document.documentElement.style.setProperty('--leg-scale', scale);
+  document.body.classList.toggle('hide-legs', z < 8);
+  /* i nomi reggono uno zoom più basso dei tempi, ma sotto il 6 diventano una macchia */
+  const ls = z >= 12 ? 1 : z >= 10 ? .9 : z >= 8 ? .8 : .72;
+  document.documentElement.style.setProperty('--lab-scale', ls);
+  document.body.classList.toggle('hide-labs', z < 6);
+}
+map.on('zoomend', scaleLabels);
+
+/* glifo nuvola+spunta, usato sia come badge sia come icona principale delle alternative */
+const CLOUD_D = 'M6.5 18a4.5 4.5 0 0 1-.5-8.97A6 6 0 0 1 17.7 8.2 4.4 4.4 0 0 1 17.5 18h-11z';
+
+function marker(p, n, color){
+  const t = typeOf(p);
+  const off = offRoute(p), poi = !p.alt && isPoi(p);
+  /* per un'alternativa meteo il pin PORTA la nuvoletta: è quello il senso della tappa.
+     Il tipo (castello, museo…) resta leggibile come piccolo glifo in basso a sinistra. */
+  const mainD = p.alt ? CLOUD_D : t.d;
+  /* contrassegni cumulabili: meteo a sinistra, Francesco a destra */
+  const bRain = p.alt
+    ? '<span class="pin-t" title="'+esc(t.label)+'"><svg viewBox="0 0 24 24"><path d="'+t.d+'"/></svg></span>'
+    : (p.rain
+      ? '<span class="pin-r" title="Adatta con meteo avverso">'
+        + '<svg viewBox="0 0 24 24"><path d="'+CLOUD_D+'"/></svg><b>✓</b></span>'
+      : '');
+  const bKid = p.kid
+    ? '<span class="pin-k" title="Adatta a Francesco">'
+      + '<svg viewBox="0 0 24 24"><path d="'+KID_D+'"/></svg></span>'
+    : '';
+  const badge = bRain + bKid;
+  const tag = p.alt ? '<span class="pin-a" title="Alternativa se piove">ALT</span>'
+            : poi   ? ''
+            : (n === '' ? '' : '<span class="pin-n">'+n+'</span>');
+  const icon = L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-32],
+    html:'<div class="pin'+(off?' alt':'')+(poi?' poi':'')+(p.alt?' rainpin':'')+'" style="background:'+color+'">' +
+           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+mainD+'"/></svg>' +
+         '</div>' + tag + badge +
+         '<span class="pin-lab'+(off?' dim':'')+'">'+esc(p.name)+'</span>'});
+  const m = L.marker([p.lat,p.lng],{icon, zIndexOffset: off ? -400 : 0, opacity: off ? .9 : 1});
+  let h = (p.img ? '<img class="pop-img" src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '')
+        + '<span class="pop-k">'+(p.alt?'Alternativa se piove · ':poi?'Segnaposto · ':'')+esc(t.label)
+        + (p.city?' · in città':'') + (!p.alt&&p.rain?' · ☂ ok':'') + (p.kid?' · 👶 ok':'')+'</span>'
+        + '<span class="pop-t">'+esc(p.name)+'</span>';
+  if(p.notes) h += '<span class="pop-n">'+esc(p.notes)+'</span>';
+  (p.links||[]).forEach(l => h += '<a class="pop-l" href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||l.url)+' ↗</a>');
+  h += '<a class="pop-b" href="#" onclick="edit(\''+p.id+'\');return false">Modifica</a>';
+  m.bindPopup(h);
+  return m;
+}
+
+function drawList(){
+  const box = document.getElementById('list');
+  box.innerHTML = '';
+  const orphans = state.places.filter(p=>!p.dayId || !dayOf(p.dayId));
+  if(orphans.length) box.appendChild(dayBlock({id:null,name:'Da assegnare',color:'#8FA3B0'}, orphans));
+  state.days.forEach(d => box.appendChild(dayBlock(d, stops(d.id))));
+}
+
+function dayBlock(d, list){
+  const sec = document.createElement('section');
+  sec.className = 'day';
+
+  let tot = 0, totMin = 0, onFoot = 0;
+  for(let i=1;i<list.length;i++){
+    const t = legTime(list[i-1], list[i]);
+    tot += t.dist; totMin += t.mins;
+    if(t.mode === 'walking') onFoot += t.dist;
+  }
+
+  const head = document.createElement('div');
+  head.className = 'day-head';
+  head.innerHTML =
+    '<span class="swatch" style="background:'+d.color+'"></span>' +
+    (d.id ? '<input class="day-name" value="'+esc(d.name)+'">' : '<span class="day-name">'+d.name+'</span>') +
+    '<span class="day-stat mono">'+list.length+' · '+(tot?fmt(tot)+' · '+dur(totMin):'—')+
+      (onFoot ? '<b class="foot-km" title="Di cui a piedi">🚶'+fmt(onFoot)+'</b>' : '')+'</span>' +
+    (d.id ? '<button class="icon-btn" title="Inquadra">◎</button><button class="icon-btn" title="Apri il giorno su Google Maps">➔</button><button class="icon-btn" title="Elimina giorno">✕</button>' : '');
+  sec.appendChild(head);
+
+  if(d.id){
+    head.querySelector('input').onchange = e => { d.name = e.target.value; save(); };
+    const [zoomB, gmB, delB] = head.querySelectorAll('.icon-btn');
+    gmB.onclick = () => openInGmaps(d, list);
+    if(list.length < 2) gmB.style.opacity = '.35';
+    zoomB.onclick = () => { const f = all(d.id); if(f.length) map.fitBounds(L.latLngBounds(f.map(p=>[p.lat,p.lng])).pad(.25)); closeSheetMobile(); };
+    delB.onclick = () => {
+      if(!confirm('Elimino "'+d.name+'"? Le sue tappe tornano in “Da assegnare”.')) return;
+      state.places.forEach(p => { if(p.dayId===d.id) p.dayId = null; });
+      state.days = state.days.filter(x=>x.id!==d.id);
+      save(); render();
+    };
+  }
+
+  const altList = d.id ? alts(d.id) : [];
+
+  if(!list.length && !altList.length){
+    const e = document.createElement('p');
+    e.className = 'empty';
+    e.textContent = 'Nessuna tappa. Cerca un luogo qui sopra o tocca “＋ Punto sulla mappa”.';
+    sec.appendChild(e);
+    return sec;
+  }
+
+  const ol = document.createElement('ol');
+  ol.className = 'rail';
+  list.forEach((p,i) => {
+    const li = document.createElement('li');
+    li.className = 'stop';
+    li.style.setProperty('--c', d.color);
+    let links = '';
+    (p.links||[]).forEach(l => links += '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||new URL(l.url,'https://x').hostname.replace('www.',''))+' ↗</a>');
+    li.innerHTML =
+      '<span class="node" title="'+esc(typeOf(p).label)+'">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+typeOf(p).d+'"/></svg>' +
+        '<b class="node-n">'+(d.id?i+1:'?')+'</b>' +
+      '</span>' +
+      '<div class="stop-card">' +
+        '<div class="stop-top">' +
+          '<button class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta a Francesco">👶</i>':'')+'</button>' +
+          '<button class="icon-btn" title="Su">↑</button>' +
+          '<button class="icon-btn" title="Giù">↓</button>' +
+          '<button class="icon-btn" title="Modifica">✎</button>' +
+        '</div>' +
+        (p.img ? '<img class="thumb" src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
+        (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
+        (links ? '<div class="links">'+links+'</div>' : '') +
+      '</div>' +
+      (i < list.length-1
+        ? '<div class="seg mono">'+(() => { const t = legTime(p, list[i+1]); return (t.mode==='walking'?'🚶':'🚗')+' '+(t.real?'':'~')+dur(t.mins)+' · '+fmt(t.dist); })()+' ↓</div>'
+        : '');
+
+    const [nameB, upB, dnB, edB] = li.querySelectorAll('.stop-name,.icon-btn');
+    nameB.onclick = () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); };
+    upB.onclick = () => move(p, -1);
+    dnB.onclick = () => move(p, 1);
+    edB.onclick = () => edit(p.id);
+    ol.appendChild(li);
+  });
+  sec.appendChild(ol);
+
+  if(altList.length){
+    const groups = [
+      {k:'rain', head:'☂ Se piove',      items: altList.filter(p => p.alt)},
+      {k:'free', head:'○ Tappe libere',  items: altList.filter(p => !p.alt && !isPoi(p) && !inChain(p))},
+      {k:'poi',  head:'📍 Segnaposti',   items: altList.filter(p => !p.alt && isPoi(p))}
+    ].filter(g => g.items.length);
+
+    groups.forEach(g => {
+      const wrap = document.createElement('div');
+      wrap.className = 'alt-box';
+      wrap.innerHTML = '<div class="alt-head mono">'+g.head+' · '+g.items.length+'</div>';
+      g.items.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'alt-item';
+        row.style.setProperty('--c', d.color);
+        let links = '';
+        (p.links||[]).forEach(l => links += '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||new URL(l.url,'https://x').hostname.replace('www.',''))+' ↗</a>');
+        row.innerHTML =
+          '<span class="alt-node" title="'+esc(typeOf(p).label)+'">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+typeOf(p).d+'"/></svg>' +
+          '</span>' +
+          '<div class="alt-body">' +
+            '<button class="stop-name">'+esc(p.name)+(p.rain&&!p.alt?' <i class="rain-tag">☂</i>':'')+(p.kid?' <i class="kid-tag">👶</i>':'')+'</button>' +
+            (p.img ? '<img class="thumb" src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
+            (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
+            (links ? '<div class="links">'+links+'</div>' : '') +
+          '</div>' +
+          '<button class="icon-btn" title="Modifica">✎</button>';
+        row.querySelector('.stop-name').onclick = () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); };
+        row.querySelector('.icon-btn').onclick = () => edit(p.id);
+        wrap.appendChild(row);
+      });
+      sec.appendChild(wrap);
+    });
+  }
+  return sec;
+}
+
+function move(p, dir){
+  const sib = state.places.filter(x => x.dayId === p.dayId);
+  const i = sib.indexOf(p), j = i + dir;
+  if(j < 0 || j >= sib.length) return;
+  const a = state.places.indexOf(sib[i]), b = state.places.indexOf(sib[j]);
+  [state.places[a], state.places[b]] = [state.places[b], state.places[a]];
+  save(); render();
+}
+
+/* ============ apri su Google Maps ============ */
+/* Maps URLs (api=1, nessuna chiave): origin + destination + waypoints in ordine.
+   Il pipe va codificato %7C, la virgola %2C. Limite pratico ~9 waypoint per link,
+   quindi i giorni lunghi vengono spezzati in tratte consecutive. */
+const MAXW = 9; // waypoint intermedi per link
+
+function gmapsLinks(list, mode){
+  const c = p => p.lat.toFixed(6)+'%2C'+p.lng.toFixed(6);
+  const out = [];
+  for(let s = 0; s < list.length - 1; s += MAXW + 1){
+    const chunk = list.slice(s, s + MAXW + 2);
+    if(chunk.length < 2) break;
+    const mid = chunk.slice(1, -1);
+    let u = 'https://www.google.com/maps/dir/?api=1'
+          + '&origin=' + c(chunk[0])
+          + '&destination=' + c(chunk[chunk.length-1])
+          + '&travelmode=' + mode;
+    if(mid.length) u += '&waypoints=' + mid.map(c).join('%7C');
+    out.push({url:u, from:chunk[0].name, to:chunk[chunk.length-1].name, n:chunk.length});
+  }
+  return out;
+}
+
+function openInGmaps(d, list){
+  if(list.length < 2){
+    if(list.length === 1) window.open('https://www.google.com/maps/search/?api=1&query='+list[0].lat.toFixed(6)+'%2C'+list[0].lng.toFixed(6), '_blank');
+    return;
+  }
+  /* spezzo il giorno dove cambia il modo: i blocchi cittadini escono come percorsi a piedi.
+     I blocchi condividono il punto di giunzione, così la catena resta continua. */
+  const blocks = [];
+  let cur = {mode: legMode(list[0], list[1]), pts: [list[0]]};
+  for(let i=1;i<list.length;i++){
+    const m = legMode(list[i-1], list[i]);
+    if(m !== cur.mode){ blocks.push(cur); cur = {mode:m, pts:[list[i-1]]}; }
+    cur.pts.push(list[i]);
+  }
+  blocks.push(cur);
+
+  const links = [];
+  blocks.forEach(b => { if(b.pts.length > 1) links.push(...gmapsLinks(b.pts, b.mode).map(l => ({...l, mode:b.mode}))); });
+
+  if(links.length === 1){ window.open(links[0].url, '_blank'); return; }
+
+  const box = document.getElementById('gmapsList');
+  box.innerHTML =
+    '<p class="empty" style="padding:0 0 10px">Il giorno si divide in '+links.length+' tratte '+
+    '(cambio di mezzo o troppe tappe per un solo link). Aprile in sequenza:</p>' +
+    links.map((l,i) =>
+      '<a class="btn" style="display:block;margin-bottom:6px;text-decoration:none" target="_blank" rel="noopener" href="'+l.url+'">'+
+      (l.mode==='walking'?'🚶 ':'🚗 ')+'Tratta '+(i+1)+' · '+esc(l.from)+' → '+esc(l.to)+'</a>').join('');
+  document.getElementById('gmapsTitle').textContent = d.name + ' su Google Maps';
+  document.getElementById('gmapsVeil').hidden = false;
+}
+
+/* ============ spese condivise ============ */
+function normalize(){
+  if(!state.people) state.people = [];
+  if(!state.expenses) state.expenses = [];
+  if(!state.bookings) state.bookings = [];
+  if(!state.currency) state.currency = '€';
+  /* le versioni precedenti avevano "Con Francesco" come tipo: ora è un contrassegno */
+  state.places.forEach(p => {
+    if(p.type === 'kids'){ p.type = 'place'; p.kid = true; }
+  });
+}
+const money = v => state.currency + ' ' + (Math.round(v*100)/100).toFixed(2).replace('.', ',');
+const personName = id => (state.people.find(p=>p.id===id) || {name:'—'}).name;
+
+function balances(){
+  const b = {};
+  state.people.forEach(p => b[p.id] = 0);
+  state.expenses.forEach(e => {
+    const forIds = e.forIds.filter(id => b[id] !== undefined);
+    if(!forIds.length) return;
+    const share = e.amount / forIds.length;
+    if(b[e.byId] !== undefined) b[e.byId] += e.amount;
+    forIds.forEach(id => b[id] -= share);
+  });
+  return b;
+}
+
+/* trasferimenti minimi: il maggior debitore salda il maggior creditore */
+function settle(){
+  const b = balances(), cred = [], deb = [];
+  Object.entries(b).forEach(([id,v]) => {
+    const r = Math.round(v*100)/100;
+    if(r > 0.005) cred.push({id, v:r});
+    else if(r < -0.005) deb.push({id, v:-r});
+  });
+  cred.sort((x,y)=>y.v-x.v); deb.sort((x,y)=>y.v-x.v);
+  const out = []; let i=0, j=0;
+  while(i < deb.length && j < cred.length){
+    const amt = Math.min(deb[i].v, cred[j].v);
+    out.push({from:deb[i].id, to:cred[j].id, amt:Math.round(amt*100)/100});
+    deb[i].v -= amt; cred[j].v -= amt;
+    if(deb[i].v < 0.005) i++;
+    if(cred[j].v < 0.005) j++;
+  }
+  return out;
+}
+
+function drawCosts(){
+  normalize();
+  const box = document.getElementById('costs');
+  const tot = state.expenses.reduce((s,e)=>s+e.amount, 0);
+  const b = balances();
+
+  let h = '<div class="cost-sec"><div class="alt-head mono">Partecipanti · '+state.people.length+'</div>';
+  if(!state.people.length){
+    h += '<p class="empty" style="padding:0">Aggiungi chi partecipa al viaggio: le spese si dividono tra loro.</p>';
+  } else {
+    h += '<div class="who-list">' + state.people.map(p => {
+      const v = b[p.id] || 0;
+      const cls = v > 0.005 ? 'pos' : v < -0.005 ? 'neg' : '';
+      const lab = v > 0.005 ? 'deve avere' : v < -0.005 ? 'deve dare' : 'in pari';
+      return '<div class="who"><span class="who-n">'+esc(p.name)+'</span>'+
+             '<span class="who-b '+cls+'"><i>'+lab+'</i>'+money(Math.abs(v))+'</span>'+
+             '<button class="icon-btn" data-del="'+p.id+'" title="Rimuovi">✕</button></div>';
+    }).join('') + '</div>';
+  }
+  h += '<div class="add-row"><input class="field" id="newPerson" placeholder="Nome partecipante" autocomplete="off">'+
+       '<button class="chip" id="addPerson">Aggiungi</button></div></div>';
+
+  h += '<div class="cost-sec"><div class="alt-head mono">Spese · '+state.expenses.length+' · totale '+money(tot)+'</div>';
+  if(!state.expenses.length){
+    h += '<p class="empty" style="padding:0">Nessuna spesa registrata.</p>';
+  } else {
+    h += state.expenses.slice().reverse().map(e => {
+      const who = e.forIds.length === state.people.length && state.people.length
+        ? 'tutti' : e.forIds.map(personName).join(', ');
+      return '<div class="exp"><div class="exp-top">'+
+        '<span class="exp-d">'+esc(e.desc||'Spesa')+'</span>'+
+        '<span class="exp-a mono">'+money(e.amount)+'</span>'+
+        '<button class="icon-btn" data-delx="'+e.id+'" title="Elimina">✕</button></div>'+
+        '<div class="exp-m mono">'+esc(personName(e.byId))+' ha pagato · per '+esc(who)+'</div></div>';
+    }).join('');
+  }
+  h += '</div>';
+
+  const tr = settle();
+  h += '<div class="cost-sec"><div class="alt-head mono">Come pareggiare · '+tr.length+' movimenti</div>';
+  h += tr.length
+    ? tr.map(t => '<div class="settle"><b>'+esc(personName(t.from))+'</b> → <b>'+esc(personName(t.to))+'</b>'+
+        '<span class="mono">'+money(t.amt)+'</span></div>').join('')
+    : '<p class="empty" style="padding:0">Tutti in pari.</p>';
+  h += '</div>';
+
+  box.innerHTML = h;
+
+  const np = document.getElementById('newPerson');
+  const addP = () => {
+    const v = np.value.trim();
+    if(!v) return;
+    state.people.push({id:uid(), name:v});
+    save(); drawCosts();
+    document.getElementById('newPerson').focus();
+  };
+  document.getElementById('addPerson').onclick = addP;
+  np.onkeydown = e => { if(e.key === 'Enter') addP(); };
+  box.querySelectorAll('[data-del]').forEach(b2 => b2.onclick = () => {
+    const id = b2.dataset.del;
+    if(state.expenses.some(e => e.byId === id || e.forIds.includes(id))
+       && !confirm(personName(id)+' compare in alcune spese. Rimuovere comunque?')) return;
+    state.people = state.people.filter(p => p.id !== id);
+    state.expenses = state.expenses.filter(e => e.byId !== id);
+    state.expenses.forEach(e => e.forIds = e.forIds.filter(x => x !== id));
+    state.expenses = state.expenses.filter(e => e.forIds.length);
+    save(); drawCosts();
+  });
+  box.querySelectorAll('[data-delx]').forEach(b2 => b2.onclick = () => {
+    state.expenses = state.expenses.filter(e => e.id !== b2.dataset.delx);
+    save(); drawCosts();
+  });
+}
+
+/* --- form nuova spesa --- */
+function openExpense(){
+  normalize();
+  if(state.people.length < 2){ alert('Aggiungi almeno due partecipanti prima di registrare una spesa.'); return; }
+  const byS = document.getElementById('xBy');
+  byS.innerHTML = state.people.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('');
+  const forBox = document.getElementById('xFor');
+  forBox.innerHTML = state.people.map(p =>
+    '<button class="who-pick on" data-id="'+p.id+'">'+esc(p.name)+'</button>').join('');
+  forBox.querySelectorAll('.who-pick').forEach(b2 => b2.onclick = () => b2.classList.toggle('on'));
+  document.getElementById('xDesc').value = '';
+  document.getElementById('xAmt').value = '';
+  document.getElementById('xVeil').hidden = false;
+  document.getElementById('xDesc').focus();
+}
+
+document.getElementById('xAll').onclick = () =>
+  document.querySelectorAll('#xFor .who-pick').forEach(b => b.classList.add('on'));
+document.getElementById('xNone').onclick = () =>
+  document.querySelectorAll('#xFor .who-pick').forEach(b => b.classList.remove('on'));
+document.getElementById('xCancel').onclick = () => document.getElementById('xVeil').hidden = true;
+document.getElementById('xSave').onclick = () => {
+  const amt = parseFloat(document.getElementById('xAmt').value.replace(',','.'));
+  const forIds = [...document.querySelectorAll('#xFor .who-pick.on')].map(b=>b.dataset.id);
+  if(!(amt > 0)){ alert('Inserisci un importo maggiore di zero.'); return; }
+  if(!forIds.length){ alert('Indica per chi è la spesa.'); return; }
+  state.expenses.push({
+    id: uid(),
+    desc: document.getElementById('xDesc').value.trim(),
+    amount: amt,
+    byId: document.getElementById('xBy').value,
+    forIds,
+    ts: Date.now()
+  });
+  document.getElementById('xVeil').hidden = true;
+  save(); drawCosts();
+};
+
+/* ============ immagine della tappa ============ */
+/* Una foto da telefono pesa 3-5 MB: salvata così farebbe esplodere il file del viaggio
+   e supererebbe il limite dello storage. La ridimensiono a 900 px lato lungo e la
+   ricomprimo in JPEG prima di conservarla. */
+function shrinkImage(file, cb){
+  const rd = new FileReader();
+  rd.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 900;
+      let {width:w, height:h} = img;
+      if(w > max || h > max){ const s = max/Math.max(w,h); w = Math.round(w*s); h = Math.round(h*s); }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(c.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = () => cb(null);
+    img.src = rd.result;
+  };
+  rd.onerror = () => cb(null);
+  rd.readAsDataURL(file);
+}
+
+function imgPreview(src){
+  const box = document.getElementById('fImgPrev');
+  box.innerHTML = src
+    ? '<img class="img-prev" src="'+esc(src)+'" alt="Anteprima">'
+    : '';
+}
+
+document.getElementById('fImgPick').onclick = () => document.getElementById('fImgFile').click();
+document.getElementById('fImgFile').onchange = e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  shrinkImage(f, data => {
+    if(!data){ alert('Non sono riuscito a leggere questa immagine.'); return; }
+    document.getElementById('fImg').value = data;
+    imgPreview(data);
+  });
+  e.target.value = '';
+};
+document.getElementById('fImgClear').onclick = () => {
+  document.getElementById('fImg').value = '';
+  imgPreview('');
+};
+document.getElementById('fImg').oninput = e => imgPreview(e.target.value.trim());
+
+/* ============ prenotazioni ============ */
+/* Sei tipi con esigenze diverse: un treno ha partenza e arrivo con orario,
+   un albergo ha check-in e check-out, un noleggio ha ritiro e riconsegna.
+   Il campo "leg" distingue chi ha due estremi da chi ha un solo momento. */
+const BOOK_TYPES = {
+  flight: {label:'Aereo',    icon:'✈', leg:true,  aLab:'Partenza',  bLab:'Arrivo',      ref:'Codice prenotazione (PNR)'},
+  train:  {label:'Treno',    icon:'🚆', leg:true,  aLab:'Partenza',  bLab:'Arrivo',      ref:'Codice biglietto'},
+  car:    {label:'Noleggio', icon:'🚗', leg:true,  aLab:'Ritiro',    bLab:'Riconsegna',  ref:'Codice noleggio'},
+  stay:   {label:'Alloggio', icon:'🏨', leg:true,  aLab:'Check-in',  bLab:'Check-out',   ref:'Codice prenotazione'},
+  tour:   {label:'Escursione',icon:'🥾', leg:false, aLab:'Data e ora', bLab:'',           ref:'Codice prenotazione'},
+  ticket: {label:'Biglietto',icon:'🎟', leg:false, aLab:'Data e ora', bLab:'',           ref:'Codice biglietto'}
+};
+
+function ensureBooks(){ if(!state.bookings) state.bookings = []; }
+
+/* ordinamento cronologico: le prenotazioni senza data finiscono in coda */
+function sortedBookings(){
+  ensureBooks();
+  return state.bookings.slice().sort((x,y) => {
+    if(!x.aWhen && !y.aWhen) return 0;
+    if(!x.aWhen) return 1;
+    if(!y.aWhen) return -1;
+    return x.aWhen.localeCompare(y.aWhen);
+  });
+}
+
+const fmtWhen = s => {
+  if(!s) return '—';
+  const [d,t] = s.split('T');
+  const [Y,M,D] = d.split('-');
+  return D+'/'+M+'/'+Y + (t ? ' · '+t : '');
+};
+/* giorni che mancano alla scadenza della cancellazione gratuita.
+   Confronto le date a mezzanotte, altrimenti una scadenza di ieri sera
+   arrotonda a 0 e verrebbe mostrata come "ancora in tempo". */
+function daysTo(s){
+  if(!s) return null;
+  const [Y,M,D] = s.split('-').map(Number);
+  const end = new Date(Y, M-1, D);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((end - today) / 86400000);
+}
+
+function drawBooks(){
+  ensureBooks();
+  const box = document.getElementById('books');
+  const list = sortedBookings();
+  const tot = state.bookings.reduce((s,b) => s + (parseFloat(b.cost)||0), 0);
+
+  if(!list.length){
+    box.innerHTML = '<div class="cost-sec"><p class="empty" style="padding:0">'+
+      'Nessuna prenotazione. Aggiungi voli, treni, alloggi, noleggi ed escursioni: '+
+      'qui restano in ordine di data con codici, allegati e scadenze di cancellazione.</p></div>';
+    return;
+  }
+
+  let h = '<div class="cost-sec"><div class="alt-head mono">'+list.length+' prenotazioni'+
+          (tot ? ' · '+money(tot) : '')+'</div>';
+
+  list.forEach(b => {
+    const T = BOOK_TYPES[b.type] || BOOK_TYPES.ticket;
+    const dd = daysTo(b.freeUntil);
+    let flag = '';
+    if(b.refund === 'free' && b.freeUntil){
+      flag = dd < 0
+        ? '<span class="bk-flag late">Cancellazione scaduta</span>'
+        : '<span class="bk-flag'+(dd <= 7 ? ' soon' : ' ok')+'">Gratis fino al '+fmtWhen(b.freeUntil)+
+          (dd <= 30 ? ' · '+dd+'g' : '')+'</span>';
+    } else if(b.refund === 'paid'){
+      flag = '<span class="bk-flag late">Non rimborsabile</span>';
+    }
+
+    h += '<div class="bk">'+
+      '<div class="bk-top">'+
+        '<span class="bk-ic">'+T.icon+'</span>'+
+        '<div class="bk-h">'+
+          '<span class="bk-t">'+esc(b.title || T.label)+'</span>'+
+          '<span class="bk-s mono">'+esc(T.label)+(b.who ? ' · '+esc(b.who) : '')+'</span>'+
+        '</div>'+
+        (b.cost ? '<span class="exp-a mono">'+money(parseFloat(b.cost)||0)+'</span>' : '')+
+        '<button class="icon-btn" data-bke="'+b.id+'" title="Modifica">✎</button>'+
+      '</div>'+
+      '<div class="bk-when mono">'+
+        '<span>'+esc(T.aLab)+': <b>'+fmtWhen(b.aWhen)+'</b>'+(b.aPlace ? ' · '+esc(b.aPlace) : '')+'</span>'+
+        (T.leg && (b.bWhen || b.bPlace)
+          ? '<span>'+esc(T.bLab)+': <b>'+fmtWhen(b.bWhen)+'</b>'+(b.bPlace ? ' · '+esc(b.bPlace) : '')+'</span>'
+          : '')+
+      '</div>'+
+      (b.ref ? '<div class="bk-ref mono">'+esc(T.ref)+': <b>'+esc(b.ref)+'</b></div>' : '')+
+      (flag ? '<div class="bk-flags">'+flag+'</div>' : '')+
+      (b.notes ? '<p class="stop-note">'+esc(b.notes)+'</p>' : '')+
+      '<div class="links">'+
+        (b.url ? '<a href="'+esc(b.url)+'" target="_blank" rel="noopener">Gestisci ↗</a>' : '')+
+        (b.file ? '<a href="'+esc(b.file)+'" download="'+esc((b.title||T.label).replace(/\W+/g,'-'))+'.pdf">📄 '+esc(b.fileName||'Allegato')+'</a>' : '')+
+      '</div>'+
+    '</div>';
+  });
+  h += '</div>';
+  box.innerHTML = h;
+
+  box.querySelectorAll('[data-bke]').forEach(bt =>
+    bt.onclick = () => openBooking(bt.dataset.bke));
+}
+
+/* --- scheda prenotazione --- */
+let editingBook = null;
+function openBooking(id){
+  ensureBooks();
+  editingBook = id ? state.bookings.find(b => b.id === id) : null;
+  const b = editingBook || {type:'train', refund:'free'};
+
+  const tg = document.getElementById('bType');
+  tg.innerHTML = Object.entries(BOOK_TYPES).map(([k,v]) =>
+    '<button class="type-opt'+(b.type===k?' on':'')+'" data-type="'+k+'">'+
+    '<span style="font-size:17px">'+v.icon+'</span><span>'+v.label+'</span></button>').join('');
+  tg.querySelectorAll('.type-opt').forEach(x => x.onclick = () => {
+    tg.querySelectorAll('.type-opt').forEach(y => y.classList.remove('on'));
+    x.classList.add('on');
+    bookLabels(x.dataset.type);
+  });
+
+  document.getElementById('bTitle').value = b.title || '';
+  document.getElementById('bWho').value   = b.who   || '';
+  document.getElementById('bAWhen').value = b.aWhen || '';
+  document.getElementById('bAPlace').value= b.aPlace|| '';
+  document.getElementById('bBWhen').value = b.bWhen || '';
+  document.getElementById('bBPlace').value= b.bPlace|| '';
+  document.getElementById('bRef').value   = b.ref   || '';
+  document.getElementById('bCost').value  = b.cost  || '';
+  document.getElementById('bUrl').value    = b.url   || '';
+  document.getElementById('bNotes').value = b.notes || '';
+  document.getElementById('bFreeUntil').value = b.freeUntil || '';
+  bookFile = b.file || ''; bookFileName = b.fileName || '';
+  bookFileView();
+
+  document.querySelectorAll('#bRefund .who-pick').forEach(x =>
+    x.classList.toggle('on', x.dataset.v === (b.refund || 'free')));
+  refundView();
+
+  document.getElementById('bDel').hidden = !editingBook;
+  document.getElementById('bSheetT').textContent = editingBook ? 'Modifica prenotazione' : 'Nuova prenotazione';
+  bookLabels(b.type || 'train');
+  document.getElementById('bVeil').hidden = false;
+}
+
+/* le etichette dei campi cambiano col tipo: check-in per un albergo, partenza per un volo */
+function bookLabels(type){
+  const T = BOOK_TYPES[type] || BOOK_TYPES.ticket;
+  document.getElementById('bALab').textContent = T.aLab;
+  document.getElementById('bRefLab').textContent = T.ref;
+  document.getElementById('bLegB').hidden = !T.leg;
+  if(T.leg) document.getElementById('bBLab').textContent = T.bLab;
+  const ap = document.getElementById('bAPlace');
+  ap.placeholder = type==='stay' ? 'Struttura e indirizzo'
+                 : type==='car'  ? 'Sede di ritiro'
+                 : type==='flight'? 'Aeroporto di partenza'
+                 : type==='train' ? 'Stazione di partenza' : 'Luogo di ritrovo';
+}
+function refundView(){
+  const free = document.querySelector('#bRefund .who-pick.on')?.dataset.v === 'free';
+  document.getElementById('bFreeRow').hidden = !free;
+}
+let bookFile = '', bookFileName = '';
+function bookFileView(){
+  document.getElementById('bFileName').textContent = bookFileName || 'Nessun allegato';
+  document.getElementById('bFileClear').hidden = !bookFile;
+}
+
+/* --- gestori della scheda prenotazione --- */
+document.querySelectorAll('#bRefund .who-pick').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#bRefund .who-pick').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  refundView();
+});
+document.getElementById('bFilePick').onclick = () => document.getElementById('bFileInput').click();
+document.getElementById('bFileClear').onclick = () => { bookFile=''; bookFileName=''; bookFileView(); };
+document.getElementById('bFileInput').onchange = e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  /* un PDF va conservato tale e quale, non si può ricomprimere come una foto:
+     oltre 1,5 MB conviene tenerlo su Drive e mettere qui solo il link */
+  if(f.size > 1.5*1024*1024){
+    alert('Il file pesa '+(f.size/1048576).toFixed(1)+' MB: troppo per il salvataggio.\n\n'+
+          'Caricalo su Drive e incolla il link nel campo "Link di gestione".');
+    e.target.value = ''; return;
+  }
+  const rd = new FileReader();
+  rd.onload = () => { bookFile = rd.result; bookFileName = f.name; bookFileView(); };
+  rd.readAsDataURL(f);
+  e.target.value = '';
+};
+document.getElementById('bCancel').onclick = () => document.getElementById('bVeil').hidden = true;
+document.getElementById('bDel').onclick = () => {
+  if(!editingBook || !confirm('Elimino "'+(editingBook.title||'questa prenotazione')+'"?')) return;
+  state.bookings = state.bookings.filter(b => b.id !== editingBook.id);
+  document.getElementById('bVeil').hidden = true;
+  save(); drawBooks();
+};
+document.getElementById('bSave').onclick = () => {
+  ensureBooks();
+  const type = (document.querySelector('#bType .type-opt.on')||{dataset:{type:'ticket'}}).dataset.type;
+  const rec = {
+    id: editingBook ? editingBook.id : uid(),
+    type,
+    title:  document.getElementById('bTitle').value.trim(),
+    who:    document.getElementById('bWho').value.trim(),
+    aWhen:  document.getElementById('bAWhen').value,
+    aPlace: document.getElementById('bAPlace').value.trim(),
+    bWhen:  document.getElementById('bBWhen').value,
+    bPlace: document.getElementById('bBPlace').value.trim(),
+    ref:    document.getElementById('bRef').value.trim(),
+    cost:   document.getElementById('bCost').value.replace(',','.').trim(),
+    refund: (document.querySelector('#bRefund .who-pick.on')||{dataset:{v:'free'}}).dataset.v,
+    freeUntil: document.getElementById('bFreeUntil').value,
+    url:    document.getElementById('bUrl').value.trim(),
+    notes:  document.getElementById('bNotes').value,
+    file:   bookFile,
+    fileName: bookFileName
+  };
+  if(!rec.title && !rec.ref && !rec.aWhen){ alert('Dai almeno un titolo o una data alla prenotazione.'); return; }
+  if(editingBook) Object.assign(editingBook, rec);
+  else state.bookings.push(rec);
+  document.getElementById('bVeil').hidden = true;
+  save(); drawBooks();
+};
+document.getElementById('bVeil').onclick = e => {
+  if(e.target === document.getElementById('bVeil')) document.getElementById('bVeil').hidden = true;
+};
+
+/* ============ editor ============ */
+const veil = document.getElementById('veil');
+function edit(id){
+  editing = state.places.find(p=>p.id===id);
+  if(!editing) return;
+  map.closePopup();
+  document.getElementById('fName').value = editing.name;
+  document.getElementById('fNote').value = editing.notes || '';
+  document.getElementById('fImg').value = editing.img || '';
+  imgPreview(editing.img || '');
+  document.getElementById('fCoord').textContent = editing.lat.toFixed(5)+', '+editing.lng.toFixed(5);
+  const sel = document.getElementById('fDay');
+  sel.innerHTML = '<option value="">Da assegnare</option>' + state.days.map(d=>'<option value="'+d.id+'">'+esc(d.name)+'</option>').join('');
+  sel.value = editing.dayId || '';
+
+  const rainB = document.getElementById('fRain'), altB = document.getElementById('fAlt'),
+        cityB = document.getElementById('fCity'), chainB = document.getElementById('fChain'),
+        kidB = document.getElementById('fKid');
+  rainB.classList.toggle('on', !!editing.rain);
+  altB.classList.toggle('on', !!editing.alt);
+  cityB.classList.toggle('on', !!editing.city);
+  chainB.classList.toggle('on', inChain(editing));
+  kidB.classList.toggle('on', !!editing.kid);
+  rainB.onclick = () => rainB.classList.toggle('on');
+  altB.onclick = () => altB.classList.toggle('on');
+  cityB.onclick = () => cityB.classList.toggle('on');
+  chainB.onclick = () => chainB.classList.toggle('on');
+  kidB.onclick = () => kidB.classList.toggle('on');
+
+  const tg = document.getElementById('fType');  tg.innerHTML = '';
+  Object.entries(TYPES).forEach(([k,v]) => {
+    const b = document.createElement('button');
+    b.className = 'type-opt' + ((editing.type||'place') === k ? ' on' : '');
+    b.dataset.type = k;
+    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="'+v.d+'"/></svg><span>'+esc(v.label)+'</span>';
+    b.onclick = () => {
+      tg.querySelectorAll('.type-opt').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    };
+    tg.appendChild(b);
+  });
+  const box = document.getElementById('fLinks');
+  box.innerHTML = '';
+  (editing.links||[]).forEach(l => linkRow(l.label, l.url));
+  veil.hidden = false;
+  document.getElementById('fName').focus();
+}
+window.edit = edit;
+
+function linkRow(label, url){
+  const row = document.createElement('div');
+  row.className = 'link-row';
+  row.innerHTML = '<input class="field lab" placeholder="etichetta"><input class="field url" placeholder="https://…"><button class="icon-btn">✕</button>';
+  row.querySelector('.lab').value = label || '';
+  row.querySelector('.url').value = url || '';
+  row.querySelector('.icon-btn').onclick = () => row.remove();
+  document.getElementById('fLinks').appendChild(row);
+}
+document.getElementById('addLink').onclick = () => linkRow('','');
+
+document.getElementById('save').onclick = () => {
+  editing.name = document.getElementById('fName').value.trim() || 'Tappa';
+  editing.notes = document.getElementById('fNote').value;
+  editing.img = document.getElementById('fImg').value.trim();
+  editing.dayId = document.getElementById('fDay').value || null;
+  editing.type = (document.querySelector('#fType .type-opt.on') || {dataset:{type:'place'}}).dataset.type;
+  editing.rain = document.getElementById('fRain').classList.contains('on');
+  editing.kid  = document.getElementById('fKid').classList.contains('on');
+  editing.alt  = document.getElementById('fAlt').classList.contains('on');
+  editing.city = document.getElementById('fCity').classList.contains('on');
+  editing.chain = document.getElementById('fChain').classList.contains('on');
+  editing.links = [...document.querySelectorAll('#fLinks .link-row')].map(r => ({
+    label: r.querySelector('.lab').value.trim(),
+    url: r.querySelector('.url').value.trim()
+  })).filter(l => l.url).map(l => ({label:l.label, url:/^https?:/i.test(l.url)?l.url:'https://'+l.url}));
+  veil.hidden = true; save(); render();
+};
+document.getElementById('fMove').onclick = () => {
+  moving = editing.id;
+  veil.hidden = true;
+  document.body.classList.add('moving');
+  if(window.matchMedia('(max-width:880px)').matches) setView('map');
+  map.panTo([editing.lat, editing.lng]);
+};
+
+document.getElementById('cancel').onclick = () => veil.hidden = true;
+document.getElementById('del').onclick = () => {
+  if(!confirm('Elimino "'+editing.name+'"?')) return;
+  state.places = state.places.filter(p => p.id !== editing.id);
+  veil.hidden = true; save(); render();
+};
+veil.onclick = e => { if(e.target === veil) veil.hidden = true; };
+const gveil = document.getElementById('gmapsVeil');
+document.getElementById('gmapsClose').onclick = () => gveil.hidden = true;
+gveil.onclick = e => { if(e.target === gveil) gveil.hidden = true; };
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    if(moving){ moving = null; document.body.classList.remove('moving'); return; }
+    veil.hidden = true; gveil.hidden = true;
+    document.getElementById('xVeil').hidden = true;
+    document.getElementById('bVeil').hidden = true;
+  }
+});
+
+/* ============ comandi ============ */
+document.getElementById('tripTitle').oninput = e => { state.title = e.target.value; save(); };
+
+const pickBtn = document.getElementById('btnPick');
+function setPick(v){
+  pickMode = v;
+  pickBtn.classList.toggle('on', v);
+  pickBtn.textContent = v ? '✓ Tocca la mappa' : '＋ Punto sulla mappa';
+  document.getElementById('map').style.cursor = v ? 'crosshair' : '';
+}
+pickBtn.onclick = () => { setPick(!pickMode); if(pickMode) closeSheetMobile(); };
+
+document.getElementById('btnRoad').onclick = e => {
+  road = !road;
+  e.target.classList.toggle('on', road);
+  e.target.textContent = road ? 'Strada' : 'Strada';
+  drawMap();
+};
+
+document.getElementById('btnFit').onclick = () => {  if(!state.places.length) return;
+  map.fitBounds(L.latLngBounds(state.places.map(p=>[p.lat,p.lng])).pad(.2));
+  closeSheetMobile();
+};
+
+/* i nomi si possono spegnere quando la mappa è troppo fitta */
+let labsOff = false;
+document.getElementById('btnLabs').onclick = e => {
+  labsOff = !labsOff;
+  e.target.classList.toggle('on', !labsOff);
+  document.body.classList.toggle('labs-off', labsOff);
+};
+
+document.getElementById('btnDay').onclick = () => {
+  state.days.push({id:uid(), name:'Giorno '+(state.days.length+1), color:PALETTE[state.days.length % PALETTE.length]});
+  save(); render();
+  document.getElementById('list').scrollTop = 1e6;
+};
+
+document.getElementById('btnExport').onclick = () => {
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (state.title||'viaggio').replace(/\W+/g,'-').toLowerCase()+'.json';
+  a.click();
+  dirty = false;
+  badge(storageOK === true ? 'saved' : 'off');
+};
+document.getElementById('btnImport').onclick = () => document.getElementById('file').click();
+document.getElementById('file').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const j = JSON.parse(r.result);
+      if(!j.days || !j.places) throw 0;
+      state = j;
+      normalize();
+      document.getElementById('tripTitle').value = state.title || '';
+      save(); render(); drawCosts();
+      if(state.places.length) map.fitBounds(L.latLngBounds(state.places.map(p=>[p.lat,p.lng])).pad(.2));
+    }catch(err){ alert('Il file non è un itinerario di Rotta.'); }
+  };
+  r.readAsText(f);
+};
+
+/* ============ navigazione ============ */
+/* Tre viste di pari livello: Mappa · Itinerario · Spese.
+   Su desktop la mappa e il pannello convivono, quindi "Mappa" chiude solo il pannello;
+   su mobile il pannello scorre sopra la mappa. */
+const tabMap  = document.getElementById('tabMap'),
+      tabList = document.getElementById('tabList'),
+      tabCost = document.getElementById('tabCost'),
+      tabBook = document.getElementById('tabBook');
+const listEl = document.getElementById('list'), costEl = document.getElementById('costs');
+let view = 'map';
+
+function setView(v){
+  view = v;
+  const cost = v === 'cost', book = v === 'book';
+  listEl.hidden = cost || book;
+  costEl.hidden = !cost;
+  document.getElementById('books').hidden = !book;
+  document.getElementById('btnDay').hidden = cost || book;
+  document.getElementById('btnExpense').hidden = !cost;
+  document.getElementById('btnBooking').hidden = !book;
+  document.body.classList.toggle('panel-open', v !== 'map');
+  [[tabMap,'map'],[tabList,'list'],[tabCost,'cost'],[tabBook,'book']]
+    .forEach(([b,k]) => b.classList.toggle('on', v === k));
+  if(cost) drawCosts();
+  if(book) drawBooks();
+  map.invalidateSize();
+  setTimeout(() => map.invalidateSize(), 300);
+}
+tabMap.onclick  = () => setView('map');
+tabList.onclick = () => setView('list');
+tabCost.onclick = () => setView('cost');
+tabBook.onclick = () => setView('book');
+document.getElementById('btnBooking').onclick = () => openBooking(null);
+document.getElementById('btnExpense').onclick = openExpense;
+/* usata dopo un'azione sulla mappa: torna alla mappa su mobile, innocua su desktop */
+function closeSheetMobile(){ if(window.matchMedia('(max-width:880px)').matches) setView('map'); }
+
+/* ============ installazione e funzionamento offline ============ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      /* se arriva una versione nuova, avviso invece di cambiare le carte in tavola */
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        if(!w) return;
+        w.addEventListener('statechange', () => {
+          if(w.state === 'installed' && navigator.serviceWorker.controller){
+            const b = document.getElementById('updateBar');
+            if(b) b.hidden = false;
+          }
+        });
+      });
+    }).catch(e => console.warn('service worker non registrato:', e && e.message));
+  });
+}
+
+document.getElementById('updateNow').onclick = () => {
+  navigator.serviceWorker.getRegistration().then(r => {
+    if(r && r.waiting) r.waiting.postMessage('skipWaiting');
+    location.reload();
+  });
+};
+
+/* invito all'installazione: Chrome lo consente solo dopo un gesto dell'utente */
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installEvt = e;
+  const b = document.getElementById('btnInstall');
+  if(b) b.hidden = false;
+});
+document.getElementById('btnInstall').onclick = async () => {
+  if(!installEvt) return;
+  installEvt.prompt();
+  await installEvt.userChoice;
+  installEvt = null;
+  document.getElementById('btnInstall').hidden = true;
+};
+window.addEventListener('appinstalled', () => {
+  const b = document.getElementById('btnInstall');
+  if(b) b.hidden = true;
+});
+
+boot();
+</script>
+</body>
+</html>
