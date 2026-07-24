@@ -188,8 +188,8 @@ button:active{transform:scale(.97)}
   border-radius:10px;padding:8px 2px;
 }
 .wx-hour span:nth-child(2){font-size:16px}
-.icon-btn{color:var(--fog);padding:5px 6px;border-radius:8px;font-size:13px;line-height:1;transition:.15s}
-.icon-btn:hover{color:var(--paper);background:var(--ink-3)}
+.icon-btn, .day-toggle{color:var(--fog);padding:5px 6px;border-radius:8px;font-size:13px;line-height:1;transition:.15s}
+.icon-btn:hover, .day-toggle:hover{color:var(--paper);background:var(--ink-3)}
 @keyframes flashDay{from{background:rgba(240,172,62,.22)}to{background:transparent}}
 .day.flash{animation:flashDay 1.8s var(--ease)}
 
@@ -622,6 +622,8 @@ body.hide-legs .leg-lab{display:none}
       <div class="head-row" id="mapTools">
         <button class="chip" id="btnFit">Inquadra tutto</button>
         <button class="chip on" id="btnLabs" title="Mostra o nascondi i nomi sulla mappa">Nomi</button>
+        <button class="chip" id="btnCollapseAll" title="Ripiega tutti i giorni dell'itinerario">Comprimi tutto</button>
+        <button class="chip" id="btnExpandAll" title="Riapre tutti i giorni dell'itinerario">Espandi tutto</button>
       </div>
     </div>
 
@@ -915,6 +917,9 @@ const tripKey = id => 'rotta:trip:' + id;
 let state = null, pickMode = false, editing = null, moving = null;
 let tripIndex = [];
 const routeCache = new Map();
+/* giorni (per id, o null per "da assegnare") ripiegati nell'Itinerario:
+   preferenza di sola sessione, non salvata nel viaggio */
+const collapsedDays = new Set();
 
 const uid = () => Math.random().toString(36).slice(2,9);
 const fresh = () => ({
@@ -1898,6 +1903,11 @@ function dayBlock(d, list){
     if(t.mode === 'walking') onFoot += t.dist;
   }
 
+  /* "da assegnare" usa id null: la chiave di comprimi/espandi tollera anche quello */
+  const altList = d.id ? alts(d.id) : [];
+  const hasContent = list.length > 0 || altList.length > 0;
+  const collapsed = hasContent && collapsedDays.has(d.id);
+
   const head = document.createElement('div');
   head.className = 'day-head';
   head.innerHTML =
@@ -1907,6 +1917,7 @@ function dayBlock(d, list){
     '<span class="day-stat mono">'+list.length+' · '+(tot?fmt(tot)+' · '+dur(totMin):'—')+
       (onFoot ? '<b class="foot-km" title="Di cui a piedi">🚶'+fmt(onFoot)+'</b>' : '')+'</span>' +
     (d.id ? wxBadgeHTML(d) : '') +
+    (hasContent ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '') +
     (d.id ? '<button class="icon-btn" title="Inquadra">◎</button><button class="icon-btn" title="Apri il giorno su Google Maps">➔</button><button class="icon-btn" title="Elimina giorno">✕</button>' : '');
   sec.appendChild(head);
 
@@ -1934,13 +1945,23 @@ function dayBlock(d, list){
     };
   }
 
-  const altList = d.id ? alts(d.id) : [];
+  const toggleB = head.querySelector('.day-toggle');
+  const body = document.createElement('div');
+  body.className = 'day-body';
+  body.hidden = collapsed;
+  sec.appendChild(body);
+  if(toggleB) toggleB.onclick = () => {
+    const nowCollapsed = body.hidden = !body.hidden;
+    if(nowCollapsed) collapsedDays.add(d.id); else collapsedDays.delete(d.id);
+    toggleB.textContent = nowCollapsed ? '▸' : '▾';
+    toggleB.title = nowCollapsed ? 'Espandi' : 'Comprimi';
+  };
 
-  if(!list.length && !altList.length){
+  if(!hasContent){
     const e = document.createElement('p');
     e.className = 'empty';
     e.textContent = 'Nessuna tappa. Tocca “＋ Aggiungi un luogo” qui sopra per cercarlo o metterlo sulla mappa.';
-    sec.appendChild(e);
+    body.appendChild(e);
     return sec;
   }
 
@@ -1981,7 +2002,7 @@ function dayBlock(d, list){
     delB.onclick = () => deletePlace(p.id);
     ol.appendChild(li);
   });
-  sec.appendChild(ol);
+  body.appendChild(ol);
 
   if(altList.length){
     const groups = [
@@ -2018,7 +2039,7 @@ function dayBlock(d, list){
         delB2.onclick = () => deletePlace(p.id);
         wrap.appendChild(row);
       });
-      sec.appendChild(wrap);
+      body.appendChild(wrap);
     });
   }
   return sec;
@@ -2870,6 +2891,16 @@ document.getElementById('btnPickInline').onclick = () => {
 document.getElementById('btnFit').onclick = () => {  if(!state.places.length) return;
   map.fitBounds(L.latLngBounds(state.places.map(p=>[p.lat,p.lng])).pad(.2));
   closeSheetMobile();
+};
+
+document.getElementById('btnCollapseAll').onclick = () => {
+  state.days.forEach(d => collapsedDays.add(d.id));
+  collapsedDays.add(null); // "Da assegnare"
+  drawList();
+};
+document.getElementById('btnExpandAll').onclick = () => {
+  collapsedDays.clear();
+  drawList();
 };
 
 /* i nomi si possono spegnere quando la mappa è troppo fitta */
