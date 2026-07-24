@@ -59,6 +59,28 @@ button{cursor:pointer;background:none;border:0}
   body:not(.panel-open) .panel{overflow:hidden;border-right-color:transparent}
 }
 .panel{background:var(--ink);display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--ink-3);z-index:1200}
+/* maniglia che nasconde/mostra tutto il pannello: su desktop segue il bordo
+   destro del pannello (390px aperto, 0 chiuso), su mobile resta una pillola
+   fissa in un angolo, dato che lì il pannello scorre sopra la mappa invece
+   di ridurre una colonna della griglia */
+.panel-toggle{
+  position:fixed;z-index:1300;display:grid;place-items:center;
+  background:var(--ink-2);color:var(--paper);border:1px solid var(--ink-3);
+  box-shadow:0 4px 14px rgba(0,0,0,.35);font-size:13px;
+}
+.panel-toggle:hover{border-color:var(--fog)}
+@media (min-width:881px){
+  .panel-toggle{
+    top:50%;left:390px;transform:translate(-50%,-50%);
+    width:24px;height:52px;border-radius:8px;
+    transition:left .26s cubic-bezier(.3,.8,.4,1);
+  }
+  body:not(.panel-open) .panel-toggle{left:0;transform:translate(-50%,-50%) rotate(180deg)}
+}
+@media (max-width:880px){
+  .panel-toggle{right:16px;bottom:130px;width:38px;height:38px;border-radius:50%;transform:rotate(-90deg)}
+  body:not(.panel-open) .panel-toggle{transform:rotate(90deg)}
+}
 #map{height:100%;width:100%;background:var(--paper-2)}
 
 /* ---------- header ---------- */
@@ -134,6 +156,7 @@ button{cursor:pointer;background:none;border:0}
 .day-wx.tap:active{background:var(--ink-3)}
 .day-wx.rain-ready{color:#20170A;background:var(--ochre);border-color:var(--ochre)}
 /* ---------- widget meteo dettagliato ---------- */
+.wx-place{color:var(--fog);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
 .wx-main{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .wx-ic{font-size:34px;line-height:1}
 .wx-main b{font-size:20px;font-family:"Bricolage Grotesque",sans-serif;display:block}
@@ -544,13 +567,6 @@ body.hide-legs .leg-lab{display:none}
 /* lo scorrimento finisce sopra la barra, così l'ultima tappa non ci va sotto */
 .scroll{padding-bottom:118px}
 @media (min-width:881px){
-  /* in vista Mappa il pannello resta ma si accorcia: mostra intestazione,
-     strumenti e ricerca, lasciando libera la mappa sotto */
-  body.map-view .panel{
-    align-self:start;max-height:none;border-radius:0 0 16px 0;
-    border-bottom:1px solid var(--ink-3)
-  }
-  body.map-view .scroll{display:none}
   .bar{background:none}
   .tabs, .bar-acts{
     background:rgba(18,32,43,.94);border-radius:999px;
@@ -563,12 +579,6 @@ body.hide-legs .leg-lab{display:none}
   #map{grid-area:1/1}
   .panel{grid-area:1/1;transform:translateY(100%);transition:transform .28s cubic-bezier(.3,.8,.4,1);border-right:0;border-top:1px solid var(--ink-3);border-radius:16px 16px 0 0}
   body.panel-open .panel{transform:translateY(0)}
-  /* in vista Mappa il pannello si ancora in alto e mostra solo i comandi */
-  body.map-view .panel{
-    align-self:start;transform:none;border-radius:0 0 16px 16px;
-    border-top:0;border-bottom:1px solid var(--ink-3)
-  }
-  body.map-view .scroll{display:none}
   .bar{width:100%}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -609,10 +619,14 @@ body.hide-legs .leg-lab{display:none}
   <div id="map"></div>
 </div>
 
+<!-- maniglia: nasconde/mostra tutto il pannello (itinerario, spese, ecc.),
+     lasciando solo la mappa. Fuori da .app così resta raggiungibile anche a
+     pannello chiuso. -->
+<button id="btnPanel" class="panel-toggle" title="Mostra o nascondi il pannello">‹</button>
+
 <!-- barra fissa: sempre visibile, in tutte e tre le viste -->
 <div class="bar">
   <div class="tabs">
-    <button id="tabMap">Mappa</button>
     <button id="tabList" class="on">Itinerario</button>
     <button id="tabCost">Spese</button>
     <button id="tabBook">Prenot.</button>
@@ -1543,17 +1557,31 @@ function wmoCategory(code){
 }
 const isRainy = code => (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
 
-/* posizione da usare per il meteo del giorno: prima tappa in sequenza,
-   altrimenti la media di tutte le tappe del giorno */
+/* posizione da usare per il meteo del giorno: punto centrale (media delle
+   coordinate) di TUTTE le tappe del giorno, in sequenza o meno — una zona
+   media anziché la sola prima tappa, più rappresentativa quando le tappe
+   coprono un'area ampia */
 function dayCoord(d){
-  const chain = stops(d.id);
-  if(chain.length) return {lat:chain[0].lat, lng:chain[0].lng};
   const list = all(d.id);
   if(!list.length) return null;
   return {
     lat: list.reduce((s,p)=>s+p.lat,0)/list.length,
     lng: list.reduce((s,p)=>s+p.lng,0)/list.length
   };
+}
+
+/* nome della località più vicina al punto usato per il meteo, per dare un
+   riferimento leggibile a una coordinata altrimenti astratta (media di più
+   tappe). Nominatim, stesso servizio già usato per la ricerca luoghi. */
+async function nearestLocality(coord){
+  try{
+    const url = 'https://nominatim.openstreetmap.org/reverse?format=json&zoom=14&addressdetails=1'
+      + '&lat='+coord.lat+'&lon='+coord.lng;
+    const r = await fetch(url);
+    const j = await r.json();
+    const a = j.address || {};
+    return a.town || a.village || a.city || a.suburb || a.hamlet || a.municipality || a.county || j.name || null;
+  }catch(e){ return null; }
 }
 
 async function fetchDayWeather(d){
@@ -1641,8 +1669,9 @@ async function fetchDayWeatherDetail(d){
     const r = await fetch(url);
     const j = await r.json();
     if(!j.daily || !j.daily.time || !j.daily.time.length) return null;
+    const place = await nearestLocality(coord);
     return {
-      fetchedAt: Date.now(), date: d.date,
+      fetchedAt: Date.now(), date: d.date, place,
       tmax: j.daily.temperature_2m_max[0], tmin: j.daily.temperature_2m_min[0],
       code: j.daily.weathercode[0],
       precip: j.daily.precipitation_sum[0], precipProb: j.daily.precipitation_probability_max[0],
@@ -1669,7 +1698,8 @@ function wxDetailHTML(w){
   const cat = wmoCategory(w.code);
   const fmtH = s => s ? s.slice(11,16) : '—';
   const hrs = w.hourly.filter((h,i) => i % 3 === 0);
-  return '<div class="wx-main">'+
+  return (w.place ? '<div class="wx-place mono">Vicino a '+esc(w.place)+'</div>' : '')+
+    '<div class="wx-main">'+
       '<span class="wx-ic">'+cat.icon+'</span>'+
       '<div><b>'+Math.round(w.tmax)+'° / '+Math.round(w.tmin)+'°</b><i>'+esc(cat.label)+'</i></div>'+
     '</div>'+
@@ -2737,7 +2767,7 @@ document.getElementById('fMove').onclick = () => {
   moving = editing.id;
   veil.hidden = true;
   document.body.classList.add('moving');
-  if(window.matchMedia('(max-width:880px)').matches) setView('map');
+  closeSheetMobile();
   map.panTo([editing.lat, editing.lng]);
 };
 
@@ -2881,21 +2911,21 @@ document.getElementById('file').onchange = e => {
 };
 
 /* ============ navigazione ============ */
-/* Tre viste di pari livello: Mappa · Itinerario · Spese.
-   Su desktop la mappa e il pannello convivono, quindi "Mappa" chiude solo il pannello;
-   su mobile il pannello scorre sopra la mappa. */
-const tabMap  = document.getElementById('tabMap'),
-      tabList = document.getElementById('tabList'),
+/* Quattro viste di pari livello: Itinerario · Spese · Prenot. · Calendario,
+   tutte mostrate nel pannello. La mappa è sempre presente dietro/accanto:
+   non è più una vista a sé, la si scopre nascondendo il pannello con la
+   maniglia #btnPanel (vedi più sotto). */
+const tabList = document.getElementById('tabList'),
       tabCost = document.getElementById('tabCost'),
       tabBook = document.getElementById('tabBook'),
       tabCal  = document.getElementById('tabCal');
 const listEl = document.getElementById('list'), costEl = document.getElementById('costs');
-let view = 'map';
+let view = 'list';
 
 function setView(v){
   view = v;
-  const cost = v === 'cost', book = v === 'book', mapv = v === 'map', cal = v === 'cal';
-  const geo  = !cost && !book && !cal;   // Mappa e Itinerario lavorano sui luoghi
+  const cost = v === 'cost', book = v === 'book', cal = v === 'cal';
+  const geo  = !cost && !book && !cal;   // solo l'Itinerario lavora sui luoghi
   listEl.hidden = !(v === 'list');
   costEl.hidden = !cost;
   document.getElementById('books').hidden = !book;
@@ -2907,10 +2937,10 @@ function setView(v){
   document.getElementById('btnDay').hidden = v !== 'list';
   document.getElementById('btnExpense').hidden = !cost;
   document.getElementById('btnBooking').hidden = !book;
-  /* in vista Mappa il pannello resta aperto ma ridotto ai soli comandi */
-  document.body.classList.toggle('panel-open', true);
-  document.body.classList.toggle('map-view', mapv);
-  [[tabMap,'map'],[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabCal,'cal']]
+  /* cambiare vista implica volerla vedere: se il pannello era stato chiuso
+     con la maniglia, lo riapro */
+  document.body.classList.add('panel-open');
+  [[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabCal,'cal']]
     .forEach(([b,k]) => b.classList.toggle('on', v === k));
   if(cost) drawCosts();
   if(book) drawBooks();
@@ -2919,14 +2949,23 @@ function setView(v){
   setTimeout(() => map.invalidateSize(), 300);
 }
 tabCal.onclick  = () => setView('cal');
-tabMap.onclick  = () => setView('map');
 tabList.onclick = () => setView('list');
 tabCost.onclick = () => setView('cost');
 tabBook.onclick = () => setView('book');
 document.getElementById('btnBooking').onclick = () => openBooking(null);
 document.getElementById('btnExpense').onclick = openExpense;
-/* usata dopo un'azione sulla mappa: torna alla mappa su mobile, innocua su desktop */
-function closeSheetMobile(){ if(window.matchMedia('(max-width:880px)').matches) setView('map'); }
+
+/* maniglia: nasconde/mostra tutto il pannello, lasciando solo la mappa */
+document.getElementById('btnPanel').onclick = () => {
+  document.body.classList.toggle('panel-open');
+  map.invalidateSize();
+  setTimeout(() => map.invalidateSize(), 300);
+};
+/* usata dopo un'azione sulla mappa (aprire una tappa, spostarla…): su mobile
+   chiude il pannello per liberare la mappa, innocua su desktop */
+function closeSheetMobile(){
+  if(window.matchMedia('(max-width:880px)').matches) document.body.classList.remove('panel-open');
+}
 
 /* ============ installazione e funzionamento offline ============ */
 /* Versione dell'applicazione: se il service worker registrato ne dichiara una
