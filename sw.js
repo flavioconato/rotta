@@ -5,7 +5,7 @@
    I tile sono a numero chiuso: oltre il limite si buttano i più vecchi,
    altrimenti dopo qualche esplorazione l'app occuperebbe centinaia di MB. */
 
-const VERSION   = 'v5';
+const VERSION   = 'v8';
 const APP_CACHE = 'rotta-app-' + VERSION;
 /* La cache delle mappe NON porta la versione: le piastrelle scaricate prima di
    partire devono sopravvivere agli aggiornamenti dell'app, altrimenti un
@@ -22,7 +22,11 @@ const APP_FILES = [
   './icon-maskable-512.png',
   './ripristino.html',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js'
 ];
 
 self.addEventListener('install', e => {
@@ -83,8 +87,12 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Ricerca luoghi e calcolo percorsi: solo rete, non ha senso servirli vecchi
-  if(/nominatim\.openstreetmap\.org|router\.project-osrm\.org/.test(url.hostname)) return;
+  // Ricerca luoghi, calcolo percorsi e meteo: solo rete, non ha senso servirli vecchi
+  if(/nominatim\.openstreetmap\.org|router\.project-osrm\.org|api\.open-meteo\.com/.test(url.hostname)) return;
+
+  // Sincronizzazione condivisa (Firebase): solo rete, il worker non deve interferire
+  // con le connessioni lunghe di Firestore né con l'autenticazione
+  if(/firestore\.googleapis\.com|firebasestorage\.googleapis\.com|identitytoolkit\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com/.test(url.hostname)) return;
 
   // Tutto il resto (app e librerie): cache con aggiornamento in background
   e.respondWith((async () => {
@@ -101,5 +109,9 @@ self.addEventListener('fetch', e => {
 /* consente alla pagina di forzare l'aggiornamento e di chiedere quale versione gira */
 self.addEventListener('message', e => {
   if(e.data === 'skipWaiting') self.skipWaiting();
-  if(e.data === 'version' && e.source) e.source.postMessage({version: VERSION});
+  if(e.data === 'version'){
+    const p = e.ports && e.ports[0];
+    if(p) p.postMessage({version: VERSION});
+    else if(e.source) e.source.postMessage({version: VERSION});
+  }
 });

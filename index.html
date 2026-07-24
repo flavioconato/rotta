@@ -31,6 +31,10 @@
   --rail:2px;
 }
 *{box-sizing:border-box}
+/* L'attributo hidden vale display:none a priorità minima: qualunque regola che
+   imposti display (flex, grid…) lo annulla silenziosamente. Lo rendo vincolante
+   ovunque, altrimenti gli elementi nascosti via JS restano visibili. */
+[hidden]{display:none!important}
 html,body{margin:0;height:100%}
 body{
   font-family:"Public Sans",system-ui,sans-serif;
@@ -87,6 +91,10 @@ button{cursor:pointer;background:none;border:0}
 
 /* ---------- search ---------- */
 .search{position:relative;padding:12px 16px;border-bottom:1px solid var(--ink-3)}
+.search-label{
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--fog);margin-bottom:8px;
+}
 .search input{
   width:100%;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);
   padding:10px 12px;font-size:14px;
@@ -106,15 +114,42 @@ button{cursor:pointer;background:none;border:0}
 /* ---------- days ---------- */
 .scroll{flex:1;overflow-y:auto;padding:4px 0 90px;scrollbar-width:thin}
 .day{border-bottom:1px solid var(--ink-3)}
-.day-head{display:flex;align-items:center;gap:9px;padding:13px 16px 9px}
+.day-head{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:13px 16px 9px}
 .swatch{width:11px;height:11px;border-radius:3px;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.day-date{
+  flex:none;width:120px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:6px;
+  padding:4px 6px;font-size:11px;color:var(--paper);color-scheme:dark;
+}
 .day-name{
   flex:1;min-width:0;background:none;border:0;padding:0;
   font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15px;letter-spacing:-.01em
 }
 .day-stat{color:var(--fog);flex:none}
+.day-wx{color:var(--fog);flex:none;font-size:11px;white-space:nowrap}
+.day-wx.tap{
+  cursor:pointer;color:var(--paper);background:var(--ink-2);
+  border:1px solid var(--ink-3);border-radius:999px;padding:3px 9px 3px 8px;
+}
+.day-wx.tap:hover{border-color:var(--fog)}
+.day-wx.tap:active{background:var(--ink-3)}
+.day-wx.rain-ready{color:#20170A;background:var(--ochre);border-color:var(--ochre)}
+/* ---------- widget meteo dettagliato ---------- */
+.wx-main{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.wx-ic{font-size:34px;line-height:1}
+.wx-main b{font-size:20px;font-family:"Bricolage Grotesque",sans-serif;display:block}
+.wx-main i{display:block;font-style:normal;color:var(--fog);font-size:12.5px;margin-top:2px;text-transform:capitalize}
+.wx-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;font-size:12px;color:var(--fog)}
+.wx-hours{display:flex;overflow-x:auto;gap:5px;padding-bottom:2px}
+.wx-hour{
+  flex:none;width:44px;text-align:center;display:flex;flex-direction:column;gap:3px;
+  font-size:10.5px;color:var(--fog);background:var(--ink-2);border:1px solid var(--ink-3);
+  border-radius:8px;padding:7px 2px;
+}
+.wx-hour span:nth-child(2){font-size:15px}
 .icon-btn{color:var(--fog);padding:4px 5px;border-radius:6px;font-size:13px;line-height:1}
 .icon-btn:hover{color:var(--paper);background:var(--ink-3)}
+@keyframes flashDay{from{background:rgba(224,163,46,.18)}to{background:transparent}}
+.day.flash{animation:flashDay 1.6s ease-out}
 
 /* ---------- il nastro (signature) ---------- */
 .rail{list-style:none;margin:0;padding:0 16px 14px 16px}
@@ -175,21 +210,82 @@ body.moving::after{
   padding:9px 15px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.4);
   pointer-events:none;white-space:nowrap
 }
+body.picking #map{cursor:crosshair}
+body.picking::after{
+  content:"Tocca la mappa per aggiungere una tappa";
+  position:fixed;z-index:1700;top:14px;left:50%;transform:translateX(-50%);
+  background:var(--ochre);color:#20170A;font-weight:700;font-size:12.5px;
+  padding:9px 15px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.4);
+  pointer-events:none;white-space:nowrap
+}
 /* ---------- installazione e aggiornamenti ---------- */
 .act.ghost.install{background:var(--moss);border-color:var(--moss);color:#0E1A22;font-weight:800}
-#updateBar{
-  position:fixed;z-index:1800;left:50%;bottom:96px;transform:translateX(-50%);
+#updateBar, #syncBar{
+  position:fixed;z-index:1800;left:50%;transform:translateX(-50%);
   display:flex;align-items:center;gap:10px;white-space:nowrap;
   background:var(--paper);color:var(--ink);border-radius:999px;
   padding:9px 10px 9px 16px;font-size:12.5px;font-weight:600;
   box-shadow:0 8px 24px rgba(0,0,0,.45)
 }
-#updateBar button{
+#updateBar{bottom:96px}
+/* più in alto dell'avviso di aggiornamento app: se compaiono insieme si impilano */
+#syncBar{bottom:150px}
+/* display:flex vince sulla regola implicita di [hidden] (display:none),
+   quindi la barra resterebbe visibile sempre: va dichiarato esplicitamente. */
+#updateBar[hidden], #syncBar[hidden]{display:none}
+#updateBar button, #syncBar button{
   background:var(--ink);color:var(--paper);border-radius:999px;
   padding:6px 13px;font-size:12px;font-weight:700
 }
-#updateDismiss{padding:6px 10px!important;background:none!important;color:var(--fog)!important}
-#updateDismiss:hover{color:var(--ink)!important}
+#updateDismiss, #syncDismiss{padding:6px 10px!important;background:none!important;color:var(--fog)!important}
+#updateDismiss:hover, #syncDismiss:hover{color:var(--ink)!important}
+/* ---------- visualizzatore allegati ---------- */
+.viewer{
+  width:min(1000px,100%);height:min(88dvh,100%);display:flex;flex-direction:column;
+  background:var(--ink);border:1px solid var(--ink-3);border-radius:14px;overflow:hidden
+}
+.vw-head{
+  display:flex;align-items:center;gap:8px;padding:11px 12px;
+  border-bottom:1px solid var(--ink-3);flex:none
+}
+.vw-head span{flex:1;min-width:0;font-size:13.5px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vw-btn{
+  flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+  background:var(--ink-2);border:1px solid var(--ink-3);color:var(--paper);
+  font-size:15px;text-decoration:none
+}
+.vw-btn:hover{border-color:var(--fog)}
+.vw-body{flex:1;min-height:0;background:#0C141B;display:flex}
+.vw-body img{width:100%;height:100%;object-fit:contain;background:#0C141B}
+.vw-body iframe{width:100%;height:100%;border:0;background:#fff}
+.vw-msg{margin:auto;text-align:center;color:var(--fog);font-size:14px;padding:24px;line-height:1.5}
+/* anteprime cliccabili */
+.img-prev.tap{cursor:zoom-in}
+.img-prev.tap:hover{border-color:var(--ochre)}
+.pdf-card{
+  display:flex;align-items:center;gap:10px;width:100%;margin-top:7px;text-align:left;
+  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);
+  padding:12px;font-size:20px;color:var(--paper)
+}
+.pdf-card:hover{border-color:var(--ochre)}
+.pdf-card b{display:block;font-size:13.5px;font-weight:600}
+.pdf-card i{display:block;font-style:normal;font-size:11px;color:var(--fog);margin-top:1px}
+/* allegato nell'elenco prenotazioni */
+.bk-att{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;margin:8px 0 0 27px;
+  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);padding:7px;
+  width:calc(100% - 27px)
+}
+.bk-att:hover{border-color:var(--ochre)}
+.bk-att img{width:52px;height:40px;object-fit:cover;border-radius:6px;flex:none}
+.bk-pdf{
+  width:52px;height:40px;border-radius:6px;flex:none;display:grid;place-items:center;
+  background:var(--ink);font-size:19px
+}
+.bk-att-n{flex:1;min-width:0;font-size:12.5px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bk-att-n i{display:block;font-style:normal;font-size:10.5px;color:var(--fog);font-weight:400;margin-top:1px}
 /* ---------- prenotazioni ---------- */
 .bk{padding:11px 0;border-bottom:1px solid var(--ink-3)}
 .bk:last-child{border-bottom:0}
@@ -286,6 +382,21 @@ textarea.field{min-height:84px;resize:vertical;line-height:1.45}
 body.hide-legs .leg-lab{display:none}
 /* tag pioggia in elenco */
 .rain-tag{font-style:normal;color:#4ec27a;margin-left:3px}
+/* ---------- vista calendario ---------- */
+.cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:14px 16px}
+.cal-tile{
+  position:relative;text-align:left;border:1px solid var(--ink-3);border-left:3px solid var(--c,var(--fog));
+  border-radius:var(--r);background:var(--ink-2);padding:10px 32px 10px 11px;
+  display:flex;flex-direction:column;gap:4px;
+}
+.cal-tile:hover{border-color:var(--fog)}
+.cal-tile.rain-ready{border-color:var(--ochre)}
+.cal-date{color:var(--fog);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.cal-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:14px;line-height:1.25}
+.cal-stat{color:var(--fog);font-size:10.5px}
+.cal-wx{font-size:11px;color:var(--fog)}
+.cal-badge{position:absolute;top:9px;right:9px;font-size:14px}
+.cal-badge.warn{opacity:.4;filter:grayscale(1)}
 /* blocco alternative */
 .alt-box{margin:0 16px 14px;border:1px dashed var(--ink-3);border-radius:var(--r);padding:9px 10px;background:rgba(255,255,255,.02)}
 .alt-head{color:var(--ochre);letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;margin-bottom:8px}
@@ -307,10 +418,23 @@ body.hide-legs .leg-lab{display:none}
   flex:none;width:18px;height:18px;border-radius:5px;border:1.5px solid var(--ink-3);
   display:grid;place-items:center;font-size:11px;color:transparent;margin-top:1px
 }
-.toggle b{display:block;font-size:13px;font-weight:600}
-.toggle i{display:block;font-style:normal;font-size:11.5px;color:var(--fog);line-height:1.3;margin-top:1px}
+.toggle b{font-size:13px;font-weight:600}
 .toggle.on{border-color:var(--moss);background:rgba(76,122,90,.14)}
 .toggle.on .tick{background:var(--moss);border-color:var(--moss);color:#0E1A22}
+/* icona informativa: apre un piccolo popover di testo, al posto del vecchio
+   sottotitolo sempre visibile sotto ogni comando */
+.info-btn{
+  display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;
+  background:var(--ink-3);color:var(--fog);font-size:10px;font-weight:700;margin-left:5px;
+  cursor:pointer;vertical-align:middle;user-select:none;
+}
+.info-btn:hover{color:var(--paper);border:1px solid var(--fog)}
+.info-pop{
+  position:fixed;z-index:2400;max-width:260px;background:var(--ink-2);color:var(--paper);
+  border:1px solid var(--ink-3);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.45;
+  box-shadow:0 10px 26px rgba(0,0,0,.45);
+}
+.info-pop[hidden]{display:none}
 /* segnaposto di servizio: pin più piccolo e sobrio, senza numero */
 .pin.poi{width:26px;height:26px;border-width:1.5px;opacity:.92}
 .pin.poi svg{width:14px;height:14px}
@@ -343,6 +467,9 @@ body.hide-legs .leg-lab{display:none}
 .who-b i{display:block;font-style:normal;font-size:9px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
 .who-b.pos{color:var(--moss)}
 .who-b.neg{color:var(--rust)}
+/* elenco viaggi, riusa la riga .who */
+.trip-row .who-n{cursor:pointer}
+.trip-when{display:block;font-weight:400;color:var(--fog);font-size:10.5px;margin-top:2px}
 .add-row{display:flex;gap:6px}
 .add-row .field{flex:1;font-size:13px;padding:8px 10px}
 .exp{padding:8px 0;border-bottom:1px solid var(--ink-3)}
@@ -454,25 +581,30 @@ body.hide-legs .leg-lab{display:none}
     <div class="head">
       <div class="eyebrow-row">
         <span class="eyebrow">Itinerario</span>
-        <span id="saveState" class="save-state mono"></span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="icon-btn" id="btnTrips" title="I tuoi viaggi" style="font-size:14px">🗂</button>
+          <span id="saveState" class="save-state mono"></span>
+          <span class="save-state mono" style="opacity:.5" id="verTag"></span>
+        </div>
       </div>
       <input id="tripTitle" placeholder="Nome del viaggio" autocomplete="off">
       <div class="head-row" id="mapTools">
-        <button class="chip" id="btnPick">＋ Punto sulla mappa</button>
-        <button class="chip" id="btnRoad" title="Percorso reale su strada (richiede rete)">Strada</button>
         <button class="chip" id="btnFit">Inquadra tutto</button>
         <button class="chip on" id="btnLabs" title="Mostra o nascondi i nomi sulla mappa">Nomi</button>
       </div>
     </div>
 
     <div class="search" id="searchBox">
+      <div class="search-label mono">Aggiungi una tappa</div>
       <input id="q" placeholder="Cerca un luogo…" autocomplete="off">
       <div class="results" id="results" hidden></div>
+      <button class="chip" id="btnPickInline" style="margin-top:8px;width:100%;justify-content:center">✛ Oppure tocca la mappa</button>
     </div>
 
     <div class="scroll" id="list"></div>
     <div class="scroll" id="costs" hidden></div>
     <div class="scroll" id="books" hidden></div>
+    <div class="scroll" id="calBox" hidden></div>
   </aside>
   <div id="map"></div>
 </div>
@@ -484,6 +616,7 @@ body.hide-legs .leg-lab{display:none}
     <button id="tabList" class="on">Itinerario</button>
     <button id="tabCost">Spese</button>
     <button id="tabBook">Prenot.</button>
+    <button id="tabCal" title="Calendario">📅</button>
   </div>
   <div class="bar-acts">
     <button class="act" id="btnDay" title="Aggiungi un giorno">＋ Giorno</button>
@@ -508,27 +641,27 @@ body.hide-legs .leg-lab{display:none}
     <label>Percorso</label>
     <button class="toggle" id="fChain" type="button">
       <span class="tick">✓</span>
-      <span><b>Tappa in sequenza</b><i>Numerata e collegata dal percorso. Spenta: pin libero del giorno</i></span>
+      <span><b>Tappa in sequenza</b><span class="info-btn" tabindex="0" data-info="Numerata e collegata dal percorso. Spenta: pin libero del giorno">ⓘ</span></span>
     </button>
     <label>Spostamenti</label>
     <button class="toggle" id="fCity" type="button">
       <span class="tick">✓</span>
-      <span><b>Tappa cittadina</b><i>Tra due tappe cittadine consecutive ci si muove a piedi</i></span>
+      <span><b>Tappa cittadina</b><span class="info-btn" tabindex="0" data-info="Quando due tappe consecutive sono entrambe segnate come cittadine, il tragitto tra loro viene calcolato a piedi invece che in auto. Attivalo su tutte le tappe che visiti camminando all'interno dello stesso centro urbano.">ⓘ</span></span>
     </button>
     <label>Contrassegni</label>
     <button class="toggle" id="fRain" type="button">
       <span class="tick">✓</span>
-      <span><b>Adatta con meteo avverso</b><i>Al coperto o comunque godibile sotto la pioggia</i></span>
+      <span><b>Adatta con meteo avverso</b><span class="info-btn" tabindex="0" data-info="Segnala che questa tappa resta piacevole anche con pioggia o maltempo — un museo, un edificio interno, un'attrazione al coperto. Aiuta a riconoscere a colpo d'occhio le tappe su cui contare se il tempo cambia.">ⓘ</span></span>
     </button>
     <button class="toggle" id="fKid" type="button">
       <span class="tick">✓</span>
-      <span><b>Adatta a Francesco</b><i>Accessibile col passeggino o comoda con lo zaino</i></span>
+      <span><b>Adatta con bimbo</b><span class="info-btn" tabindex="0" data-info="Segnala che la tappa è pensata per una famiglia con bambini piccoli: percorso accessibile con passeggino o comodo da affrontare con un bimbo in braccio o nello zaino, attività particolarmente divertente o coinvolgente per i più piccoli, oppure luogo al chiuso dove il meteo non è un problema.">ⓘ</span></span>
     </button>
     <button class="toggle" id="fAlt" type="button">
       <span class="tick">✓</span>
-      <span><b>Tappa alternativa</b><i>Fuori dal percorso numerato: subentra solo se piove</i></span>
+      <span><b>Tappa alternativa</b><span class="info-btn" tabindex="0" data-info="Le tappe alternative non fanno parte del percorso principale del giorno: non vengono numerate né collegate dal tragitto, restano sul posto come opzione di riserva pronta a subentrare in caso di meteo avverso o di altri imprevisti — chiusure, code, cambi di programma dell'ultimo minuto.">ⓘ</span></span>
     </button>
-    <label>Immagine</label>
+    <label>Immagine <span class="info-btn" tabindex="0" data-info="Puoi aggiungere una foto rappresentativa della tappa in due modi: caricandola dal telefono o dal computer, oppure incollando il link di un'immagine già pubblicata online.">ⓘ</span></label>
     <div class="img-row">
       <input class="field" id="fImg" placeholder="Incolla il link di un'immagine…" autocomplete="off">
       <button class="act ghost" id="fImgPick" type="button" title="Scegli dal dispositivo">📁</button>
@@ -538,14 +671,14 @@ body.hide-legs .leg-lab{display:none}
     <div id="fImgPrev"></div>
     <label for="fNote">Note</label>
     <textarea class="field" id="fNote" placeholder="Orari, prezzi, cosa vedere, promemoria…"></textarea>
-    <label>Link</label>
+    <label>Link <span class="info-btn" tabindex="0" data-info="Aggiungi uno o più collegamenti utili per questa tappa: il sito ufficiale dell'attrazione, la pagina di prenotazione, un articolo di approfondimento o qualunque altra pagina web pertinente.">ⓘ</span></label>
     <div id="fLinks"></div>
     <button class="chip" id="addLink" style="margin-top:6px">＋ Link</button>
     <label>Coordinate</label>
     <div class="mono" id="fCoord" style="color:var(--fog)"></div>
     <button class="toggle" id="fMove" type="button" style="margin-top:7px">
       <span class="tick">✛</span>
-      <span><b>Sposta sulla mappa</b><i>Chiude la scheda: il tocco successivo sposta qui la tappa</i></span>
+      <span><b>Sposta sulla mappa</b><span class="info-btn" tabindex="0" data-info="Chiude la scheda: il tocco successivo sposta qui la tappa">ⓘ</span></span>
     </button>
     <div class="sheet-actions">
       <button class="btn" id="save">Salva</button>
@@ -555,10 +688,56 @@ body.hide-legs .leg-lab{display:none}
   </div>
 </div>
 
+<div class="veil" id="vwVeil" hidden>
+  <div class="viewer" role="dialog" aria-modal="true">
+    <div class="vw-head">
+      <span id="vwName">Allegato</span>
+      <a class="vw-btn" id="vwDownload" href="#" download title="Scarica">↓</a>
+      <button class="vw-btn" id="vwClose" title="Chiudi">✕</button>
+    </div>
+    <div class="vw-body" id="vwBody"></div>
+  </div>
+</div>
+
 <div id="updateBar" hidden>
   Nuova versione disponibile
   <button id="updateNow">Aggiorna</button>
   <button id="updateDismiss" title="Ignora">✕</button>
+</div>
+
+<div id="infoPop" class="info-pop" hidden></div>
+
+<div id="syncBar" hidden>
+  Il viaggio è stato aggiornato dall'altro dispositivo
+  <button id="syncReload">Ricarica</button>
+  <button id="syncDismiss" title="Ignora">✕</button>
+</div>
+
+<div class="veil" id="wxVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2 id="wxTitle">Meteo</h2>
+    <div id="wxBody"></div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="wxClose" style="flex:1">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="tripsVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2>I tuoi viaggi</h2>
+    <div id="tripsList"></div>
+    <div class="sheet-actions">
+      <button class="btn" id="btnNewTrip">＋ Nuovo viaggio</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="btnShareTrip" style="flex:1">🔗 Condividi questo viaggio</button>
+      <button class="btn ghost" id="btnJoinTrip" style="flex:1">＋ Unisciti con un codice</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="tripsClose" style="flex:1">Chiudi</button>
+    </div>
+  </div>
 </div>
 
 <div class="veil" id="bVeil" hidden>
@@ -625,6 +804,17 @@ body.hide-legs .leg-lab{display:none}
   </div>
 </div>
 
+<div class="veil" id="bViewVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2 id="bvTitle">Prenotazione</h2>
+    <div id="bvBody"></div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="bvEdit" style="flex:1">✎ Modifica</button>
+      <button class="btn ghost" id="bvClose" style="flex:1">Chiudi</button>
+    </div>
+  </div>
+</div>
+
 <div class="veil" id="xVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true">
     <h2>Nuova spesa</h2>
@@ -658,15 +848,42 @@ body.hide-legs .leg-lab{display:none}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- Firebase (solo per la condivisione tra dispositivi): se FIREBASE_CONFIG resta
+     vuoto più sotto, questi script restano semplicemente inutilizzati. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
+const APP_VERSION = 'v8';
+(() => {
+  const v = document.getElementById('verTag');
+  if(v) v.textContent = APP_VERSION;
+  /* La barra di aggiornamento parte SEMPRE nascosta e viene mostrata solo dalla
+     logica del service worker. Il gestore della ✕ è collegato qui, all'inizio
+     dello script, così funziona anche se qualcosa si rompesse più avanti. */
+  const bar = document.getElementById('updateBar');
+  const dis = document.getElementById('updateDismiss');
+  if(bar) bar.hidden = true;
+  if(dis) dis.onclick = () => { if(bar) bar.hidden = true; };
+})();
 const PALETTE = ['#E0A32E','#4C9BB0','#8B6BB1','#4C7A5A','#B8492C','#5A78C4','#C2557E','#7E8B99'];
-const KEY = 'rotta:v1';
-let state = null, pickMode = false, road = false, editing = null, moving = null;
+/* Da v7 l'app tiene più viaggi: ognuno vive sotto la propria chiave 'rotta:trip:<id>'
+   nello stesso object store 'kv' di sempre (nessun bump di versione IndexedDB).
+   'rotta:v1' è la vecchia chiave a viaggio singolo: resta lì solo per la migrazione
+   al primo avvio dopo l'aggiornamento, non viene più scritta. */
+const LEGACY_KEY = 'rotta:v1';
+const INDEX_KEY = 'rotta:index';
+const ACTIVE_KEY = 'rotta:active';
+const tripKey = id => 'rotta:trip:' + id;
+let state = null, pickMode = false, editing = null, moving = null;
+let tripIndex = [];
 const routeCache = new Map();
 
 const uid = () => Math.random().toString(36).slice(2,9);
 const fresh = () => ({
+  id: uid(),
   title:'Il mio viaggio',
   days:[{id:uid(), name:'Giorno 1', color:PALETTE[0]}],
   places:[],
@@ -730,6 +947,24 @@ function dbSet(k, v){
     q.onerror = () => rej(q.error);
   });
 }
+function dbDel(k){
+  return new Promise((res, rej) => {
+    const q = db.transaction('kv','readwrite').objectStore('kv').delete(k);
+    q.onsuccess = () => res(true);
+    q.onerror = () => rej(q.error);
+  });
+}
+
+/* aggiorna (o crea) la voce di un viaggio nell'elenco leggero rotta:index,
+   usato dalla sheet "I tuoi viaggi" senza dover caricare ogni viaggio intero */
+async function touchIndex(id, title, updatedAt){
+  const idx = (await dbGet(INDEX_KEY)) || [];
+  const row = idx.find(t => t.id === id);
+  if(row){ row.title = title || 'Il mio viaggio'; row.updatedAt = updatedAt; }
+  else idx.unshift({id, title: title || 'Il mio viaggio', updatedAt});
+  await dbSet(INDEX_KEY, idx);
+  tripIndex = idx;
+}
 
 function badge(mode){
   const el = document.getElementById('saveState');
@@ -756,28 +991,344 @@ async function write(){
   if(!db){ storageOK = false; badge('off'); return; }
   try{
     /* structuredClone implicito: salvo l'oggetto, non una stringa */
-    await dbSet(KEY, JSON.parse(JSON.stringify(state)));
+    await dbSet(tripKey(state.id), JSON.parse(JSON.stringify(state)));
+    await touchIndex(state.id, state.title, Date.now());
     storageOK = true; dirty = false; badge('saved');
   }catch(e){
     console.warn('salvataggio non riuscito:', e && e.message);
     storageOK = false;
     badge('off');
+    return;
   }
+  /* la sincronizzazione cloud va in background e non deve mai rallentare né
+     bloccare il salvataggio locale, che resta sempre la fonte di verità */
+  if(state.shareId) pushToCloud(state);
 }
 
 async function boot(){
+  await initSync();
   try{
     db = await openDB();
-    const saved = await dbGet(KEY);
-    if(saved && saved.days){ state = saved; storageOK = true; }
+    tripIndex = (await dbGet(INDEX_KEY)) || [];
+    if(tripIndex.length){
+      const activeId = await dbGet(ACTIVE_KEY);
+      const wanted = tripIndex.some(t => t.id === activeId) ? activeId : tripIndex[0].id;
+      const loaded = await dbGet(tripKey(wanted));
+      if(loaded && loaded.days){ state = loaded; storageOK = true; }
+    } else {
+      /* nessun indice: o è il primissimo avvio, o l'app veniva da prima di v7
+         con un solo viaggio salvato sotto la vecchia chiave fissa */
+      const legacy = await dbGet(LEGACY_KEY);
+      if(legacy && legacy.days){
+        legacy.id = legacy.id || uid();
+        state = legacy; storageOK = true;
+        await dbSet(tripKey(state.id), state);
+        await touchIndex(state.id, state.title, Date.now());
+        await dbSet(ACTIVE_KEY, state.id);
+      }
+    }
   }catch(e){ console.warn('IndexedDB non disponibile:', e && e.message); }
-  if(!state || !state.days) state = fresh();
+  if(!state || !state.days){
+    state = fresh();
+    if(db){
+      try{
+        await dbSet(tripKey(state.id), state);
+        await touchIndex(state.id, state.title, Date.now());
+        await dbSet(ACTIVE_KEY, state.id);
+        storageOK = true;
+      }catch(e){}
+    }
+  }
   normalize();
   document.getElementById('tripTitle').value = state.title || '';
   if(state.view) map.setView([state.view.lat, state.view.lng], state.view.z);
   badge(storageOK ? 'saved' : 'unsaved');
   render();
   setView('list');
+  subscribeShared(state.shareId);
+}
+
+/* ============ più viaggi ============ */
+function closeTripsSheet(){ document.getElementById('tripsVeil').hidden = true; }
+
+async function switchTrip(id, opts){
+  opts = opts || {};
+  if(!db || id === state.id){ if(opts.close !== false) closeTripsSheet(); return; }
+  const loaded = await dbGet(tripKey(id));
+  if(!loaded || !loaded.days) return;
+  state = loaded;
+  normalize();
+  await dbSet(ACTIVE_KEY, id);
+  document.getElementById('tripTitle').value = state.title || '';
+  if(state.view) map.setView([state.view.lat, state.view.lng], state.view.z);
+  render();
+  if(view === 'cost') drawCosts();
+  if(view === 'book') drawBooks();
+  badge(storageOK ? 'saved' : 'unsaved');
+  if(opts.close !== false) closeTripsSheet();
+  subscribeShared(state.shareId);
+}
+
+async function newTrip(opts){
+  opts = opts || {};
+  const t = fresh();
+  state = t;
+  tripIndex.unshift({id:t.id, title:t.title, updatedAt:Date.now()});
+  if(db){
+    await dbSet(tripKey(t.id), t);
+    await dbSet(INDEX_KEY, tripIndex);
+    await dbSet(ACTIVE_KEY, t.id);
+    storageOK = true;
+  }
+  document.getElementById('tripTitle').value = t.title;
+  map.setView([t.view.lat, t.view.lng], t.view.z);
+  render();
+  badge(storageOK ? 'saved' : 'unsaved');
+  if(opts.close !== false){
+    closeTripsSheet();
+    const ti = document.getElementById('tripTitle');
+    ti.focus(); ti.select();
+  } else {
+    drawTrips();
+  }
+  subscribeShared(null);
+}
+
+async function deleteTrip(id){
+  const row = tripIndex.find(t => t.id === id);
+  if(!row) return;
+  if(!confirm('Eliminare "'+(row.title||'questo viaggio')+'"? Non si può annullare.')) return;
+  await dbDel(tripKey(id));
+  tripIndex = tripIndex.filter(t => t.id !== id);
+  await dbSet(INDEX_KEY, tripIndex);
+  if(id === state.id){
+    if(tripIndex.length) await switchTrip(tripIndex[0].id, {close:false});
+    else await newTrip({close:false});
+  }
+  drawTrips();
+}
+
+function fmtTripDate(ts){
+  if(!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleDateString('it-IT') + ' · ' + d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+
+function drawTrips(){
+  const box = document.getElementById('tripsList');
+  const sorted = tripIndex.slice().sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
+  box.innerHTML = sorted.map(t => (
+    '<div class="who trip-row">'+
+      '<span class="who-n" data-open="'+t.id+'">'+esc(t.title||'Senza nome')+
+        (t.id===state.id ? ' <b style="color:var(--moss);font-weight:600">· attivo</b>' : '')+
+        '<i class="trip-when mono">'+fmtTripDate(t.updatedAt)+'</i></span>'+
+      '<button class="icon-btn" data-del="'+t.id+'" title="Elimina">✕</button>'+
+    '</div>'
+  )).join('') || '<p class="empty" style="padding:0">Nessun viaggio.</p>';
+  box.querySelectorAll('[data-open]').forEach(el => el.onclick = () => switchTrip(el.dataset.open));
+  box.querySelectorAll('[data-del]').forEach(el => el.onclick = e => { e.stopPropagation(); deleteTrip(el.dataset.del); });
+}
+
+function openTrips(){ drawTrips(); document.getElementById('tripsVeil').hidden = false; }
+document.getElementById('btnTrips').onclick = openTrips;
+document.getElementById('tripsClose').onclick = closeTripsSheet;
+document.getElementById('btnNewTrip').onclick = () => newTrip();
+document.getElementById('tripsVeil').onclick = e => { if(e.target === document.getElementById('tripsVeil')) closeTripsSheet(); };
+document.getElementById('btnShareTrip').onclick = shareTrip;
+document.getElementById('btnJoinTrip').onclick = () => {
+  const code = prompt('Incolla qui il codice di condivisione ricevuto:');
+  if(code) joinTrip(code);
+};
+
+/* ============ sincronizzazione condivisa (Firebase) ============ */
+/* Incolla qui la configurazione del tuo progetto Firebase (Impostazioni progetto
+   -> app Web). Questi valori non sono segreti: la sicurezza sta nelle regole di
+   Firestore/Storage, non nel nasconderli. Finché resta null la condivisione tra
+   dispositivi è disattivata e il resto dell'app funziona comunque normalmente. */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCMz086qcSzyYJht5bg7YtypC8uacW35Qw",
+  authDomain: "family-trip-9848d.firebaseapp.com",
+  projectId: "family-trip-9848d",
+  storageBucket: "family-trip-9848d.firebasestorage.app",
+  messagingSenderId: "922655367741",
+  appId: "1:922655367741:web:65a5df6fb87835d39f4054"
+};
+
+/* identifica questo browser/installazione, per riconoscere i propri stessi
+   salvataggi quando tornano indietro dall'ascolto in tempo reale */
+const DEVICE_ID = (() => {
+  let d = localStorage.getItem('rotta:device');
+  if(!d){ d = uid()+uid(); localStorage.setItem('rotta:device', d); }
+  return d;
+})();
+
+let fbDb = null, fbStorage = null, fbReady = false, unsubShare = null, pendingRemote = null;
+
+async function initSync(){
+  if(!FIREBASE_CONFIG || typeof firebase === 'undefined') return;
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    await firebase.auth().signInAnonymously();
+    fbDb = firebase.firestore();
+    fbStorage = firebase.storage();
+    fbReady = true;
+  }catch(e){ console.warn('sincronizzazione non disponibile:', e && e.message); }
+}
+
+function dataURLtoBlob(dataUrl){
+  const [head, b64] = dataUrl.split(',');
+  const mime = (head.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type: mime});
+}
+function urlToDataURL(url){
+  return fetch(url).then(r => r.blob()).then(blob => new Promise((res, rej) => {
+    const rd = new FileReader();
+    rd.onload = () => res(rd.result);
+    rd.onerror = rej;
+    rd.readAsDataURL(blob);
+  }));
+}
+
+/* Carica su Firebase Storage gli allegati ancora locali (base64) di un viaggio
+   condiviso, e riusa il link già caricato se il contenuto non è cambiato dall'ultimo
+   invio: altrimenti ogni salvataggio ricaricherebbe le stesse foto inutilmente. */
+async function cloudizeAttachments(tripState){
+  const jobs = [];
+  const swap = (obj, field, urlField, path) => {
+    const v = obj[field];
+    if(!v || !/^data:/.test(v)){
+      if(obj[urlField]){ delete obj[urlField]; delete obj[urlField+'Src']; }
+      return;
+    }
+    if(obj[urlField+'Src'] === v && obj[urlField]) return;
+    jobs.push((async () => {
+      const ref = fbStorage.ref('trips/'+tripState.shareId+'/'+path);
+      await ref.put(dataURLtoBlob(v));
+      obj[urlField] = await ref.getDownloadURL();
+      obj[urlField+'Src'] = v;
+    })());
+  };
+  (tripState.places||[]).forEach(p => swap(p, 'img', 'imgUrl', 'place-'+p.id));
+  (tripState.bookings||[]).forEach(b => swap(b, 'file', 'fileUrl', 'book-'+b.id));
+  await Promise.all(jobs);
+}
+
+/* Il documento Firestore porta gli URL degli allegati, mai il base64: una sola
+   foto supererebbe il limite di 1MB per documento. */
+function cloudPayload(tripState){
+  const places = (tripState.places||[]).map(p => {
+    const c = {...p};
+    if(c.imgUrl) c.img = c.imgUrl;
+    delete c.imgUrl; delete c.imgUrlSrc;
+    return c;
+  });
+  const bookings = (tripState.bookings||[]).map(b => {
+    const c = {...b};
+    if(c.fileUrl) c.file = c.fileUrl;
+    delete c.fileUrl; delete c.fileUrlSrc;
+    return c;
+  });
+  return {...tripState, places, bookings};
+}
+
+async function pushToCloud(tripState){
+  if(!fbReady || !tripState.shareId || !navigator.onLine) return;
+  try{
+    await cloudizeAttachments(tripState);
+    await dbSet(tripKey(tripState.id), JSON.parse(JSON.stringify(tripState))); // gli URL calcolati restano anche in locale
+    await fbDb.collection('trips').doc(tripState.shareId).set({
+      ...cloudPayload(tripState),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      deviceId: DEVICE_ID
+    });
+  }catch(e){ console.warn('sincronizzazione non riuscita:', e && e.message); }
+}
+
+/* riporta gli allegati da URL remoto a base64 locale, così restano visibili anche offline */
+async function localizeAttachments(tripState){
+  const jobs = [];
+  const pull = (obj, field) => {
+    const v = obj[field];
+    if(!v || !/^https?:/.test(v)) return;
+    jobs.push(urlToDataURL(v).then(d => { obj[field] = d; }).catch(() => {}));
+  };
+  (tripState.places||[]).forEach(p => pull(p, 'img'));
+  (tripState.bookings||[]).forEach(b => pull(b, 'file'));
+  await Promise.all(jobs);
+}
+
+function showSyncBar(){ const b = document.getElementById('syncBar'); if(b) b.hidden = false; }
+function hideSyncBar(){ const b = document.getElementById('syncBar'); if(b) b.hidden = true; }
+
+function subscribeShared(shareId){
+  if(unsubShare){ unsubShare(); unsubShare = null; }
+  hideSyncBar(); pendingRemote = null;
+  if(!fbReady || !shareId) return;
+  unsubShare = fbDb.collection('trips').doc(shareId).onSnapshot(snap => {
+    if(!snap.exists || snap.metadata.hasPendingWrites) return;
+    const data = snap.data();
+    if(data.deviceId === DEVICE_ID) return; // è il proprio salvataggio che torna indietro
+    if(!data.updatedAt || data.updatedAt.toMillis() <= (state.cloudAt || 0)) return;
+    pendingRemote = data;
+    showSyncBar();
+  });
+}
+
+document.getElementById('syncReload').onclick = async () => {
+  if(!pendingRemote){ hideSyncBar(); return; }
+  hideSyncBar();
+  const incoming = {...pendingRemote};
+  delete incoming.updatedAt; delete incoming.deviceId;
+  incoming.id = state.id;
+  incoming.cloudAt = Date.now();
+  await localizeAttachments(incoming);
+  state = incoming;
+  normalize();
+  await dbSet(tripKey(state.id), state);
+  await touchIndex(state.id, state.title, Date.now());
+  document.getElementById('tripTitle').value = state.title || '';
+  render();
+  if(view === 'cost') drawCosts();
+  if(view === 'book') drawBooks();
+  pendingRemote = null;
+};
+document.getElementById('syncDismiss').onclick = hideSyncBar;
+
+async function shareTrip(){
+  if(!fbReady){ alert('La condivisione non è ancora configurata su questa app.'); return; }
+  if(!state.shareId){
+    state.shareId = fbDb.collection('trips').doc().id;
+    await write();
+  }
+  subscribeShared(state.shareId);
+  prompt('Comunica questo codice alla tua compagna (lo inserirà con "Unisciti con un codice"):', state.shareId);
+}
+
+async function joinTrip(code){
+  if(!fbReady){ alert('La condivisione non è ancora configurata su questa app.'); return; }
+  code = (code||'').trim();
+  if(!code) return;
+  const snap = await fbDb.collection('trips').doc(code).get();
+  if(!snap.exists){ alert('Nessun viaggio condiviso trovato con questo codice.'); return; }
+  const data = snap.data();
+  delete data.updatedAt; delete data.deviceId;
+  data.id = uid();
+  data.shareId = code;
+  data.cloudAt = Date.now();
+  await localizeAttachments(data);
+  state = data;
+  normalize();
+  tripIndex.unshift({id:state.id, title:state.title, updatedAt:Date.now()});
+  await dbSet(tripKey(state.id), state);
+  await dbSet(INDEX_KEY, tripIndex);
+  await dbSet(ACTIVE_KEY, state.id);
+  document.getElementById('tripTitle').value = state.title || '';
+  render();
+  closeTripsSheet();
+  subscribeShared(state.shareId);
 }
 
 /* avviso se esci con modifiche non salvate su disco */
@@ -826,6 +1377,12 @@ const km = (a,b) => {
 };
 const fmt = d => d < 1 ? Math.round(d*1000)+' m' : d.toFixed(1).replace('.',',')+' km';
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* somma n giorni a una data 'YYYY-MM-DD', gestendo da sola i cambi di mese/anno */
+function addDaysISO(iso, n){
+  const [Y,M,D] = iso.split('-').map(Number);
+  const d = new Date(Y, M-1, D + n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 const dayOf = id => state.days.find(d=>d.id===id);
 const all = id => state.places.filter(p=>p.dayId===id);
 const stops = id => all(id).filter(p=>!offRoute(p));  // percorso numerato
@@ -858,7 +1415,7 @@ async function find(v){
       + encodeURIComponent(v) + '&viewbox=' + [b.getWest(),b.getNorth(),b.getEast(),b.getSouth()].join(',');
     const r = await fetch(url);
     const j = await r.json();
-    if(!j.length){ resEl.innerHTML = '<div class="hint">Nessun risultato. Prova con il nome della città accanto, oppure tocca “Punto sulla mappa”.</div>'; return; }
+    if(!j.length){ resEl.innerHTML = '<div class="hint">Nessun risultato. Prova con il nome della città accanto, oppure tocca la mappa qui sotto.</div>'; return; }
     resEl.innerHTML = '';
     j.forEach(h => {
       const short = h.display_name.split(',')[0];
@@ -873,7 +1430,7 @@ async function find(v){
       resEl.appendChild(b2);
     });
   }catch(e){
-    resEl.innerHTML = '<div class="hint">Ricerca non raggiungibile. Aggiungi la tappa con “＋ Punto sulla mappa”.</div>';
+    resEl.innerHTML = '<div class="hint">Ricerca non raggiungibile. Tocca la mappa qui sotto per aggiungere la tappa.</div>';
   }
 }
 
@@ -896,6 +1453,7 @@ function render(){
   drawMap();
   drawList();
   refreshLegs();
+  refreshWeather();
 }
 
 /* velocità di riserva, usate solo finché non arriva il dato reale */
@@ -968,6 +1526,181 @@ async function refreshLegs(){
   refreshing = false;
 }
 
+/* ============ meteo per giorno (Open-Meteo, gratuito, senza chiave) ============ */
+/* Codici WMO restituiti dall'API, ridotti a poche categorie utili. Verificato
+   l'endpoint reale prima di scrivere questo codice: massimo 16 giorni di
+   previsione affidabile (forecast_days), timezone=auto rileva il fuso dalle
+   coordinate (utile per mete fuori Italia). */
+const WX_STALE_MS = 6*3600*1000;
+function wmoCategory(code){
+  if(code === 0) return {icon:'☀️', label:'sereno'};
+  if(code <= 3) return {icon:'⛅', label:'nuvoloso'};
+  if(code === 45 || code === 48) return {icon:'🌫️', label:'nebbia'};
+  if((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return {icon:'🌧️', label:'pioggia'};
+  if((code >= 71 && code <= 77) || code === 85 || code === 86) return {icon:'❄️', label:'neve'};
+  if(code >= 95) return {icon:'⛈️', label:'temporale'};
+  return {icon:'🌡️', label:''};
+}
+const isRainy = code => (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
+
+/* posizione da usare per il meteo del giorno: prima tappa in sequenza,
+   altrimenti la media di tutte le tappe del giorno */
+function dayCoord(d){
+  const chain = stops(d.id);
+  if(chain.length) return {lat:chain[0].lat, lng:chain[0].lng};
+  const list = all(d.id);
+  if(!list.length) return null;
+  return {
+    lat: list.reduce((s,p)=>s+p.lat,0)/list.length,
+    lng: list.reduce((s,p)=>s+p.lng,0)/list.length
+  };
+}
+
+async function fetchDayWeather(d){
+  if(!d.date) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysAhead = Math.round((new Date(d.date+'T00:00:00') - today) / 86400000);
+  if(daysAhead < 0 || daysAhead > 15) return null; // fuori dalla finestra affidabile di Open-Meteo
+  const coord = dayCoord(d);
+  if(!coord) return null;
+  try{
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude='+coord.lat.toFixed(3)+'&longitude='+coord.lng.toFixed(3)
+      + '&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=16';
+    const r = await fetch(url);
+    const j = await r.json();
+    const idx = j.daily && j.daily.time ? j.daily.time.indexOf(d.date) : -1;
+    if(idx < 0) return null;
+    return {
+      fetchedAt: Date.now(), date: d.date,
+      tmax: j.daily.temperature_2m_max[idx],
+      tmin: j.daily.temperature_2m_min[idx],
+      code: j.daily.weathercode[idx]
+    };
+  }catch(e){ return null; }
+}
+
+/* aggiorna il meteo di un giorno solo se mancante, scaduto (>6h) o riferito
+   a una data diversa da quella attuale del giorno (l'utente l'ha cambiata) */
+async function ensureWeather(d){
+  const stale = !d.wx || d.wx.date !== d.date || (Date.now() - d.wx.fetchedAt) > WX_STALE_MS;
+  if(!stale) return;
+  const wx = await fetchDayWeather(d);
+  if(wx){ d.wx = wx; save(); }
+}
+
+let wxRefreshing = false;
+async function refreshWeather(){
+  if(wxRefreshing) return;
+  wxRefreshing = true;
+  const targets = state.days.filter(d => d.date &&
+    (!d.wx || d.wx.date !== d.date || Date.now() - d.wx.fetchedAt > WX_STALE_MS));
+  if(targets.length){
+    for(const d of targets) await ensureWeather(d);
+    drawList();
+    if(view === 'cal') drawCalendar();
+  }
+  wxRefreshing = false;
+}
+
+/* badge riusato sia nell'intestazione del giorno (vista Itinerario) sia nella
+   tile della vista Calendario. È uno span cliccabile (non un <button>, perché
+   nella tile del calendario finisce dentro un altro <button>: annidare due
+   elementi interattivi non è valido HTML) con onclick inline che ferma la
+   propagazione, per non far scattare anche l'azione della tile che lo contiene. */
+function wxBadgeHTML(d){
+  if(!d.date) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysAhead = Math.round((new Date(d.date+'T00:00:00') - today) / 86400000);
+  if(daysAhead < 0 || daysAhead > 15) return '<span class="day-wx mono" title="Previsione non disponibile per una data così lontana">—</span>';
+  if(!d.wx || d.wx.date !== d.date) return '<span class="day-wx mono">…</span>';
+  const cat = wmoCategory(d.wx.code);
+  /* se piove ed esistono già tappe "se piove" pronte per quel giorno, lo segnalo:
+     è il collegamento pratico tra meteo e alternative, altrimenti solo teoriche */
+  const rainReady = isRainy(d.wx.code) && alts(d.id).some(p => p.alt);
+  return '<span class="day-wx tap mono'+(rainReady?' rain-ready':'')+'" title="'+esc(cat.label)+(rainReady?' · alternative pronte':'')+' · tocca per i dettagli" onclick="event.stopPropagation();openWeather(\''+d.id+'\')">'
+    + cat.icon+' '+Math.round(d.wx.tmax)+'°/'+Math.round(d.wx.tmin)+'°'+(rainReady?' ☂':'')+'</span>';
+}
+
+/* ============ widget meteo dettagliato ============ */
+/* Il badge mostra sempre la condizione peggiore della giornata (così Open-Meteo
+   calcola il weathercode giornaliero: la più severa, non la più frequente —
+   se piove anche solo un'ora compare pioggia). Qui invece il quadro completo:
+   precipitazioni, vento, alba/tramonto e un andamento orario, richiesto solo
+   quando l'utente apre il dettaglio, non a ogni salvataggio come il badge. */
+async function fetchDayWeatherDetail(d){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysAhead = Math.round((new Date(d.date+'T00:00:00') - today) / 86400000);
+  if(daysAhead < 0 || daysAhead > 15) return null;
+  const coord = dayCoord(d);
+  if(!coord) return null;
+  try{
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude='+coord.lat.toFixed(3)+'&longitude='+coord.lng.toFixed(3)
+      + '&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,precipitation_probability_max,windspeed_10m_max,sunrise,sunset'
+      + '&hourly=temperature_2m,precipitation_probability,weathercode'
+      + '&timezone=auto&start_date='+d.date+'&end_date='+d.date;
+    const r = await fetch(url);
+    const j = await r.json();
+    if(!j.daily || !j.daily.time || !j.daily.time.length) return null;
+    return {
+      fetchedAt: Date.now(), date: d.date,
+      tmax: j.daily.temperature_2m_max[0], tmin: j.daily.temperature_2m_min[0],
+      code: j.daily.weathercode[0],
+      precip: j.daily.precipitation_sum[0], precipProb: j.daily.precipitation_probability_max[0],
+      wind: j.daily.windspeed_10m_max[0],
+      sunrise: j.daily.sunrise[0], sunset: j.daily.sunset[0],
+      hourly: (j.hourly && j.hourly.time || []).map((t,i) => ({
+        h: t.slice(11,16), temp: j.hourly.temperature_2m[i],
+        prob: j.hourly.precipitation_probability[i], code: j.hourly.weathercode[i]
+      }))
+    };
+  }catch(e){ return null; }
+}
+
+async function ensureWeatherDetail(d){
+  const stale = !d.wxDetail || d.wxDetail.date !== d.date || (Date.now() - d.wxDetail.fetchedAt) > WX_STALE_MS;
+  if(stale){
+    const detail = await fetchDayWeatherDetail(d);
+    if(detail){ d.wxDetail = detail; save(); }
+  }
+  return d.wxDetail && d.wxDetail.date === d.date ? d.wxDetail : null;
+}
+
+function wxDetailHTML(w){
+  const cat = wmoCategory(w.code);
+  const fmtH = s => s ? s.slice(11,16) : '—';
+  const hrs = w.hourly.filter((h,i) => i % 3 === 0);
+  return '<div class="wx-main">'+
+      '<span class="wx-ic">'+cat.icon+'</span>'+
+      '<div><b>'+Math.round(w.tmax)+'° / '+Math.round(w.tmin)+'°</b><i>'+esc(cat.label)+'</i></div>'+
+    '</div>'+
+    '<div class="wx-grid mono">'+
+      '<span>☔ '+Math.round(w.precipProb||0)+'% · '+(w.precip||0).toFixed(1)+' mm</span>'+
+      '<span>💨 '+Math.round(w.wind||0)+' km/h</span>'+
+      '<span>🌅 '+fmtH(w.sunrise)+'</span>'+
+      '<span>🌇 '+fmtH(w.sunset)+'</span>'+
+    '</div>'+
+    (hrs.length ? '<div class="wx-hours mono">'+hrs.map(h => {
+      const hc = wmoCategory(h.code);
+      return '<div class="wx-hour"><span>'+h.h+'</span><span>'+hc.icon+'</span><span>'+Math.round(h.temp)+'°</span></div>';
+    }).join('')+'</div>' : '');
+}
+
+async function openWeather(id){
+  const d = dayOf(id);
+  if(!d || !d.date) return;
+  document.getElementById('wxTitle').textContent = fmtCalDate(d.date);
+  const body = document.getElementById('wxBody');
+  body.innerHTML = '<p class="hint">Carico…</p>';
+  document.getElementById('wxVeil').hidden = false;
+  const detail = await ensureWeatherDetail(d);
+  body.innerHTML = detail ? wxDetailHTML(detail) : '<p class="empty" style="padding:0">Previsione non disponibile per questo giorno.</p>';
+}
+window.openWeather = openWeather;
+document.getElementById('wxClose').onclick = () => { document.getElementById('wxVeil').hidden = true; };
+document.getElementById('wxVeil').onclick = e => {
+  if(e.target === document.getElementById('wxVeil')) document.getElementById('wxVeil').hidden = true;
+};
+
 /* Punto che sta a metà della LUNGHEZZA della traccia, non a metà dell'elenco di vertici:
    OSRM infittisce i punti nelle curve, quindi prendere il vertice centrale sposterebbe
    l'etichetta verso i tornanti. Qui accumulo la distanza e mi fermo al 50%. */
@@ -1006,7 +1739,7 @@ function drawMap(){
         const walk = t.mode === 'walking';
         const seg = L.polyline([[a.lat,a.lng],[b.lat,b.lng]],{
           color:d.color, weight: walk?3:3.5, opacity:.85,
-          dashArray: walk ? '2 7' : (road ? null : '9 7'),
+          dashArray: walk ? '2 7' : null,
           lineCap: walk ? 'round' : 'butt'
         });
         layer.addLayer(seg);
@@ -1021,7 +1754,10 @@ function drawMap(){
         });
         layer.addLayer(lab);
 
-        if(road && !walk) roadLine([a,b]).then(r => {
+        /* la tratta in auto mostra sempre il percorso reale su strada, mai il
+           collegamento puntinato in linea d'aria: se la rete manca resta comunque
+           visibile la linea diretta come stima, senza differenza di stile */
+        if(!walk) roadLine([a,b]).then(r => {
           if(!r || !layer.hasLayer(seg)) return;
           seg.setLatLngs(r.line);
           /* l'etichetta va spostata sul punto a metà della traccia reale: con una
@@ -1068,7 +1804,7 @@ function marker(p, n, color){
         + '<svg viewBox="0 0 24 24"><path d="'+CLOUD_D+'"/></svg><b>✓</b></span>'
       : '');
   const bKid = p.kid
-    ? '<span class="pin-k" title="Adatta a Francesco">'
+    ? '<span class="pin-k" title="Adatta con bimbo">'
       + '<svg viewBox="0 0 24 24"><path d="'+KID_D+'"/></svg></span>'
     : '';
   const badge = bRain + bKid;
@@ -1087,8 +1823,7 @@ function marker(p, n, color){
         + '<span class="pop-t">'+esc(p.name)+'</span>';
   if(p.notes) h += '<span class="pop-n">'+esc(p.notes)+'</span>';
   (p.links||[]).forEach(l => h += '<a class="pop-l" href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||l.url)+' ↗</a>');
-  h += '<a class="pop-b" href="#" onclick="edit(\''+p.id+'\');return false">Modifica</a>';
-  m.bindPopup(h);
+  h += '<a class="pop-b" href="#" onclick="edit(\''+p.id+'\');return false">Modifica</a>';  m.bindPopup(h);
   return m;
 }
 
@@ -1103,6 +1838,7 @@ function drawList(){
 function dayBlock(d, list){
   const sec = document.createElement('section');
   sec.className = 'day';
+  sec.dataset.day = d.id || '';
 
   let tot = 0, totMin = 0, onFoot = 0;
   for(let i=1;i<list.length;i++){
@@ -1115,14 +1851,26 @@ function dayBlock(d, list){
   head.className = 'day-head';
   head.innerHTML =
     '<span class="swatch" style="background:'+d.color+'"></span>' +
+    (d.id ? '<input type="date" class="day-date mono" value="'+(d.date||'')+'">' : '') +
     (d.id ? '<input class="day-name" value="'+esc(d.name)+'">' : '<span class="day-name">'+d.name+'</span>') +
     '<span class="day-stat mono">'+list.length+' · '+(tot?fmt(tot)+' · '+dur(totMin):'—')+
       (onFoot ? '<b class="foot-km" title="Di cui a piedi">🚶'+fmt(onFoot)+'</b>' : '')+'</span>' +
+    (d.id ? wxBadgeHTML(d) : '') +
     (d.id ? '<button class="icon-btn" title="Inquadra">◎</button><button class="icon-btn" title="Apri il giorno su Google Maps">➔</button><button class="icon-btn" title="Elimina giorno">✕</button>' : '');
   sec.appendChild(head);
 
   if(d.id){
-    head.querySelector('input').onchange = e => { d.name = e.target.value; save(); };
+    head.querySelector('.day-name').onchange = e => { d.name = e.target.value; save(); };
+    head.querySelector('.day-date').onchange = e => {
+      const v = e.target.value || null;
+      d.date = v;
+      if(state.days[0] && state.days[0].id === d.id && v &&
+         confirm('Calcolare automaticamente le date dei giorni successivi (+1 al giorno)?')){
+        const idx = state.days.indexOf(d);
+        for(let i=idx+1;i<state.days.length;i++) state.days[i].date = addDaysISO(v, i-idx);
+      }
+      save(); render();
+    };
     const [zoomB, gmB, delB] = head.querySelectorAll('.icon-btn');
     gmB.onclick = () => openInGmaps(d, list);
     if(list.length < 2) gmB.style.opacity = '.35';
@@ -1140,7 +1888,7 @@ function dayBlock(d, list){
   if(!list.length && !altList.length){
     const e = document.createElement('p');
     e.className = 'empty';
-    e.textContent = 'Nessuna tappa. Cerca un luogo qui sopra o tocca “＋ Punto sulla mappa”.';
+    e.textContent = 'Nessuna tappa. Tocca “＋ Aggiungi un luogo” qui sopra per cercarlo o metterlo sulla mappa.';
     sec.appendChild(e);
     return sec;
   }
@@ -1160,10 +1908,11 @@ function dayBlock(d, list){
       '</span>' +
       '<div class="stop-card">' +
         '<div class="stop-top">' +
-          '<button class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta a Francesco">👶</i>':'')+'</button>' +
+          '<button class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+'</button>' +
           '<button class="icon-btn" title="Su">↑</button>' +
           '<button class="icon-btn" title="Giù">↓</button>' +
           '<button class="icon-btn" title="Modifica">✎</button>' +
+          '<button class="icon-btn" title="Elimina">✕</button>' +
         '</div>' +
         (p.img ? '<img class="thumb" src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
         (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
@@ -1173,11 +1922,12 @@ function dayBlock(d, list){
         ? '<div class="seg mono">'+(() => { const t = legTime(p, list[i+1]); return (t.mode==='walking'?'🚶':'🚗')+' '+(t.real?'':'~')+dur(t.mins)+' · '+fmt(t.dist); })()+' ↓</div>'
         : '');
 
-    const [nameB, upB, dnB, edB] = li.querySelectorAll('.stop-name,.icon-btn');
+    const [nameB, upB, dnB, edB, delB] = li.querySelectorAll('.stop-name,.icon-btn');
     nameB.onclick = () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); };
     upB.onclick = () => move(p, -1);
     dnB.onclick = () => move(p, 1);
     edB.onclick = () => edit(p.id);
+    delB.onclick = () => deletePlace(p.id);
     ol.appendChild(li);
   });
   sec.appendChild(ol);
@@ -1209,9 +1959,12 @@ function dayBlock(d, list){
             (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
             (links ? '<div class="links">'+links+'</div>' : '') +
           '</div>' +
-          '<button class="icon-btn" title="Modifica">✎</button>';
+          '<button class="icon-btn" title="Modifica">✎</button>' +
+          '<button class="icon-btn" title="Elimina">✕</button>';
         row.querySelector('.stop-name').onclick = () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); };
-        row.querySelector('.icon-btn').onclick = () => edit(p.id);
+        const [edB2, delB2] = row.querySelectorAll('.icon-btn');
+        edB2.onclick = () => edit(p.id);
+        delB2.onclick = () => deletePlace(p.id);
         wrap.appendChild(row);
       });
       sec.appendChild(wrap);
@@ -1227,6 +1980,53 @@ function move(p, dir){
   const a = state.places.indexOf(sib[i]), b = state.places.indexOf(sib[j]);
   [state.places[a], state.places[b]] = [state.places[b], state.places[a]];
   save(); render();
+}
+
+/* fa scorrere l'elenco fino al giorno scelto (usato dalla vista Calendario) ed
+   evidenzia brevemente la card, per far capire dove è "atterrato" lo sguardo */
+function scrollToDay(id){
+  setTimeout(() => {
+    const el = document.querySelector('#list [data-day="'+id+'"]');
+    if(!el) return;
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 1600);
+  }, 60);
+}
+
+const fmtCalDate = iso => {
+  const [Y,M,D] = iso.split('-').map(Number);
+  return new Date(Y, M-1, D).toLocaleDateString('it-IT', {weekday:'short', day:'numeric', month:'short'});
+};
+
+function calTile(d, i){
+  const list = stops(d.id), full = all(d.id);
+  const main = list[0] ? list[0].name : d.name;
+  const hasStay = full.some(p => p.type === 'sleep');
+  const wx = wxBadgeHTML(d);
+  const rainReady = d.wx && d.wx.date === d.date && isRainy(d.wx.code) && alts(d.id).some(p => p.alt);
+  const el = document.createElement('button');
+  el.className = 'cal-tile' + (rainReady ? ' rain-ready' : '');
+  el.style.setProperty('--c', d.color);
+  el.innerHTML =
+    '<span class="cal-date mono">'+(d.date ? esc(fmtCalDate(d.date)) : 'Giorno '+(i+1))+'</span>'+
+    '<span class="cal-name">'+esc(main || 'Nessuna tappa')+'</span>'+
+    '<span class="cal-stat mono">'+list.length+' tapp'+(list.length===1?'a':'e')+'</span>'+
+    (wx ? '<span class="cal-wx">'+wx+'</span>' : '')+
+    '<span class="cal-badge'+(hasStay?'':' warn')+'" title="'+(hasStay?'Alloggio segnato':'Nessun alloggio segnato per questo giorno')+'">🏨</span>';
+  el.onclick = () => { setView('list'); scrollToDay(d.id); };
+  return el;
+}
+
+function drawCalendar(){
+  const box = document.getElementById('calBox');
+  if(!state.days.length){
+    box.innerHTML = '<p class="empty" style="padding:14px 16px">Nessun giorno. Aggiungine uno dalla vista Itinerario.</p>';
+    return;
+  }
+  box.innerHTML = '<div class="cal-grid" id="calGrid"></div>';
+  const grid = document.getElementById('calGrid');
+  state.days.forEach((d,i) => grid.appendChild(calTile(d, i)));
 }
 
 /* ============ apri su Google Maps ============ */
@@ -1286,6 +2086,7 @@ function openInGmaps(d, list){
 
 /* ============ spese condivise ============ */
 function normalize(){
+  if(!state.id) state.id = uid();
   if(!state.people) state.people = [];
   if(!state.expenses) state.expenses = [];
   if(!state.bookings) state.bookings = [];
@@ -1535,6 +2336,49 @@ function daysTo(s){
   return Math.round((end - today) / 86400000);
 }
 
+/* riepilogo icona+titolo+costo di una prenotazione: riusato sia nella card
+   compatta dell'elenco sia nella scheda di sola visualizzazione */
+function bookingHead(b, T){
+  return '<span class="bk-ic">'+T.icon+'</span>'+
+    '<div class="bk-h">'+
+      '<span class="bk-t">'+esc(b.title || T.label)+'</span>'+
+      '<span class="bk-s mono">'+esc(T.label)+(b.who ? ' · '+esc(b.who) : '')+'</span>'+
+    '</div>'+
+    (b.cost ? '<span class="exp-a mono">'+money(parseFloat(b.cost)||0)+'</span>' : '');
+}
+/* resto dei dettagli (orari, codice, scadenza cancellazione, note, allegato,
+   link di gestione): stesso riuso della card compatta e della scheda dedicata */
+function bookingBody(b, T){
+  const dd = daysTo(b.freeUntil);
+  let flag = '';
+  if(b.refund === 'free' && b.freeUntil){
+    flag = dd < 0
+      ? '<span class="bk-flag late">Cancellazione scaduta</span>'
+      : '<span class="bk-flag'+(dd <= 7 ? ' soon' : ' ok')+'">Gratis fino al '+fmtWhen(b.freeUntil)+
+        (dd <= 30 ? ' · '+dd+'g' : '')+'</span>';
+  } else if(b.refund === 'paid'){
+    flag = '<span class="bk-flag late">Non rimborsabile</span>';
+  }
+  return '<div class="bk-when mono">'+
+      '<span>'+esc(T.aLab)+': <b>'+fmtWhen(b.aWhen)+'</b>'+(b.aPlace ? ' · '+esc(b.aPlace) : '')+'</span>'+
+      (T.leg && (b.bWhen || b.bPlace)
+        ? '<span>'+esc(T.bLab)+': <b>'+fmtWhen(b.bWhen)+'</b>'+(b.bPlace ? ' · '+esc(b.bPlace) : '')+'</span>'
+        : '')+
+    '</div>'+
+    (b.ref ? '<div class="bk-ref mono">'+esc(T.ref)+': <b>'+esc(b.ref)+'</b></div>' : '')+
+    (flag ? '<div class="bk-flags">'+flag+'</div>' : '')+
+    (b.notes ? '<p class="stop-note">'+esc(b.notes)+'</p>' : '')+
+    (b.file ? '<button class="bk-att" data-bkf="'+b.id+'">'+
+              (/^image\//.test(b.fileType||'') || /^data:image\//.test(b.file)
+                ? '<img src="'+esc(b.file)+'" alt="">'
+                : '<span class="bk-pdf">📄</span>')+
+              '<span class="bk-att-n">'+esc(b.fileName||'Allegato')+'<i>Tocca per aprirlo</i></span>'+
+              '</button>' : '')+
+    '<div class="links">'+
+      (b.url ? '<a href="'+esc(b.url)+'" target="_blank" rel="noopener">Gestisci ↗</a>' : '')+
+    '</div>';
+}
+
 function drawBooks(){
   ensureBooks();
   const box = document.getElementById('books');
@@ -1553,50 +2397,50 @@ function drawBooks(){
 
   list.forEach(b => {
     const T = BOOK_TYPES[b.type] || BOOK_TYPES.ticket;
-    const dd = daysTo(b.freeUntil);
-    let flag = '';
-    if(b.refund === 'free' && b.freeUntil){
-      flag = dd < 0
-        ? '<span class="bk-flag late">Cancellazione scaduta</span>'
-        : '<span class="bk-flag'+(dd <= 7 ? ' soon' : ' ok')+'">Gratis fino al '+fmtWhen(b.freeUntil)+
-          (dd <= 30 ? ' · '+dd+'g' : '')+'</span>';
-    } else if(b.refund === 'paid'){
-      flag = '<span class="bk-flag late">Non rimborsabile</span>';
-    }
-
     h += '<div class="bk">'+
       '<div class="bk-top">'+
-        '<span class="bk-ic">'+T.icon+'</span>'+
-        '<div class="bk-h">'+
-          '<span class="bk-t">'+esc(b.title || T.label)+'</span>'+
-          '<span class="bk-s mono">'+esc(T.label)+(b.who ? ' · '+esc(b.who) : '')+'</span>'+
-        '</div>'+
-        (b.cost ? '<span class="exp-a mono">'+money(parseFloat(b.cost)||0)+'</span>' : '')+
+        bookingHead(b, T)+
+        '<button class="icon-btn" data-bkv="'+b.id+'" title="Visualizza">👁</button>'+
         '<button class="icon-btn" data-bke="'+b.id+'" title="Modifica">✎</button>'+
       '</div>'+
-      '<div class="bk-when mono">'+
-        '<span>'+esc(T.aLab)+': <b>'+fmtWhen(b.aWhen)+'</b>'+(b.aPlace ? ' · '+esc(b.aPlace) : '')+'</span>'+
-        (T.leg && (b.bWhen || b.bPlace)
-          ? '<span>'+esc(T.bLab)+': <b>'+fmtWhen(b.bWhen)+'</b>'+(b.bPlace ? ' · '+esc(b.bPlace) : '')+'</span>'
-          : '')+
-      '</div>'+
-      (b.ref ? '<div class="bk-ref mono">'+esc(T.ref)+': <b>'+esc(b.ref)+'</b></div>' : '')+
-      (flag ? '<div class="bk-flags">'+flag+'</div>' : '')+
-      (b.notes ? '<p class="stop-note">'+esc(b.notes)+'</p>' : '')+
-      '<div class="links">'+
-        (b.url ? '<a href="'+esc(b.url)+'" target="_blank" rel="noopener">Gestisci ↗</a>' : '')+
-        (b.file ? '<a href="'+esc(b.file)+'" target="_blank" rel="noopener" download="'+esc(b.fileName||'allegato')+'">'+
-                  (/^image\//.test(b.fileType||'') || /^data:image\//.test(b.file) ? '🖼 ' : '📄 ')+
-                  esc(b.fileName||'Allegato')+'</a>' : '')+
-      '</div>'+
+      bookingBody(b, T)+
     '</div>';
   });
   h += '</div>';
   box.innerHTML = h;
 
+  box.querySelectorAll('[data-bkv]').forEach(bt =>
+    bt.onclick = () => viewBooking(bt.dataset.bkv));
   box.querySelectorAll('[data-bke]').forEach(bt =>
     bt.onclick = () => openBooking(bt.dataset.bke));
+  box.querySelectorAll('[data-bkf]').forEach(bt =>
+    bt.onclick = () => {
+      const b = state.bookings.find(x => x.id === bt.dataset.bkf);
+      if(b) openViewer(b.file, b.fileName, b.fileType);
+    });
 }
+
+/* scheda di sola visualizzazione: stessi dati della card compatta, ma su una
+   schermata dedicata, senza campi di modifica */
+function viewBooking(id){
+  const b = state.bookings.find(x => x.id === id);
+  if(!b) return;
+  const T = BOOK_TYPES[b.type] || BOOK_TYPES.ticket;
+  document.getElementById('bvTitle').textContent = b.title || T.label;
+  const body = document.getElementById('bvBody');
+  body.innerHTML = '<div class="bk-top">'+bookingHead(b, T)+'</div>'+bookingBody(b, T);
+  const att = body.querySelector('[data-bkf]');
+  if(att) att.onclick = () => openViewer(b.file, b.fileName, b.fileType);
+  document.getElementById('bvEdit').onclick = () => {
+    document.getElementById('bViewVeil').hidden = true;
+    openBooking(id);
+  };
+  document.getElementById('bViewVeil').hidden = false;
+}
+document.getElementById('bvClose').onclick = () => { document.getElementById('bViewVeil').hidden = true; };
+document.getElementById('bViewVeil').onclick = e => {
+  if(e.target === document.getElementById('bViewVeil')) document.getElementById('bViewVeil').hidden = true;
+};
 
 /* --- scheda prenotazione --- */
 let editingBook = null;
@@ -1662,8 +2506,14 @@ function bookFileView(){
   document.getElementById('bFileName').textContent =
     bookFileName ? (isImg ? '🖼 ' : '📄 ') + bookFileName : 'Nessun allegato';
   document.getElementById('bFileClear').hidden = !bookFile;
-  document.getElementById('bFilePrev').innerHTML =
-    (bookFile && isImg) ? '<img class="img-prev" src="'+esc(bookFile)+'" alt="Anteprima allegato">' : '';
+  const prev = document.getElementById('bFilePrev');
+  if(!bookFile){ prev.innerHTML = ''; return; }
+  /* anteprima cliccabile: immagine in miniatura, PDF come riquadro con il nome */
+  prev.innerHTML = isImg
+    ? '<img class="img-prev tap" src="'+esc(bookFile)+'" alt="Apri l\'allegato">'
+    : '<button class="pdf-card">📄 <b>'+esc(bookFileName||'Documento')+'</b><i>Tocca per aprirlo</i></button>';
+  const el = prev.firstElementChild;
+  if(el) el.onclick = () => openViewer(bookFile, bookFileName, bookFileType);
 }
 
 /* --- gestori della scheda prenotazione --- */
@@ -1743,6 +2593,68 @@ document.getElementById('bSave').onclick = () => {
 document.getElementById('bVeil').onclick = e => {
   if(e.target === document.getElementById('bVeil')) document.getElementById('bVeil').hidden = true;
 };
+
+/* ============ visualizzatore allegati ============ */
+/* Apre PDF e immagini a schermo pieno dentro l'app. I data URL dei PDF vengono
+   convertiti in blob URL: molti browser bloccano l'apertura diretta di un
+   data URL in una scheda nuova, mentre il blob funziona ovunque e permette
+   anche lo scorrimento delle pagine dentro l'iframe. */
+let viewerBlob = null;
+
+function dataToBlobURL(dataUrl){
+  try{
+    const [head, b64] = dataUrl.split(',');
+    const mime = (head.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+    return URL.createObjectURL(new Blob([arr], {type: mime}));
+  }catch(e){ return null; }
+}
+
+function openViewer(src, name, mime){
+  if(!src) return;
+  /* Il tipo noto al momento del caricamento (mime) ha sempre la precedenza:
+     un URL di Firebase Storage arrivato da un viaggio condiviso non porta né
+     il prefisso data: né un'estensione riconoscibile nel percorso, quindi
+     senza questo indizio verrebbe scambiato per un formato non supportato. */
+  const isImg = /^image\//.test(mime||'') || /^data:image\//.test(src) || /\.(png|jpe?g|webp|gif|heic)($|\?)/i.test(src);
+  const isPdf = /^application\/pdf$/.test(mime||'') || /^data:application\/pdf/.test(src) || /\.pdf($|\?)/i.test(src);
+  const body = document.getElementById('vwBody');
+
+  if(viewerBlob){ URL.revokeObjectURL(viewerBlob); viewerBlob = null; }
+  document.getElementById('vwName').textContent = name || 'Allegato';
+
+  if(isImg){
+    body.innerHTML = '<img src="'+esc(src)+'" alt="'+esc(name||'')+'">';
+  } else if(isPdf){
+    const url = /^data:/.test(src) ? (viewerBlob = dataToBlobURL(src)) : src;
+    body.innerHTML = url
+      ? '<iframe src="'+esc(url)+'" title="'+esc(name||'Documento')+'"></iframe>'
+      : '<p class="vw-msg">Non riesco ad aprire questo documento.</p>';
+  } else {
+    /* formati che il browser non sa mostrare: offro il salvataggio */
+    body.innerHTML = '<p class="vw-msg">Questo formato non si può visualizzare qui.<br>'+
+      '<a class="btn" style="display:inline-block;margin-top:12px;text-decoration:none" '+
+      'href="'+esc(src)+'" download="'+esc(name||'allegato')+'">Scarica il file</a></p>';
+  }
+
+  const dl = document.getElementById('vwDownload');
+  dl.href = src;
+  dl.setAttribute('download', name || 'allegato');
+  document.getElementById('vwVeil').hidden = false;
+}
+
+function closeViewer(){
+  document.getElementById('vwVeil').hidden = true;
+  document.getElementById('vwBody').innerHTML = '';
+  if(viewerBlob){ URL.revokeObjectURL(viewerBlob); viewerBlob = null; }
+}
+document.getElementById('vwClose').onclick = closeViewer;
+document.getElementById('vwVeil').onclick = e => {
+  if(e.target === document.getElementById('vwVeil')) closeViewer();
+};
+window.openViewer = openViewer;
 
 /* ============ editor ============ */
 const veil = document.getElementById('veil');
@@ -1830,41 +2742,78 @@ document.getElementById('fMove').onclick = () => {
 };
 
 document.getElementById('cancel').onclick = () => veil.hidden = true;
-document.getElementById('del').onclick = () => {
-  if(!confirm('Elimino "'+editing.name+'"?')) return;
-  state.places = state.places.filter(p => p.id !== editing.id);
-  veil.hidden = true; save(); render();
-};
+
+/* elimina una tappa con conferma: condivisa tra il pulsante "Elimina" della
+   scheda di modifica e il ✕ diretto sulle card dell'elenco, per non tenere
+   la stessa logica in due posti */
+function deletePlace(id){
+  const p = state.places.find(x => x.id === id);
+  if(!p || !confirm('Elimino "'+p.name+'"?')) return;
+  state.places = state.places.filter(x => x.id !== id);
+  if(editing && editing.id === id) veil.hidden = true;
+  save(); render();
+}
+document.getElementById('del').onclick = () => deletePlace(editing.id);
 veil.onclick = e => { if(e.target === veil) veil.hidden = true; };
 const gveil = document.getElementById('gmapsVeil');
 document.getElementById('gmapsClose').onclick = () => gveil.hidden = true;
 gveil.onclick = e => { if(e.target === gveil) gveil.hidden = true; };
+/* ============ popover informativo (ⓘ) ============ */
+const infoPop = document.getElementById('infoPop');
+function showInfo(btn, text){
+  infoPop.textContent = text;
+  infoPop.hidden = false;
+  const r = btn.getBoundingClientRect(), pw = 260;
+  let left = Math.min(r.left, window.innerWidth - pw - 12);
+  infoPop.style.left = Math.max(12, left) + 'px';
+  infoPop.style.top = (r.bottom + 6) + 'px';
+}
+function hideInfo(){ infoPop.hidden = true; }
+document.querySelectorAll('.info-btn').forEach(b => {
+  b.onclick = e => {
+    e.stopPropagation();
+    const same = !infoPop.hidden && infoPop.dataset.for === b.dataset.info;
+    hideInfo();
+    if(!same){ infoPop.dataset.for = b.dataset.info; showInfo(b, b.dataset.info); }
+  };
+  b.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); b.onclick(e); } };
+});
+document.addEventListener('click', e => {
+  if(!infoPop.hidden && !infoPop.contains(e.target) && !e.target.classList.contains('info-btn')) hideInfo();
+});
+
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
+    hideInfo();
     if(moving){ moving = null; document.body.classList.remove('moving'); return; }
+    if(pickMode){ setPick(false); return; }
+    if(!document.getElementById('vwVeil').hidden){ closeViewer(); return; }
     veil.hidden = true; gveil.hidden = true;
     document.getElementById('xVeil').hidden = true;
     document.getElementById('bVeil').hidden = true;
+    document.getElementById('bViewVeil').hidden = true;
+    document.getElementById('tripsVeil').hidden = true;
+    document.getElementById('wxVeil').hidden = true;
   }
 });
 
 /* ============ comandi ============ */
 document.getElementById('tripTitle').oninput = e => { state.title = e.target.value; save(); };
 
-const pickBtn = document.getElementById('btnPick');
 function setPick(v){
   pickMode = v;
-  pickBtn.classList.toggle('on', v);
-  pickBtn.textContent = v ? '✓ Tocca la mappa' : '＋ Punto sulla mappa';
+  /* nessun pulsante fisso da evidenziare: l'indicazione "tocca la mappa" vive
+     nella pillola fissa in alto (stesso principio già usato per lo spostamento
+     tappa, .moving), perché il pulsante che ha attivato la modalità appartiene
+     a un popup che si chiude subito dopo */
+  document.body.classList.toggle('picking', v);
   document.getElementById('map').style.cursor = v ? 'crosshair' : '';
 }
-pickBtn.onclick = () => { setPick(!pickMode); if(pickMode) closeSheetMobile(); };
 
-document.getElementById('btnRoad').onclick = e => {
-  road = !road;
-  e.target.classList.toggle('on', road);
-  e.target.textContent = road ? 'Strada' : 'Strada';
-  drawMap();
+/* ============ aggiungi un luogo (ricerca o tocco sulla mappa) ============ */
+document.getElementById('btnPickInline').onclick = () => {
+  setPick(true);
+  closeSheetMobile();
 };
 
 document.getElementById('btnFit').onclick = () => {  if(!state.places.length) return;
@@ -1899,18 +2848,36 @@ document.getElementById('btnImport').onclick = () => document.getElementById('fi
 document.getElementById('file').onchange = e => {
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
-  r.onload = () => {
+  r.onload = async () => {
     try{
       const j = JSON.parse(r.result);
       if(!j.days || !j.places) throw 0;
+      /* Import non sovrascrive mai in silenzio il viaggio aperto: se il file porta
+         l'id di un viaggio già presente si chiede conferma, altrimenti diventa
+         sempre un nuovo viaggio nell'elenco (id nuovo se il file non ne aveva uno). */
+      const known = j.id && tripIndex.some(t => t.id === j.id);
+      if(known){
+        const title = (tripIndex.find(t=>t.id===j.id)||{}).title || 'un viaggio';
+        if(!confirm('Questo file è un salvataggio di "'+title+'", già presente. Sovrascrivere quel viaggio con il contenuto del file?')) return;
+      }
+      if(!j.id) j.id = uid();
       state = j;
       normalize();
+      if(db){
+        await dbSet(tripKey(state.id), state);
+        await touchIndex(state.id, state.title, Date.now());
+        await dbSet(ACTIVE_KEY, state.id);
+        storageOK = true;
+      }
       document.getElementById('tripTitle').value = state.title || '';
-      save(); render(); drawCosts();
+      render(); drawCosts();
+      badge(storageOK ? 'saved' : 'unsaved');
       if(state.places.length) map.fitBounds(L.latLngBounds(state.places.map(p=>[p.lat,p.lng])).pad(.2));
+      subscribeShared(state.shareId);
     }catch(err){ alert('Il file non è un itinerario di Rotta.'); }
   };
   r.readAsText(f);
+  e.target.value = '';
 };
 
 /* ============ navigazione ============ */
@@ -1920,18 +2887,20 @@ document.getElementById('file').onchange = e => {
 const tabMap  = document.getElementById('tabMap'),
       tabList = document.getElementById('tabList'),
       tabCost = document.getElementById('tabCost'),
-      tabBook = document.getElementById('tabBook');
+      tabBook = document.getElementById('tabBook'),
+      tabCal  = document.getElementById('tabCal');
 const listEl = document.getElementById('list'), costEl = document.getElementById('costs');
 let view = 'map';
 
 function setView(v){
   view = v;
-  const cost = v === 'cost', book = v === 'book', mapv = v === 'map';
-  const geo  = !cost && !book;           // Mappa e Itinerario lavorano sui luoghi
+  const cost = v === 'cost', book = v === 'book', mapv = v === 'map', cal = v === 'cal';
+  const geo  = !cost && !book && !cal;   // Mappa e Itinerario lavorano sui luoghi
   listEl.hidden = !(v === 'list');
   costEl.hidden = !cost;
   document.getElementById('books').hidden = !book;
-  /* ricerca luoghi e strumenti mappa non hanno senso su spese e prenotazioni */
+  document.getElementById('calBox').hidden = !cal;
+  /* ricerca luoghi e strumenti mappa non hanno senso su spese, prenotazioni e calendario */
   document.getElementById('mapTools').hidden = !geo;
   document.getElementById('searchBox').hidden = !geo;
   /* "＋ Giorno" serve solo dove si vedono i giorni */
@@ -1941,13 +2910,15 @@ function setView(v){
   /* in vista Mappa il pannello resta aperto ma ridotto ai soli comandi */
   document.body.classList.toggle('panel-open', true);
   document.body.classList.toggle('map-view', mapv);
-  [[tabMap,'map'],[tabList,'list'],[tabCost,'cost'],[tabBook,'book']]
+  [[tabMap,'map'],[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabCal,'cal']]
     .forEach(([b,k]) => b.classList.toggle('on', v === k));
   if(cost) drawCosts();
   if(book) drawBooks();
+  if(cal) drawCalendar();
   map.invalidateSize();
   setTimeout(() => map.invalidateSize(), 300);
 }
+tabCal.onclick  = () => setView('cal');
 tabMap.onclick  = () => setView('map');
 tabList.onclick = () => setView('list');
 tabCost.onclick = () => setView('cost');
@@ -1958,19 +2929,46 @@ document.getElementById('btnExpense').onclick = openExpense;
 function closeSheetMobile(){ if(window.matchMedia('(max-width:880px)').matches) setView('map'); }
 
 /* ============ installazione e funzionamento offline ============ */
+/* Versione dell'applicazione: se il service worker registrato ne dichiara una
+   diversa, è rimasto un worker vecchio in circolazione e lo rimuovo d'ufficio.
+   Senza questo, una versione difettosa in cache continuerebbe a servire sé
+   stessa impedendo a qualunque correzione di arrivare. */
+
+
 if('serviceWorker' in navigator){
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').then(reg => {
-      /* Mostro l'avviso solo quando esiste un worker in ATTESA mentre un altro
-         è già al comando: significa che una versione nuova è pronta e la vecchia
-         sta ancora servendo questa pagina. Se manca il controller siamo alla
-         prima installazione e non c'è nulla da aggiornare. */
+  window.addEventListener('load', async () => {
+    try{
+      const reg = await navigator.serviceWorker.register('./sw.js');
+
+      /* chiedo al worker attivo quale versione sta girando */
+      const attiva = await new Promise(res => {
+        const sw = navigator.serviceWorker.controller;
+        if(!sw) return res(null);
+        const ch = new MessageChannel();
+        ch.port1.onmessage = e => res(e.data && e.data.version);
+        try{ sw.postMessage('version', [ch.port2]); }catch(e){ res(null); }
+        setTimeout(() => res(null), 1200);
+      });
+
+      /* Un worker che non risponde entro il tempo limite è una versione
+         precedente al protocollo 'version': va rimossa anche quella. */
+      const controllato = !!navigator.serviceWorker.controller;
+      if(controllato && attiva !== APP_VERSION){
+        /* worker obsoleto: lo tolgo di mezzo e ricarico una volta sola */
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+        if(!sessionStorage.getItem('rotta-ripulito')){
+          sessionStorage.setItem('rotta-ripulito', '1');
+          location.reload();
+        }
+        return;
+      }
+
       const check = () => {
         const b = document.getElementById('updateBar');
         if(!b) return;
-        const pronto = reg.waiting && navigator.serviceWorker.controller
-                       && reg.waiting !== navigator.serviceWorker.controller;
-        b.hidden = !pronto;
+        b.hidden = !(reg.waiting && navigator.serviceWorker.controller
+                     && reg.waiting !== navigator.serviceWorker.controller);
       };
       check();
       reg.addEventListener('updatefound', () => {
@@ -1984,7 +2982,7 @@ if('serviceWorker' in navigator){
           }
         });
       });
-    }).catch(e => console.warn('service worker non registrato:', e && e.message));
+    }catch(e){ console.warn('service worker non registrato:', e && e.message); }
   });
 }
 
