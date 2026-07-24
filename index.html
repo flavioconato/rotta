@@ -59,27 +59,17 @@ button{cursor:pointer;background:none;border:0}
   body:not(.panel-open) .panel{overflow:hidden;border-right-color:transparent}
 }
 .panel{background:var(--ink);display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--ink-3);z-index:1200}
-/* maniglia che nasconde/mostra tutto il pannello: su desktop segue il bordo
-   destro del pannello (390px aperto, 0 chiuso), su mobile resta una pillola
-   fissa in un angolo, dato che lì il pannello scorre sopra la mappa invece
-   di ridurre una colonna della griglia */
-.panel-toggle{
-  position:fixed;z-index:1300;display:grid;place-items:center;
-  background:var(--ink-2);color:var(--paper);border:1px solid var(--ink-3);
-  box-shadow:0 4px 14px rgba(0,0,0,.35);font-size:13px;
-}
-.panel-toggle:hover{border-color:var(--fog)}
+/* nasconde/mostra tutto il pannello. Di default (mobile) è un bottone come
+   gli altri dentro .bar-acts, sempre raggiungibile: niente posizionamento
+   fisso da indovinare su schermi piccoli. Solo da desktop diventa una
+   maniglia agganciata al bordo del pannello (390px aperto, 0 chiuso). */
 @media (min-width:881px){
-  .panel-toggle{
-    top:50%;left:390px;transform:translate(-50%,-50%);
-    width:24px;height:52px;border-radius:8px;
+  #btnPanel{
+    position:fixed;z-index:1300;top:50%;left:390px;transform:translate(-50%,-50%);
+    width:24px;height:52px;border-radius:8px;padding:0;flex:none;
     transition:left .26s cubic-bezier(.3,.8,.4,1);
   }
-  body:not(.panel-open) .panel-toggle{left:0;transform:translate(-50%,-50%) rotate(180deg)}
-}
-@media (max-width:880px){
-  .panel-toggle{right:16px;bottom:130px;width:38px;height:38px;border-radius:50%;transform:rotate(-90deg)}
-  body:not(.panel-open) .panel-toggle{transform:rotate(90deg)}
+  body:not(.panel-open) #btnPanel{left:0}
 }
 #map{height:100%;width:100%;background:var(--paper-2)}
 
@@ -619,11 +609,6 @@ body.hide-legs .leg-lab{display:none}
   <div id="map"></div>
 </div>
 
-<!-- maniglia: nasconde/mostra tutto il pannello (itinerario, spese, ecc.),
-     lasciando solo la mappa. Fuori da .app così resta raggiungibile anche a
-     pannello chiuso. -->
-<button id="btnPanel" class="panel-toggle" title="Mostra o nascondi il pannello">‹</button>
-
 <!-- barra fissa: sempre visibile, in tutte e tre le viste -->
 <div class="bar">
   <div class="tabs">
@@ -633,6 +618,11 @@ body.hide-legs .leg-lab{display:none}
     <button id="tabCal" title="Calendario">📅</button>
   </div>
   <div class="bar-acts">
+    <!-- nasconde/mostra tutto il pannello, lasciando solo la mappa. Dentro
+         .bar-acts così su cellulare è sempre raggiungibile e visibile come
+         gli altri comandi; su desktop diventa una maniglia sul bordo del
+         pannello (vedi CSS #btnPanel nel media query min-width:881px). -->
+    <button class="act ghost" id="btnPanel" title="Mostra o nascondi la mappa">🗺</button>
     <button class="act" id="btnDay" title="Aggiungi un giorno">＋ Giorno</button>
     <button class="act" id="btnExpense" title="Registra una spesa" hidden>＋ Spesa</button>
     <button class="act" id="btnBooking" title="Aggiungi una prenotazione" hidden>＋ Prenotazione</button>
