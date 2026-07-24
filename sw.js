@@ -5,7 +5,7 @@
    I tile sono a numero chiuso: oltre il limite si buttano i più vecchi,
    altrimenti dopo qualche esplorazione l'app occuperebbe centinaia di MB. */
 
-const VERSION   = 'v10';
+const VERSION   = 'v11';
 const APP_CACHE = 'rotta-app-' + VERSION;
 /* La cache delle mappe NON porta la versione: le piastrelle scaricate prima di
    partire devono sopravvivere agli aggiornamenti dell'app, altrimenti un
@@ -88,7 +88,7 @@ self.addEventListener('fetch', e => {
   }
 
   // Ricerca luoghi, calcolo percorsi e meteo: solo rete, non ha senso servirli vecchi
-  if(/nominatim\.openstreetmap\.org|router\.project-osrm\.org|api\.open-meteo\.com/.test(url.hostname)) return;
+  if(/nominatim\.openstreetmap\.org|router\.project-osrm\.org|api\.open-meteo\.com|commons\.wikimedia\.org/.test(url.hostname)) return;
 
   // Sincronizzazione condivisa (Firebase): solo rete, il worker non deve interferire
   // con le connessioni lunghe di Firestore né con l'autenticazione

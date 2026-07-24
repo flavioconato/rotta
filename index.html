@@ -364,6 +364,14 @@ body.picking::after{
   display:block;width:100%;height:120px;object-fit:cover;
   border-radius:var(--r-sm);margin-top:7px;border:1px solid var(--ink-3)
 }
+.img-credit{margin:5px 0 0;color:var(--fog);font-size:10.5px;line-height:1.3}
+.img-cand-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.img-cand{
+  width:64px;height:64px;border-radius:var(--r-sm);overflow:hidden;
+  border:1px solid var(--ink-3);padding:0;flex:none;
+}
+.img-cand:hover{border-color:var(--sage)}
+.img-cand img{width:100%;height:100%;object-fit:cover;display:block}
 .btn{
   flex:1;border-radius:999px;padding:12px;font-weight:600;font-size:13.5px;text-align:center;
   background:linear-gradient(135deg,#fff,var(--paper));color:var(--ink);transition:.15s
@@ -698,9 +706,10 @@ body.hide-legs .leg-lab{display:none}
       <span class="tick">✓</span>
       <span><b>Tappa alternativa</b><span class="info-btn" tabindex="0" data-info="Le tappe alternative non fanno parte del percorso principale del giorno: non vengono numerate né collegate dal tragitto, restano sul posto come opzione di riserva pronta a subentrare in caso di meteo avverso o di altri imprevisti — chiusure, code, cambi di programma dell'ultimo minuto.">ⓘ</span></span>
     </button>
-    <label>Immagine <span class="info-btn" tabindex="0" data-info="Puoi aggiungere una foto rappresentativa della tappa in due modi: caricandola dal telefono o dal computer, oppure incollando il link di un'immagine già pubblicata online.">ⓘ</span></label>
+    <label>Immagine <span class="info-btn" tabindex="0" data-info="Per le tappe senza foto, l'app cerca da sola alcune proposte su Wikimedia Commons in base alla posizione: toccane una per usarla — funziona bene per monumenti e luoghi noti, meno per posti piccoli o poco conosciuti, e vicino a un punto preciso può capitare qualche foto estranea, quindi controlla prima di scegliere. Puoi comunque sempre caricarne una dal telefono o dal computer, oppure incollare il link di un'immagine già pubblicata online.">ⓘ</span></label>
     <div class="img-row">
       <input class="field" id="fImg" placeholder="Incolla il link di un'immagine…" autocomplete="off">
+      <button class="act ghost" id="fImgAuto" type="button" title="Cerca una foto del luogo">🔍</button>
       <button class="act ghost" id="fImgPick" type="button" title="Scegli dal dispositivo">📁</button>
       <button class="act ghost" id="fImgClear" type="button" title="Rimuovi">✕</button>
       <input type="file" id="fImgFile" accept="image/*" hidden>
@@ -893,7 +902,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v10';
+const APP_VERSION = 'v11';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -1417,6 +1426,11 @@ const km = (a,b) => {
 };
 const fmt = d => d < 1 ? Math.round(d*1000)+' m' : d.toFixed(1).replace('.',',')+' km';
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* attribuzione (title, per il tooltip al passaggio del mouse/tocco prolungato)
+   per le foto suggerite automaticamente da Wikimedia Commons */
+const imgCreditAttr = p => p.imgCredit
+  ? ' title="Foto: '+esc(p.imgCredit.author)+(p.imgCredit.license?' · '+esc(p.imgCredit.license):'')+' · Wikimedia Commons"'
+  : '';
 /* somma n giorni a una data 'YYYY-MM-DD', gestendo da sola i cambi di mese/anno */
 function addDaysISO(iso, n){
   const [Y,M,D] = iso.split('-').map(Number);
@@ -1873,7 +1887,7 @@ function marker(p, n, color){
          '</div>' + tag + badge +
          '<span class="pin-lab'+(off?' dim':'')+'">'+esc(p.name)+'</span>'});
   const m = L.marker([p.lat,p.lng],{icon, zIndexOffset: off ? -400 : 0, opacity: off ? .9 : 1});
-  let h = (p.img ? '<img class="pop-img" src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '')
+  let h = (p.img ? '<img class="pop-img"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '')
         + '<span class="pop-k">'+(p.alt?'Alternativa se piove · ':poi?'Segnaposto · ':'')+esc(t.label)
         + (p.city?' · in città':'') + (!p.alt&&p.rain?' · ☂ ok':'') + (p.kid?' · 👶 ok':'')+'</span>'
         + '<span class="pop-t">'+esc(p.name)+'</span>';
@@ -1986,7 +2000,7 @@ function dayBlock(d, list){
           '<button class="icon-btn" title="Modifica">✎</button>' +
           '<button class="icon-btn" title="Elimina">✕</button>' +
         '</div>' +
-        (p.img ? '<img class="thumb" src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
+        (p.img ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
         (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
         (links ? '<div class="links">'+links+'</div>' : '') +
       '</div>' +
@@ -2027,7 +2041,7 @@ function dayBlock(d, list){
           '</span>' +
           '<div class="alt-body">' +
             '<button class="stop-name">'+esc(p.name)+(p.rain&&!p.alt?' <i class="rain-tag">☂</i>':'')+(p.kid?' <i class="kid-tag">👶</i>':'')+'</button>' +
-            (p.img ? '<img class="thumb" src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
+            (p.img ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
             (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
             (links ? '<div class="links">'+links+'</div>' : '') +
           '</div>' +
@@ -2340,13 +2354,80 @@ function shrinkImage(file, cb, maxPx){
   rd.readAsDataURL(file);
 }
 
-function imgPreview(src){
+/* credito della foto suggerita da Wikimedia Commons per la tappa in modifica:
+   segue fImg finché resta quella trovata automaticamente, si azzera appena
+   l'utente carica, incolla o rimuove un'immagine di sua scelta */
+let pendingImgCredit = null;
+
+function imgPreview(src, credit){
   const box = document.getElementById('fImgPrev');
   box.innerHTML = src
     ? '<img class="img-prev" src="'+esc(src)+'" alt="Anteprima">'
+      + (credit ? '<p class="img-credit">Foto: '+esc(credit.author)+(credit.license?' · '+esc(credit.license):'')+' · Wikimedia Commons</p>' : '')
     : '';
 }
 
+/* Cerca su Wikimedia Commons le foto geolocalizzate più vicine alle coordinate
+   date. Gratuita e senza chiave, come le altre integrazioni dell'app: buona
+   copertura per monumenti e luoghi noti, scarsa per posti piccoli o poco
+   conosciuti — in quel caso semplicemente non trova nulla.
+   In due passaggi: prima l'elenco ordinato per distanza (list=geosearch),
+   poi i dettagli delle immagini. Combinarli in una sola chiamata con
+   generator= restituisce le pagine in ordine di pageid, non di distanza —
+   verificato: così la tappa più vicina in assoluto può finire in fondo, o
+   sparire dietro foto di soggetti a caso taggate (per errore) sullo stesso
+   punto. Per questo la scelta finale resta comunque all'utente, non è
+   automatica alla cieca: qui vicino può capitare di tutto. */
+async function findPlaceImages(lat, lng){
+  try{
+    const gsUrl = 'https://commons.wikimedia.org/w/api.php?action=query&list=geosearch'
+      + '&gscoord='+lat+'%7C'+lng+'&gsradius=700&gslimit=8&gsnamespace=6&format=json&origin=*';
+    const hits = (await (await fetch(gsUrl)).json()).query?.geosearch || [];
+    if(!hits.length) return [];
+    const iiUrl = 'https://commons.wikimedia.org/w/api.php?action=query&pageids='+hits.map(h=>h.pageid).join('|')
+      + '&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=400&format=json&origin=*';
+    const pages = (await (await fetch(iiUrl)).json()).query?.pages || {};
+    const strip = s => (s || '').replace(/<[^>]+>/g, '').trim();
+    return hits.map(h => {
+      const info = pages[h.pageid]?.imageinfo?.[0];
+      if(!info) return null;
+      const meta = info.extmetadata || {};
+      return {
+        thumb: info.thumburl || info.url,
+        author: strip(meta.Artist?.value) || 'autore sconosciuto',
+        license: strip(meta.LicenseShortName?.value),
+        source: info.descriptionurl
+      };
+    }).filter(Boolean).slice(0, 6);
+  }catch(e){ return []; }
+}
+
+/* avviata da sola quando si apre una tappa senza immagine, e a richiesta con 🔍:
+   mostra alcune miniature candidate, non applica nulla finché l'utente non
+   ne tocca una (vedi commento sopra sul perché non si può scegliere da sola) */
+async function autoImage(){
+  if(!editing) return;
+  const id = editing.id;
+  document.getElementById('fImgPrev').innerHTML = '<p class="hint" style="padding:6px 0">Cerco foto del luogo…</p>';
+  const found = await findPlaceImages(editing.lat, editing.lng);
+  /* la scheda potrebbe essere stata chiusa o essere passata a un'altra tappa
+     nel frattempo: non mostro risultati ormai fuori contesto */
+  if(!editing || editing.id !== id || veil.hidden) return;
+  if(!found.length){ imgPreview(document.getElementById('fImg').value.trim()); return; }
+  const box = document.getElementById('fImgPrev');
+  box.innerHTML = '<div class="img-cand-row">' + found.map((c,i) =>
+      '<button type="button" class="img-cand" data-i="'+i+'" title="Foto: '+esc(c.author)+(c.license?' · '+esc(c.license):'')+'"><img src="'+esc(c.thumb)+'" alt="" loading="lazy"></button>'
+    ).join('') +
+    '</div><p class="hint" style="padding:6px 0 0">Tocca una foto per usarla — vicino a un luogo può capitare che qualcuna sia estranea, controlla prima di scegliere.</p>';
+  box.querySelectorAll('.img-cand').forEach(b => b.onclick = () => {
+    const c = found[+b.dataset.i];
+    document.getElementById('fImg').value = c.thumb;
+    pendingImgCredit = c;
+    imgPreview(c.thumb, c);
+  });
+}
+
+document.getElementById('fImgAuto').onclick = autoImage;
 document.getElementById('fImgPick').onclick = () => document.getElementById('fImgFile').click();
 document.getElementById('fImgFile').onchange = e => {
   const f = e.target.files[0];
@@ -2354,15 +2435,17 @@ document.getElementById('fImgFile').onchange = e => {
   shrinkImage(f, data => {
     if(!data){ alert('Non sono riuscito a leggere questa immagine.'); return; }
     document.getElementById('fImg').value = data;
+    pendingImgCredit = null;
     imgPreview(data);
   });
   e.target.value = '';
 };
 document.getElementById('fImgClear').onclick = () => {
   document.getElementById('fImg').value = '';
+  pendingImgCredit = null;
   imgPreview('');
 };
-document.getElementById('fImg').oninput = e => imgPreview(e.target.value.trim());
+document.getElementById('fImg').oninput = e => { pendingImgCredit = null; imgPreview(e.target.value.trim()); };
 
 /* ============ prenotazioni ============ */
 /* Sei tipi con esigenze diverse: un treno ha partenza e arrivo con orario,
@@ -2737,7 +2820,9 @@ function edit(id){
   document.getElementById('fName').value = editing.name;
   document.getElementById('fNote').value = editing.notes || '';
   document.getElementById('fImg').value = editing.img || '';
-  imgPreview(editing.img || '');
+  pendingImgCredit = editing.imgCredit || null;
+  imgPreview(editing.img || '', pendingImgCredit);
+  if(!editing.img) autoImage(); // niente foto salvata: provo a trovarne una da sola
   document.getElementById('fCoord').textContent = editing.lat.toFixed(5)+', '+editing.lng.toFixed(5);
   const sel = document.getElementById('fDay');
   sel.innerHTML = '<option value="">Da assegnare</option>' + state.days.map(d=>'<option value="'+d.id+'">'+esc(d.name)+'</option>').join('');
@@ -2792,6 +2877,8 @@ document.getElementById('save').onclick = () => {
   editing.name = document.getElementById('fName').value.trim() || 'Tappa';
   editing.notes = document.getElementById('fNote').value;
   editing.img = document.getElementById('fImg').value.trim();
+  /* il credito segue l'immagine solo se è ancora quella trovata su Commons */
+  editing.imgCredit = (pendingImgCredit && pendingImgCredit.thumb === editing.img) ? pendingImgCredit : null;
   editing.dayId = document.getElementById('fDay').value || null;
   editing.type = (document.querySelector('#fType .type-opt.on') || {dataset:{type:'place'}}).dataset.type;
   editing.rain = document.getElementById('fRain').classList.contains('on');
