@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Waynder — mappa di viaggio</title>
 <link rel="manifest" href="./manifest.webmanifest">
-<meta name="theme-color" content="#12242B">
+<meta name="theme-color" content="#1A363F">
 <meta name="description" content="Itinerari su mappa con tappe, spese condivise e prenotazioni. Funziona offline.">
 <link rel="icon" href="./favicon.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -19,19 +19,19 @@
 <style>
 
 :root{
-  --ink:#12242B;
-  --ink-2:#1A3239;
-  --ink-3:#2C4A52;
-  --ink-4:#3E6169;
-  --paper:#F2EEE1;
-  --paper-2:#D8E2DE;
-  --moss:#6EA396;
-  --ochre:#4FA3B5;
-  --ochre-2:#8FCDB0;
+  --ink:#1A363F;
+  --ink-2:#234650;
+  --ink-3:#3E656E;
+  --ink-4:#557E87;
+  --paper:#F8F4EA;
+  --paper-2:#E4EDE9;
+  --moss:#87B7AA;
+  --ochre:#64B9C9;
+  --ochre-2:#A5DFC4;
   --rust:#C56A45;
-  --fog:#8CA6A9;
-  --sage:#9AD0C2;
-  --sage-2:#5FA396;
+  --fog:#A7C1C4;
+  --sage:#B4E1D6;
+  --sage-2:#78B8AB;
   --r:20px;
   --r-sm:13px;
   --r-lg:28px;
@@ -47,7 +47,7 @@ body{
   background:
     radial-gradient(1200px 800px at 10% -10%, rgba(154,208,194,.11), transparent 60%),
     radial-gradient(1000px 700px at 105% 15%, rgba(79,163,181,.09), transparent 55%),
-    linear-gradient(165deg,#0B171B 0%,#12242B 55%,#0B171B 100%);
+    linear-gradient(165deg,#12242A 0%,#1A363F 55%,#12242A 100%);
   color:var(--paper);
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
@@ -70,7 +70,7 @@ button:active{transform:scale(.97)}
   body:not(.panel-open) .panel{overflow:hidden;opacity:0;pointer-events:none;transform:scale(.97)}
 }
 .panel{
-  background:linear-gradient(165deg,#1A3239,#12242B 65%);
+  background:linear-gradient(165deg,#234650,#1A363F 65%);
   display:flex;flex-direction:column;min-height:0;
   border-right:1px solid var(--ink-3);z-index:1200;
   position:relative;transition:opacity .26s var(--ease),transform .3s var(--ease);
@@ -119,24 +119,32 @@ button:active{transform:scale(.97)}
   text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .chip:hover{border-color:var(--sage);transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.35)}
-.chip.on{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:var(--ochre);color:#0A1E24;font-weight:700;box-shadow:0 4px 14px rgba(79,163,181,.3)}
+.chip.on{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:var(--ochre);color:#0E2A30;font-weight:700;box-shadow:0 4px 14px rgba(79,163,181,.3)}
 
-/* ---------- search ---------- */
-.search{position:relative;padding:14px 19px;border-bottom:1px solid var(--ink-3)}
-.search-label{
-  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--fog);margin-bottom:8px;
+/* ---------- barra unica: aggiungi / inquadra / comprimi / espandi ---------- */
+.view-toolbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 19px;border-bottom:1px solid var(--ink-3)}
+.tb-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  padding:6px 2px;border-radius:var(--r-sm);
+  background:var(--ink-2);border:1px solid var(--ink-3);color:var(--paper);transition:.15s
 }
-.search-row{display:flex;gap:7px}
-.search-row .chip{flex:none;padding:6px 12px}
-.search input{
-  flex:1;min-width:0;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:999px;
-  padding:12px 16px;font-size:14px;transition:border-color .15s,box-shadow .15s;
+.tb-btn svg{width:14px;height:14px;fill:currentColor}
+.tb-lab{font-size:8.5px;font-weight:700;letter-spacing:.01em;line-height:1.1;color:var(--fog);transition:.15s}
+.tb-btn:hover{border-color:var(--sage);color:var(--sage);transform:translateY(-1px)}
+.tb-btn:hover .tb-lab{color:var(--sage)}
+/* ---------- ricerca (dentro il popup "Aggiungi una tappa") ---------- */
+.base-hint{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:9px;
+  background:rgba(94,178,194,.14);border:1px solid var(--ochre);border-radius:var(--r-sm);
+  padding:9px 11px;font-size:12.5px;color:var(--paper)
 }
-.search input:focus{border-color:var(--sage);box-shadow:0 0 0 4px rgba(154,208,194,.16)}
-.search input::placeholder{color:var(--fog)}
+.base-hint button{
+  margin-left:auto;flex:none;color:var(--ochre-2);font-weight:600;font-size:12px;
+  border:1px solid var(--ochre);border-radius:999px;padding:4px 11px;
+}
+.base-hint button:hover{background:rgba(94,178,194,.18)}
 .results{
-  position:absolute;left:19px;right:19px;top:60px;z-index:20;
+  position:absolute;left:0;right:0;top:52px;z-index:20;
   background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);overflow:hidden;
   box-shadow:0 28px 60px rgba(0,0,0,.6);max-height:280px;overflow-y:auto
 }
@@ -153,15 +161,37 @@ button:active{transform:scale(.97)}
 .day-head-top{display:flex;align-items:center;gap:9px}
 .day-head-meta{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding-left:20px}
 .swatch{width:11px;height:11px;border-radius:3px;flex:none;box-shadow:0 0 0 4px rgba(255,255,255,.05),0 0 12px var(--c,transparent)}
+/* pallino colore + data raggruppati in un'unica pillola: si leggono come
+   un solo blocco ("quando"), invece di due elementi scollegati */
+.day-date-wrap{
+  flex:none;display:flex;align-items:center;gap:7px;
+  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:9px;
+  padding:5px 9px 5px 8px;
+}
+.day-date-wrap .swatch{box-shadow:none}
 .day-date{
-  flex:none;width:120px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:9px;
-  padding:5px 7px;font-size:11px;color:var(--paper);color-scheme:dark;
+  flex:none;width:92px;background:none;border:0;padding:0;
+  font-size:11px;color:var(--paper);color-scheme:dark;
 }
 .day-name{
-  flex:1;min-width:0;background:none;border:0;padding:0;
+  flex:0 1 auto;min-width:24px;max-width:100%;field-sizing:content;
+  background:none;border:0;padding:0;
   font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em
 }
 .day-stat{color:var(--fog);flex:none}
+/* ---------- pillole "Parte da" / "Arriva a" nel nastro ---------- */
+.node.base-node svg{fill:none;stroke:var(--ink);stroke-width:1.7}
+.base-pill-hit{
+  position:relative;overflow:hidden;width:100%;display:flex;align-items:baseline;gap:7px;
+  padding:11px 13px;border-radius:var(--r-sm);text-align:left;
+  background:linear-gradient(155deg,var(--ink-2),var(--ink-2) 70%,var(--ink-3));
+  border:1px solid var(--ink-3);transition:border-color .15s,transform .15s;
+}
+.base-pill-hit::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--fog))}
+.base-pill-hit:hover{border-color:var(--c,var(--fog));transform:translateY(-1px)}
+.base-pill-lab{color:var(--fog);flex:none;font-size:12.5px}
+.base-pill-name{font-weight:600;font-size:13.5px;color:var(--paper);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.base-pill-hint{color:var(--fog);font-size:12.5px;font-style:italic;opacity:.8}
 .day-actions{display:flex;flex-wrap:wrap;gap:7px;padding-left:20px}
 .day-act{
   display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;
@@ -178,7 +208,7 @@ button:active{transform:scale(.97)}
 }
 .day-wx.tap:hover{border-color:var(--sage);transform:translateY(-1px)}
 .day-wx.tap:active{background:var(--ink-3)}
-.day-wx.rain-ready{color:#0B1E23;background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:var(--ochre)}
+.day-wx.rain-ready{color:#0F2830;background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:var(--ochre)}
 .wx-place{color:var(--fog);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px}
 .wx-main{display:flex;align-items:center;gap:13px;margin-bottom:13px}
 .wx-ic{font-size:38px;line-height:1;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45))}
@@ -194,10 +224,22 @@ button:active{transform:scale(.97)}
 .wx-hour span:nth-child(2){font-size:16px}
 .icon-btn, .day-toggle{color:var(--fog);padding:5px 6px;border-radius:8px;font-size:13px;line-height:1;transition:.15s}
 .icon-btn:hover, .day-toggle:hover{color:var(--paper);background:var(--ink-3)}
-.day-toggle{flex:none;padding:8px 10px;font-size:15px;background:var(--ink-2);border:1px solid var(--ink-3)}
-@keyframes flashDay{from{background:rgba(79,163,181,.22)}to{background:transparent}}
-.day.flash{animation:flashDay 1.8s var(--ease)}
-
+.icon-btn.danger{color:var(--fog);border:0;border-radius:8px;padding:5px 6px;font-size:13px;font-weight:400}
+.icon-btn.danger:hover{color:#f0a082;background:rgba(197,106,69,.14)}
+.day-toggle{flex:none;margin-left:auto;padding:6px 8px;font-size:13px;background:var(--ink-2);border:1px solid var(--ink-3)}
+/* i 4 comandi del giorno (meteo, info, altre azioni, comprimi): stessa
+   forma e stessa distanza tra loro, qualunque sia il glifo che portano */
+.day-head-actions{flex:none;margin-left:auto;display:flex;align-items:center;gap:2px}
+.day-head-actions > *{
+  box-sizing:border-box;flex:none;width:24px;height:24px;margin:0;padding:0;
+  display:grid;place-items:center;border-radius:8px;
+  background:transparent;border:1px solid transparent;color:var(--fog);
+  font-size:13px;font-weight:400;font-style:normal;font-family:inherit;line-height:1;
+  transition:.15s;
+}
+.day-head-actions > *:hover{background:var(--ink-3);border-color:var(--ink-3);color:var(--paper)}
+.day-head-actions .wx-icon-btn.rain-ready{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));color:var(--ink)}
+.day-head-actions .wx-icon-btn:disabled{opacity:.5;cursor:default}
 /* ---------- il nastro (signature) ---------- */
 .rail{list-style:none;margin:0;padding:0 19px 16px 19px}
 .stop{position:relative;padding-left:37px;padding-bottom:6px}
@@ -213,7 +255,7 @@ button:active{transform:scale(.97)}
   background:radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--c,var(--fog)) 100%, white 25%), var(--c,var(--fog)));
   box-shadow:0 4px 12px -2px rgba(0,0,0,.55),0 0 0 3px rgba(255,255,255,.05),0 0 16px -4px var(--c,transparent);
 }
-.node svg{width:15px;height:15px;fill:#12242B}
+.node svg{width:15px;height:15px;fill:var(--ink)}
 .node-n{
   position:absolute;top:-4px;right:-4px;min-width:15px;height:15px;padding:0 3px;
   border-radius:8px;background:var(--ink);color:var(--paper);border:1px solid var(--ink-3);
@@ -221,15 +263,36 @@ button:active{transform:scale(.97)}
   display:grid;place-items:center
 }
 .stop-card{
-  position:relative;overflow:hidden;
+  position:relative;overflow:hidden;display:flex;align-items:stretch;
   background:linear-gradient(155deg,var(--ink-2),var(--ink-2) 70%,var(--ink-3));
-  border:1px solid var(--ink-3);border-radius:var(--r);padding:11px 13px 11px 15px;
+  border:1px solid var(--ink-3);border-radius:var(--r-sm);
   transition:border-color .2s,transform .2s,box-shadow .2s;
 }
 .stop-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--fog))}
 .stop-card:hover{border-color:var(--c,var(--fog));transform:translateY(-2px);box-shadow:0 16px 30px -16px rgba(0,0,0,.7)}
-.stop-top{display:flex;gap:8px;align-items:flex-start}
-.stop-name{flex:1;font-weight:600;font-size:14px;line-height:1.25;cursor:pointer;text-align:left}
+.stop-top{
+  flex:1;min-width:0;display:flex;gap:10px;align-items:center;
+  padding:8px 4px 8px 15px;text-align:left;cursor:pointer;
+}
+.stop-card .thumb{
+  flex:none;width:44px;height:44px;object-fit:cover;border-radius:9px;
+  margin:0;border:1px solid var(--ink-3);background:var(--ink-3)
+}
+.thumb-ph{display:grid;place-items:center;color:var(--c,var(--fog))}
+.thumb-ph svg{width:19px;height:19px;fill:currentColor}
+.stop-body{flex:1;min-width:0}
+.stop-card .stop-name{
+  display:block;margin:0;font-weight:600;font-size:12.5px;line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.stop-card .stop-note{
+  color:var(--fog);font-size:11.5px;line-height:1.35;margin:2px 0 0;white-space:normal;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+}
+.stop-card .links{margin-top:3px;flex-wrap:nowrap;overflow:hidden}
+.stop-card .links a{flex:none}
+.stop-menu{flex:none;align-self:center;margin-right:6px}
+.stop-name{font-weight:600;font-size:14px;line-height:1.25;text-align:left}
 .stop-note{color:var(--fog);font-size:12.5px;line-height:1.4;margin:5px 0 0;white-space:pre-wrap}
 .links{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .links a{
@@ -245,7 +308,7 @@ button:active{transform:scale(.97)}
   position:absolute;top:36px;left:17px;
   transform:translateX(-50%) scale(var(--lab-scale,1));transform-origin:top center;
   max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  background:rgba(14,26,31,.92);color:var(--paper);
+  background:rgba(18,34,40,.92);color:var(--paper);
   border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:2px 7px;
   font-family:"Public Sans",sans-serif;font-size:11px;font-weight:600;line-height:1.25;
   text-shadow:0 1px 2px rgba(0,0,0,.5);box-shadow:0 4px 12px rgba(0,0,0,.45);
@@ -257,7 +320,7 @@ body.moving #map{cursor:crosshair}
 body.moving::after{
   content:"Tocca la mappa per spostare la tappa";
   position:fixed;z-index:1700;top:16px;left:50%;transform:translateX(-50%);
-  background:linear-gradient(135deg,var(--ochre-2),var(--ochre));color:#0B1E23;font-weight:700;font-size:12.5px;
+  background:linear-gradient(135deg,var(--ochre-2),var(--ochre));color:#0F2830;font-weight:700;font-size:12.5px;
   padding:10px 18px;border-radius:999px;box-shadow:0 12px 30px rgba(0,0,0,.5);
   pointer-events:none;white-space:nowrap
 }
@@ -265,11 +328,11 @@ body.picking #map{cursor:crosshair}
 body.picking::after{
   content:"Tocca la mappa per aggiungere una tappa";
   position:fixed;z-index:1700;top:16px;left:50%;transform:translateX(-50%);
-  background:linear-gradient(135deg,var(--ochre-2),var(--ochre));color:#0B1E23;font-weight:700;font-size:12.5px;
+  background:linear-gradient(135deg,var(--ochre-2),var(--ochre));color:#0F2830;font-weight:700;font-size:12.5px;
   padding:10px 18px;border-radius:999px;box-shadow:0 12px 30px rgba(0,0,0,.5);
   pointer-events:none;white-space:nowrap
 }
-.act.ghost.install{background:linear-gradient(135deg,#8FCDB0,var(--moss));border-color:var(--moss);color:#12242B;font-weight:800}
+.act.ghost.install{background:linear-gradient(135deg,#9ED9BE,var(--moss));border-color:var(--moss);color:var(--ink);font-weight:800}
 #updateBar, #syncBar{
   position:fixed;z-index:1800;left:50%;transform:translateX(-50%);
   display:flex;align-items:center;gap:10px;white-space:nowrap;
@@ -368,6 +431,14 @@ body.picking::after{
   border-radius:var(--r-sm);margin-top:7px;border:1px solid var(--ink-3)
 }
 .img-credit{margin:5px 0 0;color:var(--fog);font-size:10.5px;line-height:1.3}
+.sv-img{
+  display:block;width:100%;height:200px;object-fit:cover;
+  border-radius:var(--r-sm);margin-bottom:13px;border:1px solid var(--ink-3)
+}
+.sv-meta{display:flex;align-items:center;gap:7px;color:var(--fog);font-size:12.5px;margin-bottom:11px}
+.sv-meta svg{width:15px;height:15px;fill:currentColor}
+.sv-note{white-space:pre-wrap;line-height:1.55;font-size:14px;color:var(--paper);margin:0 0 4px}
+#svBody .links{margin-top:13px}
 .img-cand-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
 .img-cand{
   width:64px;height:64px;border-radius:var(--r-sm);overflow:hidden;
@@ -383,11 +454,11 @@ body.picking::after{
 .btn.ghost{background:var(--ink-2);color:var(--paper);border:1px solid var(--ink-3);flex:0 0 auto;padding:12px 14px;border-radius:var(--r-sm)}
 
 /* ---------- editor ---------- */
-.veil{position:fixed;inset:0;background:rgba(8,17,20,.72);backdrop-filter:blur(6px);z-index:2000;display:grid;place-items:center;padding:16px}
+.veil{position:fixed;inset:0;background:rgba(11,23,27,.72);backdrop-filter:blur(6px);z-index:2000;display:grid;place-items:center;padding:16px}
 .veil[hidden]{display:none}
 .sheet{
   position:relative;
-  width:min(460px,100%);max-height:88dvh;overflow-y:auto;background:linear-gradient(165deg,#1D343C,#12242B);
+  width:min(460px,100%);max-height:88dvh;overflow-y:auto;background:linear-gradient(165deg,#2A4C55,var(--ink));
   border:1px solid var(--ink-3);border-radius:26px;padding:24px 22px 22px;
   box-shadow:0 50px 120px rgba(0,0,0,.6)
 }
@@ -408,8 +479,8 @@ textarea.field{min-height:84px;resize:vertical;line-height:1.45}
 }
 .type-opt svg{width:19px;height:19px;fill:var(--fog)}
 .type-opt:hover{border-color:var(--sage);color:var(--paper);transform:translateY(-1px)}
-.type-opt.on{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:var(--ochre);color:#0B1E23;font-weight:600;box-shadow:0 6px 16px rgba(79,163,181,.28)}
-.type-opt.on svg{fill:#0B1E23}
+.type-opt.on{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:var(--ochre);color:#0F2830;font-weight:600;box-shadow:0 6px 16px rgba(79,163,181,.28)}
+.type-opt.on svg{fill:#0F2830}
 .pin-r{
   position:absolute;bottom:-2px;left:-6px;width:20px;height:20px;border-radius:50%;
   background:#F2FBF4;border:1.5px solid #2F9E44;display:grid;place-items:center;
@@ -434,22 +505,6 @@ textarea.field{min-height:84px;resize:vertical;line-height:1.45}
 }
 body.hide-legs .leg-lab{display:none}
 .rain-tag{font-style:normal;color:#7DD9C4;margin-left:3px}
-/* ---------- vista calendario ---------- */
-.cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:12px;padding:16px 19px}
-.cal-tile{
-  position:relative;text-align:left;border:1px solid var(--ink-3);
-  border-radius:var(--r);background:linear-gradient(155deg,var(--ink-2),var(--ink-2) 70%,var(--ink-3));padding:12px 32px 12px 13px;
-  display:flex;flex-direction:column;gap:4px;transition:.2s var(--ease);overflow:hidden
-}
-.cal-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--fog))}
-.cal-tile:hover{border-color:var(--sage);transform:translateY(-3px);box-shadow:0 18px 32px -16px rgba(0,0,0,.7)}
-.cal-tile.rain-ready{border-color:var(--ochre)}
-.cal-date{color:var(--fog);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
-.cal-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:14px;line-height:1.25}
-.cal-stat{color:var(--fog);font-size:10.5px}
-.cal-wx{font-size:11px;color:var(--fog)}
-.cal-badge{position:absolute;top:11px;right:11px;font-size:14px}
-.cal-badge.warn{opacity:.4;filter:grayscale(1)}
 .alt-box{margin:0 19px 16px;border:1px dashed var(--ink-4);border-radius:var(--r);padding:11px 12px;background:rgba(255,255,255,.02)}
 .alt-head{color:var(--ochre-2);letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;margin-bottom:9px}
 .alt-item{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-top:1px solid var(--ink-3)}
@@ -481,7 +536,7 @@ body.hide-legs .leg-lab{display:none}
 .diary-photo{position:relative;width:76px;height:76px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--ink-3)}
 .diary-photo img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
 .diary-photo-del{
-  position:absolute;top:2px;right:2px;background:rgba(8,17,20,.72);color:var(--paper);
+  position:absolute;top:2px;right:2px;background:rgba(11,23,27,.72);color:var(--paper);
   border-radius:50%;width:18px;height:18px;font-size:10px;line-height:1;display:grid;place-items:center
 }
 .diary-add{
@@ -501,19 +556,34 @@ body.hide-legs .leg-lab{display:none}
 }
 .toggle b{font-size:13px;font-weight:600}
 .toggle.on{border-color:var(--moss);background:rgba(110,163,150,.16)}
-.toggle.on .tick{background:var(--moss);border-color:var(--moss);color:#12242B}
+.toggle.on .tick{background:var(--moss);border-color:var(--moss);color:var(--ink)}
 .info-btn{
   display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;
-  background:var(--ink-3);color:var(--fog);font-size:10px;font-weight:700;margin-left:5px;
+  background:var(--ink-3);color:var(--fog);font-size:11px;font-weight:700;font-style:italic;
+  font-family:Georgia,"Times New Roman",serif;margin-left:5px;
   cursor:pointer;vertical-align:middle;user-select:none;transition:.15s
 }
 .info-btn:hover{color:var(--ink);background:var(--sage)}
 .info-pop{
   position:fixed;z-index:2400;max-width:260px;background:var(--ink-2);color:var(--paper);
   border:1px solid var(--ink-3);border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.45;
-  box-shadow:0 16px 36px rgba(0,0,0,.55);
+  box-shadow:0 16px 36px rgba(0,0,0,.55);white-space:pre-line;
 }
 .info-pop[hidden]{display:none}
+.act-pop{
+  position:fixed;z-index:2400;min-width:180px;background:var(--ink-2);color:var(--paper);
+  border:1px solid var(--ink-3);border-radius:12px;padding:5px;font-size:13px;
+  box-shadow:0 16px 36px rgba(0,0,0,.55);
+}
+.act-pop[hidden]{display:none}
+.act-pop button{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 10px;
+  border-radius:8px;color:var(--paper);transition:.12s
+}
+.act-pop button:hover{background:var(--ink-3)}
+.act-pop button.danger{color:#f0a082}
+.act-pop button.danger:hover{background:rgba(197,106,69,.16)}
+.act-pop button svg{width:15px;height:15px;fill:currentColor;flex:none}
 .pin.poi{width:26px;height:26px;border-width:1.5px;opacity:.92}
 .pin.poi svg{width:14px;height:14px}
 .leg-lab.walk{border-style:dashed}
@@ -523,7 +593,7 @@ body.hide-legs .leg-lab{display:none}
   background:#FFF6E8;border:1.5px solid var(--ochre);display:grid;place-items:center;
   box-shadow:0 3px 7px rgba(0,0,0,.32)
 }
-.pin-k svg{width:12px;height:12px;fill:#1B4A54}
+.pin-k svg{width:12px;height:12px;fill:#20565F}
 .kid-tag{font-style:normal;margin-left:3px;font-size:11px}
 .pin-t{
   position:absolute;bottom:-2px;left:-6px;width:19px;height:19px;border-radius:50%;
@@ -531,7 +601,7 @@ body.hide-legs .leg-lab{display:none}
   box-shadow:0 3px 7px rgba(0,0,0,.35)
 }
 .pin-t svg{width:11px;height:11px;fill:var(--paper)}
-.pin.rainpin svg{fill:#12242B}
+.pin.rainpin svg{fill:var(--ink)}
 .cost-sec{padding:16px 19px;border-bottom:1px solid var(--ink-3)}
 .who-list{display:flex;flex-direction:column;gap:2px;margin-bottom:11px}
 .who{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--ink-3)}
@@ -560,7 +630,7 @@ body.hide-legs .leg-lab{display:none}
   border:1px solid var(--ink-3);border-radius:999px;padding:6px 12px;font-size:12.5px;
   background:var(--ink-2);color:var(--fog);transition:.15s
 }
-.who-pick.on{background:var(--moss);border-color:var(--moss);color:#12242B;font-weight:600}
+.who-pick.on{background:var(--moss);border-color:var(--moss);color:var(--ink);font-weight:600}
 .pick-row{display:flex;gap:6px;margin-top:9px}
 .link-row{display:flex;gap:6px;margin-bottom:6px}
 .link-row .field{font-size:13px}
@@ -578,7 +648,7 @@ body.hide-legs .leg-lab{display:none}
   box-shadow:0 6px 16px rgba(0,0,0,.45),0 0 0 3px rgba(0,0,0,.08);
   transition:transform .18s var(--ease);
 }
-.pin svg{width:17px;height:17px;transform:rotate(45deg);fill:#12242B}
+.pin svg{width:17px;height:17px;transform:rotate(45deg);fill:var(--ink)}
 .pin-n{
   position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 3px;
   border-radius:9px;background:var(--ink);color:var(--paper);border:1.5px solid rgba(255,255,255,.85);
@@ -593,7 +663,7 @@ body.hide-legs .leg-lab{display:none}
 .pop-l{display:block;margin-top:6px;color:#0b5d8a}
 .pop-b{
   display:block;margin-top:10px;padding-top:9px;border-top:1px solid #dfe4e8;
-  font-weight:600;color:#12242B;text-decoration:none
+  font-weight:600;color:var(--ink);text-decoration:none
 }
 .pop-b:hover{text-decoration:underline}
 
@@ -601,10 +671,10 @@ body.hide-legs .leg-lab{display:none}
 .bar{
   position:fixed;z-index:1600;bottom:0;left:0;width:400px;
   display:flex;flex-direction:column;gap:8px;padding:11px 18px 16px;
-  background:linear-gradient(to top,var(--ink) 72%,rgba(18,36,43,0));
+  background:linear-gradient(to top,var(--ink) 72%,rgba(22,48,56,0));
   transition:width .34s var(--ease)
 }
-.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
 .tabs button{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   padding:8px 2px;border-radius:13px;color:var(--fog);transition:.2s var(--ease)
@@ -626,7 +696,7 @@ body.hide-legs .leg-lab{display:none}
 @media (min-width:881px){
   .bar{background:none;left:var(--gap);bottom:var(--gap);width:400px}
   .tabs, .bar-acts{
-    background:rgba(18,36,43,.92);
+    background:rgba(22,48,56,.92);
     box-shadow:0 14px 40px rgba(0,0,0,.55);backdrop-filter:blur(10px)
   }
   .tabs{border-radius:18px}
@@ -670,26 +740,35 @@ body.hide-legs .leg-lab{display:none}
         <button class="chip" id="btnShareTrip" title="Genera un codice per condividere questo viaggio con un altro dispositivo">🔗 Condividi</button>
         <button class="chip" id="btnJoinTrip" title="Scarica un viaggio condiviso incollando il suo codice">🔑 Unisciti</button>
       </div>
-      <div class="head-row" id="mapTools">
-        <button class="chip" id="btnFit">Inquadra tutto</button>
-        <button class="chip" id="btnCollapseAll" title="Ripiega tutti i giorni dell'itinerario">Comprimi tutto</button>
-        <button class="chip" id="btnExpandAll" title="Riapre tutti i giorni dell'itinerario">Espandi tutto</button>
-      </div>
     </div>
 
-    <div class="search" id="searchBox">
-      <div class="search-label mono">Aggiungi una tappa</div>
-      <div class="search-row">
-        <input id="q" placeholder="Cerca un luogo…" autocomplete="off">
-        <button class="chip" id="btnPickInline" title="Oppure tocca un punto sulla mappa">✛ Mappa</button>
-      </div>
-      <div class="results" id="results" hidden></div>
+    <!-- 4 comandi in una riga: aggiungere una tappa (Itinerario soltanto) e
+         inquadrare/comprimere/espandere i giorni (Itinerario e Diario, che
+         mostrano entrambi i giorni come sezioni). -->
+    <div class="view-toolbar" id="viewToolbar">
+      <button class="tb-btn" id="btnAddPlace" title="Aggiungi una tappa">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>
+        <span class="tb-lab">＋ tappa</span>
+      </button>
+      <button class="tb-btn" id="btnFit" title="Inquadra tutte le tappe">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 8V4h4"/><path d="M21 8V4h-4"/><path d="M3 16v4h4"/><path d="M21 16v4h-4"/>
+        </svg>
+        <span class="tb-lab">Inquadra</span>
+      </button>
+      <button class="tb-btn" id="btnCollapseAll" title="Comprimi tutti i giorni">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 10 8 6h8z"/><path d="M12 14 16 18H8z"/></svg>
+        <span class="tb-lab">Comprimi</span>
+      </button>
+      <button class="tb-btn" id="btnExpandAll" title="Espandi tutti i giorni">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 8 8h8z"/><path d="M12 20 16 16H8z"/></svg>
+        <span class="tb-lab">Espandi</span>
+      </button>
     </div>
 
     <div class="scroll" id="list"></div>
     <div class="scroll" id="costs" hidden></div>
     <div class="scroll" id="books" hidden></div>
-    <div class="scroll" id="calBox" hidden></div>
     <div class="scroll" id="diaryBox" hidden></div>
   </aside>
   <div id="map"></div>
@@ -698,6 +777,13 @@ body.hide-legs .leg-lab{display:none}
 <!-- barra fissa: sempre visibile, in tutte le viste. Icone grandi e quadrate
      con l'etichetta sotto, come nelle app moderne. -->
 <div class="bar">
+  <div class="bar-acts">
+    <button class="act" id="btnDay" title="Aggiungi un giorno">＋ Giorno</button>
+    <button class="act" id="btnExpense" title="Registra una spesa" hidden>＋ Spesa</button>
+    <button class="act" id="btnBooking" title="Aggiungi una prenotazione" hidden>＋ Prenotazione</button>
+    <button class="act ghost install" id="btnInstall" hidden title="Installa Waynder sul dispositivo">⤓</button>
+    <input type="file" id="file" accept="application/json" hidden>
+  </div>
   <div class="tabs">
     <button id="tabList" class="on" title="Tappe" aria-label="Tappe">
       <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
@@ -721,16 +807,6 @@ body.hide-legs .leg-lab{display:none}
       </svg>
       <span class="tab-lab">Prenot.</span>
     </button>
-    <button id="tabCal" title="Calendario" aria-label="Calendario">
-      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 4.5a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.5a2 2 0 0 0-2-2h-1v-1a1 1 0 1 0-2 0v1H8v-1a1 1 0 1 0-2 0v1H5z"/>
-        <path d="M3 9.5h18" stroke="var(--ink)" stroke-width="1.6" opacity=".9"/>
-        <circle cx="8" cy="14" r="1.15" fill="var(--ink)" opacity=".85"/>
-        <circle cx="12" cy="14" r="1.15" fill="var(--ink)" opacity=".85"/>
-        <circle cx="16" cy="14" r="1.15" fill="var(--ink)" opacity=".85"/>
-      </svg>
-      <span class="tab-lab">Calendario</span>
-    </button>
     <button id="tabDiary" title="Diario di viaggio" aria-label="Diario di viaggio">
       <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 6.2c-2-1.4-4.7-1.9-7-1.5a1 1 0 0 0-.8 1v12.4c0 .6.5 1.05 1.1.96 2.1-.3 4.6.2 6.4 1.5.2.1.5.1.7 0 1.8-1.3 4.3-1.8 6.4-1.5.6.09 1.1-.36 1.1-.96V5.7a1 1 0 0 0-.8-1c-2.3-.4-5 .1-7 1.5z"/>
@@ -749,12 +825,23 @@ body.hide-legs .leg-lab{display:none}
       <span class="tab-lab">Mappa</span>
     </button>
   </div>
-  <div class="bar-acts">
-    <button class="act" id="btnDay" title="Aggiungi un giorno">＋ Giorno</button>
-    <button class="act" id="btnExpense" title="Registra una spesa" hidden>＋ Spesa</button>
-    <button class="act" id="btnBooking" title="Aggiungi una prenotazione" hidden>＋ Prenotazione</button>
-    <button class="act ghost install" id="btnInstall" hidden title="Installa Waynder sul dispositivo">⤓</button>
-    <input type="file" id="file" accept="application/json" hidden>
+</div>
+
+<div class="veil" id="addVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2>Aggiungi una tappa</h2>
+    <div class="base-hint" id="baseHint" hidden>
+      🏠 Cerca la base per <b id="baseHintDay"></b>
+      <button id="baseHintCancel" type="button">Annulla</button>
+    </div>
+    <div style="position:relative">
+      <input class="field" id="q" placeholder="Cerca un luogo…" autocomplete="off">
+      <div class="results" id="results" hidden></div>
+    </div>
+    <button class="chip" id="btnPickInline" style="margin-top:10px;width:100%;justify-content:center" title="Tocca un punto sulla mappa">✛ Oppure tocca la mappa</button>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="addVeilClose" style="flex:1">Chiudi</button>
+    </div>
   </div>
 </div>
 
@@ -770,32 +857,32 @@ body.hide-legs .leg-lab{display:none}
     <label>Percorso</label>
     <button class="toggle" id="fChain" type="button">
       <span class="tick">✓</span>
-      <span><b>Tappa in sequenza</b><span class="info-btn" tabindex="0" data-info="Numerata e collegata dal percorso. Spenta: pin libero del giorno">ⓘ</span></span>
+      <span><b>Tappa in sequenza</b><span class="info-btn" tabindex="0" data-info="Numerata e collegata dal percorso. Spenta: pin libero del giorno">i</span></span>
     </button>
     <label>Spostamenti</label>
     <button class="toggle" id="fCity" type="button">
       <span class="tick">✓</span>
-      <span><b>Tappa cittadina</b><span class="info-btn" tabindex="0" data-info="Quando due tappe consecutive sono entrambe segnate come cittadine, il tragitto tra loro viene calcolato a piedi invece che in auto. Attivalo su tutte le tappe che visiti camminando all'interno dello stesso centro urbano.">ⓘ</span></span>
+      <span><b>Tappa cittadina</b><span class="info-btn" tabindex="0" data-info="Quando due tappe consecutive sono entrambe segnate come cittadine, il tragitto tra loro viene calcolato a piedi invece che in auto. Attivalo su tutte le tappe che visiti camminando all'interno dello stesso centro urbano.">i</span></span>
     </button>
     <label>Contrassegni</label>
     <button class="toggle" id="fRain" type="button">
       <span class="tick">✓</span>
-      <span><b>Adatta con meteo avverso</b><span class="info-btn" tabindex="0" data-info="Segnala che questa tappa resta piacevole anche con pioggia o maltempo — un museo, un edificio interno, un'attrazione al coperto. Aiuta a riconoscere a colpo d'occhio le tappe su cui contare se il tempo cambia.">ⓘ</span></span>
+      <span><b>Adatta con meteo avverso</b><span class="info-btn" tabindex="0" data-info="Segnala che questa tappa resta piacevole anche con pioggia o maltempo — un museo, un edificio interno, un'attrazione al coperto. Aiuta a riconoscere a colpo d'occhio le tappe su cui contare se il tempo cambia.">i</span></span>
     </button>
     <button class="toggle" id="fKid" type="button">
       <span class="tick">✓</span>
-      <span><b>Adatta con bimbo</b><span class="info-btn" tabindex="0" data-info="Segnala che la tappa è pensata per una famiglia con bambini piccoli: percorso accessibile con passeggino o comodo da affrontare con un bimbo in braccio o nello zaino, attività particolarmente divertente o coinvolgente per i più piccoli, oppure luogo al chiuso dove il meteo non è un problema.">ⓘ</span></span>
+      <span><b>Adatta con bimbo</b><span class="info-btn" tabindex="0" data-info="Segnala che la tappa è pensata per una famiglia con bambini piccoli: percorso accessibile con passeggino o comodo da affrontare con un bimbo in braccio o nello zaino, attività particolarmente divertente o coinvolgente per i più piccoli, oppure luogo al chiuso dove il meteo non è un problema.">i</span></span>
     </button>
     <button class="toggle" id="fAlt" type="button">
       <span class="tick">✓</span>
-      <span><b>Tappa alternativa</b><span class="info-btn" tabindex="0" data-info="Le tappe alternative non fanno parte del percorso principale del giorno: non vengono numerate né collegate dal tragitto, restano sul posto come opzione di riserva pronta a subentrare in caso di meteo avverso o di altri imprevisti — chiusure, code, cambi di programma dell'ultimo minuto.">ⓘ</span></span>
+      <span><b>Tappa alternativa</b><span class="info-btn" tabindex="0" data-info="Le tappe alternative non fanno parte del percorso principale del giorno: non vengono numerate né collegate dal tragitto, restano sul posto come opzione di riserva pronta a subentrare in caso di meteo avverso o di altri imprevisti — chiusure, code, cambi di programma dell'ultimo minuto.">i</span></span>
     </button>
     <label>Diario</label>
     <button class="toggle" id="fVisited" type="button">
       <span class="tick">✓</span>
-      <span><b>Visitata</b><span class="info-btn" tabindex="0" data-info="Segna questa tappa come effettivamente visitata: comparirà nel Diario, dove puoi scrivere com'è andata davvero e aggiungere le foto del viaggio.">ⓘ</span></span>
+      <span><b>Visitata</b><span class="info-btn" tabindex="0" data-info="Segna questa tappa come effettivamente visitata: comparirà nel Diario, dove puoi scrivere com'è andata davvero e aggiungere le foto del viaggio.">i</span></span>
     </button>
-    <label>Immagine <span class="info-btn" tabindex="0" data-info="Per le tappe senza foto, l'app cerca da sola alcune proposte su Wikimedia Commons in base alla posizione: toccane una per usarla — funziona bene per monumenti e luoghi noti, meno per posti piccoli o poco conosciuti, e vicino a un punto preciso può capitare qualche foto estranea, quindi controlla prima di scegliere. Puoi comunque sempre caricarne una dal telefono o dal computer, oppure incollare il link di un'immagine già pubblicata online.">ⓘ</span></label>
+    <label>Immagine <span class="info-btn" tabindex="0" data-info="Per le tappe senza foto, l'app cerca da sola alcune proposte su Wikimedia Commons in base alla posizione: toccane una per usarla — funziona bene per monumenti e luoghi noti, meno per posti piccoli o poco conosciuti, e vicino a un punto preciso può capitare qualche foto estranea, quindi controlla prima di scegliere. Puoi comunque sempre caricarne una dal telefono o dal computer, oppure incollare il link di un'immagine già pubblicata online.">i</span></label>
     <div class="img-row">
       <input class="field" id="fImg" placeholder="Incolla il link di un'immagine…" autocomplete="off">
       <button class="act ghost" id="fImgAuto" type="button" title="Cerca una foto del luogo">🔍</button>
@@ -806,14 +893,14 @@ body.hide-legs .leg-lab{display:none}
     <div id="fImgPrev"></div>
     <label for="fNote">Note</label>
     <textarea class="field" id="fNote" placeholder="Orari, prezzi, cosa vedere, promemoria…"></textarea>
-    <label>Link <span class="info-btn" tabindex="0" data-info="Aggiungi uno o più collegamenti utili per questa tappa: il sito ufficiale dell'attrazione, la pagina di prenotazione, un articolo di approfondimento o qualunque altra pagina web pertinente.">ⓘ</span></label>
+    <label>Link <span class="info-btn" tabindex="0" data-info="Aggiungi uno o più collegamenti utili per questa tappa: il sito ufficiale dell'attrazione, la pagina di prenotazione, un articolo di approfondimento o qualunque altra pagina web pertinente.">i</span></label>
     <div id="fLinks"></div>
     <button class="chip" id="addLink" style="margin-top:6px">＋ Link</button>
     <label>Coordinate</label>
     <div class="mono" id="fCoord" style="color:var(--fog)"></div>
     <button class="toggle" id="fMove" type="button" style="margin-top:7px">
       <span class="tick">✛</span>
-      <span><b>Sposta sulla mappa</b><span class="info-btn" tabindex="0" data-info="Chiude la scheda: il tocco successivo sposta qui la tappa">ⓘ</span></span>
+      <span><b>Sposta sulla mappa</b><span class="info-btn" tabindex="0" data-info="Chiude la scheda: il tocco successivo sposta qui la tappa">i</span></span>
     </button>
     <div class="sheet-actions">
       <button class="btn" id="save">Salva</button>
@@ -841,6 +928,7 @@ body.hide-legs .leg-lab{display:none}
 </div>
 
 <div id="infoPop" class="info-pop" hidden></div>
+<div id="actPop" class="act-pop" hidden></div>
 
 <div id="syncBar" hidden>
   Il viaggio è stato aggiornato dall'altro dispositivo
@@ -939,6 +1027,18 @@ body.hide-legs .leg-lab{display:none}
   </div>
 </div>
 
+<div class="veil" id="stopViewVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2 id="svTitle">Tappa</h2>
+    <div id="svBody"></div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="svEdit" style="flex:1">✎ Modifica</button>
+      <button class="btn ghost" id="svClose" style="flex:1">Chiudi</button>
+      <button class="danger" id="svDel">✕</button>
+    </div>
+  </div>
+</div>
+
 <div class="veil" id="bViewVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true">
     <h2 id="bvTitle">Prenotazione</h2>
@@ -992,7 +1092,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v15';
+const APP_VERSION = 'v16';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -1026,6 +1126,7 @@ const fresh = () => ({
   title:'Il mio viaggio',
   days:[{id:uid(), name:'Giorno 1', color:PALETTE[0]}],
   places:[],
+  bases:[],
   people:[],
   expenses:[],
   currency:'€',
@@ -1054,6 +1155,7 @@ map.on('click', e => {
   }
   if(!pickMode) return;
   setPick(false);
+  if(addingBase){ finishAddBase({name:'Nuova base', lat:e.latlng.lat, lng:e.latlng.lng}); return; }
   addPlace({name:'Nuova tappa', lat:e.latlng.lat, lng:e.latlng.lng}, true);
 });
 map.on('moveend', () => { state.view = {lat:map.getCenter().lat, lng:map.getCenter().lng, z:map.getZoom()}; save(); });
@@ -1526,6 +1628,11 @@ const TYPES = {
 /* glifo passeggino: contrassegno per le tappe adatte a Francesco */
 const KID_D = 'M13 3.2c3.6.5 6.4 3.5 6.7 7.2h-6.7V3.2zM11.4 4v6.4H4.7A7.7 7.7 0 0 1 11.4 4zM4.6 12h14.9a7.5 7.5 0 0 1-3.3 5.2l1.4 2.3-1.5.9-1.5-2.5c-.8.3-1.7.4-2.6.4s-1.8-.1-2.6-.4l-1.5 2.5-1.5-.9 1.4-2.3A7.5 7.5 0 0 1 4.6 12zm3.6 8.8a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2zm7.7 0a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2z';
 const typeOf = p => TYPES[p.type] || TYPES.place;
+/* segnaposto quadrato per le tappe senza foto: icona del tipo su sfondo tenue */
+function thumbPlaceholderHTML(p){
+  const t = typeOf(p);
+  return '<span class="thumb thumb-ph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+t.d+'"/></svg></span>';
+}
 /* tipi che sono segnaposto di servizio: non entrano mai nel percorso numerato */
 const POI = {food:1, sleep:1, shop:1, transit:1};
 const isPoi = p => !!POI[p.type||'place'];
@@ -1573,6 +1680,61 @@ function addPlace(o, open){
   return p;
 }
 
+/* ============ basi (dove si dorme) ============ */
+/* Una Base è dove si dorme: l'alloggio da cui parte e a cui torna la giornata.
+   Vive a parte da state.places perché la stessa base viene riusata da più
+   giorni (non ha senso più tappe con lo stesso dayId per posti diversi).
+   Crearne una apre subito anche la prenotazione Alloggio corrispondente, già
+   con il nome compilato: basta aggiungere date, costo e codice. */
+function baseOf(id){ return (state.bases||[]).find(b => b.id === id); }
+
+function addBase(o){
+  ensureBooks();
+  const b = {id:uid(), name:o.name, lat:o.lat, lng:o.lng, notes:'', bookingId:null};
+  const booking = {
+    id:uid(), type:'stay', title:b.name, who:'',
+    aWhen:'', aPlace:b.name, bWhen:'', bPlace:'',
+    ref:'', cost:'', refund:'free', freeUntil:'', url:'', notes:'',
+    file:null, fileName:null, fileType:null
+  };
+  state.bookings.push(booking);
+  b.bookingId = booking.id;
+  state.bases = state.bases || [];
+  state.bases.push(b);
+  save();
+  return b;
+}
+
+/* {dayId, which} mentre si cerca (ricerca o tocco mappa) il luogo di una nuova
+   base: la ricerca normale delle tappe si "presta" per questo, deviando il
+   risultato verso addBase invece che addPlace. */
+let addingBase = null;
+
+function startAddBase(dayId, which){
+  addingBase = {dayId, which};
+  const hint = document.getElementById('baseHint');
+  const d = dayOf(dayId);
+  document.getElementById('baseHintDay').textContent = (d ? d.name : '') + (which === 'baseToId' ? ' · ritorno' : ' · partenza');
+  hint.hidden = false;
+  document.getElementById('q').focus();
+  closeSheetMobile();
+}
+function cancelAddBase(){
+  addingBase = null;
+  document.getElementById('baseHint').hidden = true;
+}
+function finishAddBase(o){
+  const {dayId, which} = addingBase;
+  const b = addBase(o);
+  const d = dayOf(dayId);
+  if(d) d[which] = b.id;
+  addingBase = null;
+  document.getElementById('baseHint').hidden = true;
+  save(); render();
+  map.flyTo([b.lat,b.lng], Math.max(map.getZoom(),13));
+}
+document.getElementById('baseHintCancel').onclick = cancelAddBase;
+
 /* ============ ricerca ============ */
 const qEl = document.getElementById('q'), resEl = document.getElementById('results');
 let qt = null;
@@ -1602,6 +1764,7 @@ async function find(v){
       b2.onclick = () => {
         resEl.hidden = true; qEl.value = '';
         if(pickMode) setPick(false); // cercare un luogo vale come rinunciare al tocco sulla mappa in sospeso
+        if(addingBase){ finishAddBase({name:short, lat:+h.lat, lng:+h.lon}); return; }
         const p = addPlace({name:short, lat:+h.lat, lng:+h.lon});
         freshPlaceId = p.id;
         map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),13));
@@ -1791,28 +1954,22 @@ async function refreshWeather(){
   if(targets.length){
     for(const d of targets) await ensureWeather(d);
     drawList();
-    if(view === 'cal') drawCalendar();
   }
   wxRefreshing = false;
 }
 
-/* badge riusato sia nell'intestazione del giorno (vista Itinerario) sia nella
-   tile della vista Calendario. È uno span cliccabile (non un <button>, perché
-   nella tile del calendario finisce dentro un altro <button>: annidare due
-   elementi interattivi non è valido HTML) con onclick inline che ferma la
-   propagazione, per non far scattare anche l'azione della tile che lo contiene. */
-function wxBadgeHTML(d){
+/* iconcina sola (senza temperature)
+   per stare accanto a infobutton/comprimi nell'intestazione del giorno: il
+   dettaglio con le temperature si apre comunque al tocco, in openWeather() */
+function wxIconBtnHTML(d){
   if(!d.date) return '';
   const today = new Date(); today.setHours(0,0,0,0);
   const daysAhead = Math.round((new Date(d.date+'T00:00:00') - today) / 86400000);
-  if(daysAhead < 0 || daysAhead > 15) return '<span class="day-wx mono" title="Previsione non disponibile per una data così lontana">—</span>';
-  if(!d.wx || d.wx.date !== d.date) return '<span class="day-wx mono">…</span>';
+  if(daysAhead < 0 || daysAhead > 15) return '';
+  if(!d.wx || d.wx.date !== d.date) return '<button class="icon-btn wx-icon-btn" type="button" title="Meteo in caricamento…" disabled>…</button>';
   const cat = wmoCategory(d.wx.code);
-  /* se piove ed esistono già tappe "se piove" pronte per quel giorno, lo segnalo:
-     è il collegamento pratico tra meteo e alternative, altrimenti solo teoriche */
   const rainReady = isRainy(d.wx.code) && alts(d.id).some(p => p.alt);
-  return '<span class="day-wx tap mono'+(rainReady?' rain-ready':'')+'" title="'+esc(cat.label)+(rainReady?' · alternative pronte':'')+' · tocca per i dettagli" onclick="event.stopPropagation();openWeather(\''+d.id+'\')">'
-    + cat.icon+' '+Math.round(d.wx.tmax)+'°/'+Math.round(d.wx.tmin)+'°'+(rainReady?' ☂':'')+'</span>';
+  return '<button class="icon-btn wx-icon-btn'+(rainReady?' rain-ready':'')+'" type="button" title="'+esc(cat.label)+' · '+Math.round(d.wx.tmax)+'°/'+Math.round(d.wx.tmin)+'°'+(rainReady?' · alternative pronte':'')+' · tocca per i dettagli">'+cat.icon+'</button>';
 }
 
 /* ============ widget meteo dettagliato ============ */
@@ -2023,12 +2180,56 @@ function marker(p, n, color){
   return m;
 }
 
+/* icone "casetta con freccia": stessa sagoma di casa, freccia che esce (si
+   parte da questa base) o che entra (si torna/arriva a questa base) */
+const ICON_HOUSE_OUT = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 9 6 15 11"/><path d="M4.3 10.3V18H13.7V10.3"/><path d="M7.5 18V13.5H10.5V18"/><path d="M14.5 13H21"/><path d="M18 10 21 13 18 16"/></svg>';
+const ICON_HOUSE_IN  = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 9 6 15 11"/><path d="M4.3 10.3V18H13.7V10.3"/><path d="M7.5 18V13.5H10.5V18"/><path d="M21 13H14.5"/><path d="M18 10 14.5 13 18 16"/></svg>';
+
+/* testo del popover ⓘ nell'intestazione del giorno: tutto ciò che prima stava
+   sempre in vista (conteggio, km, durata, a piedi, meteo) ora a richiesta */
+function dayInfoText(d, list, tot, totMin, onFoot){
+  const lines = [ list.length + (list.length === 1 ? ' tappa' : ' tappe')
+    + (tot ? ' · ' + fmt(tot) + ' · ' + dur(totMin) : '') ];
+  if(onFoot) lines.push('🚶 '+fmt(onFoot)+' a piedi');
+  return lines.join('\n');
+}
+
 function drawList(){
   const box = document.getElementById('list');
   box.innerHTML = '';
   const orphans = state.places.filter(p=>!p.dayId || !dayOf(p.dayId));
   if(orphans.length) box.appendChild(dayBlock({id:null,name:'Da assegnare',color:'#8FA3B0'}, orphans));
   state.days.forEach(d => box.appendChild(dayBlock(d, stops(d.id))));
+}
+
+/* pillola "Parte da"/"Arriva a" ai due estremi del nastro: stessa base per
+   entrambe le direzioni, si tocca per scegliere tra le basi già create,
+   crearne una nuova (stessa ricerca delle tappe) o rimuoverla. */
+function baseStopLi(d, which, label, icon){
+  const li = document.createElement('li');
+  li.className = 'stop base-stop';
+  li.style.setProperty('--c', d.color);
+  const b = baseOf(d[which]);
+  li.innerHTML =
+    '<span class="node base-node" title="'+esc(label)+'">'+icon+'</span>' +
+    '<button type="button" class="base-pill-hit">' +
+      '<span class="base-pill-lab">'+esc(label)+'</span>' +
+      (b ? '<span class="base-pill-name">'+esc(b.name)+'</span>' : '<span class="base-pill-hint">tocca per aggiungere</span>') +
+    '</button>';
+  li.querySelector('.base-pill-hit').onclick = e => {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const bases = state.bases || [];
+    if(!bases.length){ startAddBase(d.id, which); return; }
+    const items = bases.map(x => ({
+      label: (x.id === d[which] ? '✓ ' : '') + x.name,
+      onClick: () => { d[which] = x.id; save(); render(); }
+    }));
+    items.push({label:'➕ Nuova base…', onClick: () => startAddBase(d.id, which)});
+    if(d[which]) items.push({label:'Rimuovi', danger:true, onClick: () => { d[which] = null; save(); render(); }});
+    showActionMenu(btn, items);
+  };
+  return li;
 }
 
 function dayBlock(d, list){
@@ -2043,30 +2244,32 @@ function dayBlock(d, list){
     if(t.mode === 'walking') onFoot += t.dist;
   }
 
-  /* "da assegnare" usa id null: la chiave di comprimi/espandi tollera anche quello */
+  /* "da assegnare" usa id null: la chiave di comprimi/espandi tollera anche quello.
+     Un giorno vero (d.id) mostra sempre almeno le pillole "Parte da"/"Arriva a"
+     nel nastro, quindi è sempre comprimibile anche a tappe zero. */
   const altList = d.id ? alts(d.id) : [];
-  const hasContent = list.length > 0 || altList.length > 0;
+  const hasContent = d.id ? true : (list.length > 0 || altList.length > 0);
   const collapsed = hasContent && collapsedDays.has(d.id);
+  const infoText = d.id ? dayInfoText(d, list, tot, totMin, onFoot) : '';
 
   const head = document.createElement('div');
   head.className = 'day-head';
   head.innerHTML =
     '<div class="day-head-top">' +
-      '<span class="swatch" style="background:'+d.color+'"></span>' +
+      (d.id
+        ? '<span class="day-date-wrap"><span class="swatch" style="background:'+d.color+'"></span><input type="date" class="day-date mono" value="'+(d.date||'')+'"></span>'
+        : '<span class="swatch" style="background:'+d.color+'"></span>') +
       (d.id ? '<input class="day-name" value="'+esc(d.name)+'">' : '<span class="day-name">'+d.name+'</span>') +
-      (hasContent ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '') +
+      (d.id ?
+        '<div class="day-head-actions">' +
+          wxIconBtnHTML(d) +
+          '<button class="info-btn day-info-btn" type="button" title="Dettagli del giorno" aria-label="Dettagli del giorno">i</button>' +
+          '<button class="icon-btn" data-act="menu" title="Altre azioni" aria-label="Altre azioni">⋯</button>' +
+          (hasContent ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '') +
+        '</div>'
+        : (hasContent ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '')) +
     '</div>' +
-    '<div class="day-head-meta">' +
-      (d.id ? '<input type="date" class="day-date mono" value="'+(d.date||'')+'">' : '') +
-      '<span class="day-stat mono">'+list.length+' · '+(tot?fmt(tot)+' · '+dur(totMin):'—')+
-        (onFoot ? '<b class="foot-km" title="Di cui a piedi">🚶'+fmt(onFoot)+'</b>' : '')+'</span>' +
-      (d.id ? wxBadgeHTML(d) : '') +
-    '</div>' +
-    (d.id ? '<div class="day-actions">' +
-      '<button class="day-act" data-act="zoom"><span aria-hidden="true">◎</span>Inquadra</button>' +
-      '<button class="day-act" data-act="gmaps"><span aria-hidden="true">➔</span>Maps</button>' +
-      '<button class="day-act danger" data-act="del"><span aria-hidden="true">✕</span>Elimina</button>' +
-    '</div>' : '');
+    (!d.id ? '<div class="day-head-meta"><span class="day-stat mono">'+list.length+'</span></div>' : '');
   sec.appendChild(head);
 
   if(d.id){
@@ -2081,16 +2284,33 @@ function dayBlock(d, list){
       }
       save(); render();
     };
-    const zoomB = head.querySelector('[data-act="zoom"]'), gmB = head.querySelector('[data-act="gmaps"]'), delB = head.querySelector('[data-act="del"]');
-    gmB.onclick = () => openInGmaps(d, list);
-    if(list.length < 2) gmB.style.opacity = '.45';
-    zoomB.onclick = () => { const f = all(d.id); if(f.length) map.fitBounds(L.latLngBounds(f.map(p=>[p.lat,p.lng])).pad(.25)); closeSheetMobile(); };
-    delB.onclick = () => {
-      if(!confirm('Elimino "'+d.name+'"? Le sue tappe tornano in “Da assegnare”.')) return;
-      state.places.forEach(p => { if(p.dayId===d.id) p.dayId = null; });
-      state.days = state.days.filter(x=>x.id!==d.id);
-      save(); render();
+    const menuB = head.querySelector('[data-act="menu"]');
+    menuB.onclick = e => {
+      e.stopPropagation();
+      showActionMenu(menuB, [
+        {label:'Inquadra sulla mappa', onClick: () => {
+          const f = all(d.id); if(f.length) map.fitBounds(L.latLngBounds(f.map(p=>[p.lat,p.lng])).pad(.25));
+          closeSheetMobile();
+        }},
+        {label:'Apri in Google Maps', onClick: () => openInGmaps(d, list)},
+        {label:'Elimina il giorno', danger:true, onClick: () => {
+          if(!confirm('Elimino "'+d.name+'"? Le sue tappe tornano in “Da assegnare”.')) return;
+          state.places.forEach(p => { if(p.dayId===d.id) p.dayId = null; });
+          state.days = state.days.filter(x=>x.id!==d.id);
+          save(); render();
+        }}
+      ]);
     };
+    const infoB = head.querySelector('.day-info-btn');
+    infoB.onclick = e => {
+      e.stopPropagation();
+      const key = 'day-'+d.id;
+      const same = !infoPop.hidden && infoPop.dataset.for === key;
+      hideInfo();
+      if(!same){ infoPop.dataset.for = key; showInfo(infoB, infoText); }
+    };
+    const wxB = head.querySelector('.wx-icon-btn');
+    if(wxB && !wxB.disabled) wxB.onclick = e => { e.stopPropagation(); openWeather(d.id); };
   }
 
   const toggleB = head.querySelector('.day-toggle');
@@ -2115,6 +2335,7 @@ function dayBlock(d, list){
 
   const ol = document.createElement('ol');
   ol.className = 'rail';
+  if(d.id) ol.appendChild(baseStopLi(d, 'baseFromId', 'Parte da', ICON_HOUSE_OUT));
   list.forEach((p,i) => {
     const li = document.createElement('li');
     li.className = 'stop';
@@ -2127,29 +2348,41 @@ function dayBlock(d, list){
         '<b class="node-n">'+(d.id?i+1:'?')+'</b>' +
       '</span>' +
       '<div class="stop-card">' +
-        '<div class="stop-top">' +
-          '<button class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+'</button>' +
-          '<button class="icon-btn" title="Su">↑</button>' +
-          '<button class="icon-btn" title="Giù">↓</button>' +
-          '<button class="icon-btn" title="Modifica">✎</button>' +
-          '<button class="icon-btn" title="Elimina">✕</button>' +
+        '<div class="stop-top" role="button" tabindex="0">' +
+          (p.img
+            ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="">'
+            : thumbPlaceholderHTML(p)) +
+          '<div class="stop-body">' +
+            '<p class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+'</p>' +
+            (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
+            (links ? '<div class="links">'+links+'</div>' : '') +
+          '</div>' +
         '</div>' +
-        (p.img ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
-        (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
-        (links ? '<div class="links">'+links+'</div>' : '') +
+        '<button class="icon-btn stop-menu" title="Altre azioni" aria-label="Altre azioni">⋯</button>' +
       '</div>' +
       (i < list.length-1
         ? '<div class="seg mono">'+(() => { const t = legTime(p, list[i+1]); return (t.mode==='walking'?'🚶':'🚗')+' '+(t.real?'':'~')+dur(t.mins)+' · '+fmt(t.dist); })()+' ↓</div>'
         : '');
 
-    const [nameB, upB, dnB, edB, delB] = li.querySelectorAll('.stop-name,.icon-btn');
-    nameB.onclick = () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); };
-    upB.onclick = () => move(p, -1);
-    dnB.onclick = () => move(p, 1);
-    edB.onclick = () => edit(p.id);
-    delB.onclick = () => deletePlace(p.id);
+    const top = li.querySelector('.stop-top'), menuB = li.querySelector('.stop-menu');
+    const thumbImg = li.querySelector('img.thumb');
+    if(thumbImg) thumbImg.onerror = () => { thumbImg.outerHTML = thumbPlaceholderHTML(p); };
+    const openDetail = () => viewStop(p.id);
+    top.onclick = e => { if(e.target.closest('a')) return; openDetail(); };
+    top.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openDetail(); } };
+    menuB.onclick = e => {
+      e.stopPropagation();
+      showActionMenu(menuB, [
+        {label:'Mostra sulla mappa', onClick: () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); }},
+        {label:'Sposta su', onClick: () => move(p, -1)},
+        {label:'Sposta giù', onClick: () => move(p, 1)},
+        {label:'Modifica', onClick: () => edit(p.id)},
+        {label:'Elimina', danger:true, onClick: () => deletePlace(p.id)}
+      ]);
+    };
     ol.appendChild(li);
   });
+  if(d.id) ol.appendChild(baseStopLi(d, 'baseToId', 'Arriva a', ICON_HOUSE_IN));
   body.appendChild(ol);
 
   if(altList.length){
@@ -2202,57 +2435,11 @@ function move(p, dir){
   save(); render();
 }
 
-/* fa scorrere l'elenco fino al giorno scelto (usato dalla vista Calendario) ed
-   evidenzia brevemente la card, per far capire dove è "atterrato" lo sguardo */
-function scrollToDay(id){
-  setTimeout(() => {
-    const el = document.querySelector('#list [data-day="'+id+'"]');
-    if(!el) return;
-    el.scrollIntoView({behavior:'smooth', block:'start'});
-    el.classList.add('flash');
-    setTimeout(() => el.classList.remove('flash'), 1600);
-  }, 60);
-}
-
+/* usata da openWeather() per il titolo del pannello meteo dettagliato */
 const fmtCalDate = iso => {
   const [Y,M,D] = iso.split('-').map(Number);
   return new Date(Y, M-1, D).toLocaleDateString('it-IT', {weekday:'short', day:'numeric', month:'short'});
 };
-
-function calTile(d, i){
-  const list = stops(d.id), full = all(d.id);
-  const main = list[0] ? list[0].name : d.name;
-  /* conta sia una tappa "Dormire" nell'itinerario sia una prenotazione Alloggio
-     che copre questa data: le due cose vivono in due liste separate, ma per
-     chi guarda il calendario sono la stessa domanda ("ho un letto stanotte?"). */
-  const hasStay = full.some(p => p.type === 'sleep') || (!!d.date && (state.bookings||[]).some(b =>
-    b.type === 'stay' && b.aWhen && b.bWhen && b.aWhen.slice(0,10) <= d.date && d.date <= b.bWhen.slice(0,10)
-  ));
-  const wx = wxBadgeHTML(d);
-  const rainReady = d.wx && d.wx.date === d.date && isRainy(d.wx.code) && alts(d.id).some(p => p.alt);
-  const el = document.createElement('button');
-  el.className = 'cal-tile' + (rainReady ? ' rain-ready' : '');
-  el.style.setProperty('--c', d.color);
-  el.innerHTML =
-    '<span class="cal-date mono">'+(d.date ? esc(fmtCalDate(d.date)) : 'Giorno '+(i+1))+'</span>'+
-    '<span class="cal-name">'+esc(main || 'Nessuna tappa')+'</span>'+
-    '<span class="cal-stat mono">'+list.length+' tapp'+(list.length===1?'a':'e')+'</span>'+
-    (wx ? '<span class="cal-wx">'+wx+'</span>' : '')+
-    '<span class="cal-badge'+(hasStay?'':' warn')+'" title="'+(hasStay?'Alloggio segnato':'Nessun alloggio segnato per questo giorno')+'">🏨</span>';
-  el.onclick = () => { setView('list'); scrollToDay(d.id); };
-  return el;
-}
-
-function drawCalendar(){
-  const box = document.getElementById('calBox');
-  if(!state.days.length){
-    box.innerHTML = '<p class="empty" style="padding:14px 16px">Nessun giorno. Aggiungine uno dalla vista Itinerario.</p>';
-    return;
-  }
-  box.innerHTML = '<div class="cal-grid" id="calGrid"></div>';
-  const grid = document.getElementById('calGrid');
-  state.days.forEach((d,i) => grid.appendChild(calTile(d, i)));
-}
 
 /* ============ diario di viaggio ============ */
 /* Riusa le tappe già pianificate: "Visitata" (toggle fVisited nella scheda,
@@ -2277,15 +2464,20 @@ function diaryDayBlock(d, list){
   const sec = document.createElement('section');
   sec.className = 'day';
   const done = list.filter(p => p.visited).length;
+  const collapsed = list.length > 0 && collapsedDays.has(d.id);
   const head = document.createElement('div');
   head.className = 'day-head';
   head.innerHTML =
-    '<span class="swatch" style="background:'+d.color+'"></span>' +
-    '<span class="day-name">'+esc(d.name)+'</span>' +
-    '<span class="day-stat mono">'+(list.length ? done+' / '+list.length+' fatte' : '—')+'</span>';
+    '<div class="day-head-top">' +
+      '<span class="swatch" style="background:'+d.color+'"></span>' +
+      '<span class="day-name">'+esc(d.name)+'</span>' +
+      '<span class="day-stat mono">'+(list.length ? done+' / '+list.length+' fatte' : '—')+'</span>' +
+      (list.length ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '') +
+    '</div>';
   sec.appendChild(head);
   const body = document.createElement('div');
   body.className = 'day-body';
+  body.hidden = collapsed;
   if(!list.length){
     const e = document.createElement('p');
     e.className = 'empty';
@@ -2295,6 +2487,13 @@ function diaryDayBlock(d, list){
     list.forEach(p => body.appendChild(diaryStopCard(p, d.color)));
   }
   sec.appendChild(body);
+  const toggleB = head.querySelector('.day-toggle');
+  if(toggleB) toggleB.onclick = () => {
+    const nowCollapsed = body.hidden = !body.hidden;
+    if(nowCollapsed) collapsedDays.add(d.id); else collapsedDays.delete(d.id);
+    toggleB.textContent = nowCollapsed ? '▸' : '▾';
+    toggleB.title = nowCollapsed ? 'Espandi' : 'Comprimi';
+  };
   return sec;
 }
 
@@ -2424,6 +2623,7 @@ function normalize(){
   if(!state.people) state.people = [];
   if(!state.expenses) state.expenses = [];
   if(!state.bookings) state.bookings = [];
+  if(!state.bases) state.bases = [];
   if(!state.currency) state.currency = '€';
   /* le versioni precedenti avevano "Con Francesco" come tipo: ora è un contrassegno */
   state.places.forEach(p => {
@@ -3198,6 +3398,32 @@ function deletePlace(id){
 }
 document.getElementById('del').onclick = () => deletePlace(editing.id);
 veil.onclick = e => { if(e.target === veil) closeEditor(); };
+
+/* ============ dettaglio tappa (sola visualizzazione) ============ */
+const stopViewVeil = document.getElementById('stopViewVeil');
+function stopDetailBody(p){
+  const t = typeOf(p);
+  let links = '';
+  (p.links||[]).forEach(l => links += '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||new URL(l.url,'https://x').hostname.replace('www.',''))+' ↗</a>');
+  return (p.img ? '<img class="sv-img"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
+    '<div class="sv-meta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+t.d+'"/></svg><span>'+esc(t.label)+
+      (p.rain ? ' · ☂ adatta con meteo avverso' : '') +
+      (p.kid ? ' · 👶 adatta con bimbo' : '') +
+    '</span></div>' +
+    (p.notes ? '<p class="sv-note">'+esc(p.notes)+'</p>' : '<p class="sv-note" style="opacity:.55">Nessuna descrizione.</p>') +
+    (links ? '<div class="links">'+links+'</div>' : '');
+}
+function viewStop(id){
+  const p = state.places.find(x => x.id === id);
+  if(!p) return;
+  document.getElementById('svTitle').textContent = p.name;
+  document.getElementById('svBody').innerHTML = stopDetailBody(p);
+  document.getElementById('svEdit').onclick = () => { stopViewVeil.hidden = true; edit(id); };
+  document.getElementById('svDel').onclick = () => { stopViewVeil.hidden = true; deletePlace(id); };
+  stopViewVeil.hidden = false;
+}
+document.getElementById('svClose').onclick = () => { stopViewVeil.hidden = true; };
+stopViewVeil.onclick = e => { if(e.target === stopViewVeil) stopViewVeil.hidden = true; };
 const gveil = document.getElementById('gmapsVeil');
 document.getElementById('gmapsClose').onclick = () => gveil.hidden = true;
 gveil.onclick = e => { if(e.target === gveil) gveil.hidden = true; };
@@ -3212,6 +3438,29 @@ function showInfo(btn, text){
   infoPop.style.top = (r.bottom + 6) + 'px';
 }
 function hideInfo(){ infoPop.hidden = true; }
+
+/* ============ menu azioni (⋯) ============ */
+const actPop = document.getElementById('actPop');
+function showActionMenu(anchor, items){
+  actPop.innerHTML = '';
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    if(it.danger) b.className = 'danger';
+    b.textContent = it.label;
+    b.onclick = e => { e.stopPropagation(); hideActionMenu(); it.onClick(); };
+    actPop.appendChild(b);
+  });
+  actPop.hidden = false;
+  const r = anchor.getBoundingClientRect(), pw = 190;
+  let left = Math.min(r.right - pw, window.innerWidth - pw - 12);
+  actPop.style.left = Math.max(12, left) + 'px';
+  actPop.style.top = (r.bottom + 6) + 'px';
+}
+function hideActionMenu(){ actPop.hidden = true; }
+document.addEventListener('click', e => {
+  if(!actPop.hidden && !actPop.contains(e.target)) hideActionMenu();
+});
 document.querySelectorAll('.info-btn').forEach(b => {
   b.onclick = e => {
     e.stopPropagation();
@@ -3228,6 +3477,7 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
     hideInfo();
+    hideActionMenu();
     if(moving){ moving = null; document.body.classList.remove('moving'); return; }
     if(pickMode){ setPick(false); return; }
     if(!document.getElementById('vwVeil').hidden){ closeViewer(); return; }
@@ -3236,6 +3486,7 @@ document.addEventListener('keydown', e => {
     document.getElementById('xVeil').hidden = true;
     document.getElementById('bVeil').hidden = true;
     document.getElementById('bViewVeil').hidden = true;
+    stopViewVeil.hidden = true;
     document.getElementById('tripsVeil').hidden = true;
     document.getElementById('wxVeil').hidden = true;
   }
@@ -3255,7 +3506,16 @@ function setPick(v){
 }
 
 /* ============ aggiungi un luogo (ricerca o tocco sulla mappa) ============ */
+const addVeil = document.getElementById('addVeil');
+document.getElementById('btnAddPlace').onclick = () => {
+  addVeil.hidden = false;
+  document.getElementById('q').focus();
+};
+document.getElementById('addVeilClose').onclick = () => addVeil.hidden = true;
+addVeil.onclick = e => { if(e.target === addVeil) addVeil.hidden = true; };
+
 document.getElementById('btnPickInline').onclick = () => {
+  addVeil.hidden = true; // la mappa sotto va lasciata scoperta per poterla toccare
   setPick(true);
   closeSheetMobile();
 };
@@ -3265,18 +3525,27 @@ document.getElementById('btnFit').onclick = () => {  if(!state.places.length) re
   closeSheetMobile();
 };
 
+function redrawDays(){ if(view === 'diary') drawDiary(); else drawList(); }
 document.getElementById('btnCollapseAll').onclick = () => {
   state.days.forEach(d => collapsedDays.add(d.id));
   collapsedDays.add(null); // "Da assegnare"
-  drawList();
+  redrawDays();
 };
 document.getElementById('btnExpandAll').onclick = () => {
   collapsedDays.clear();
-  drawList();
+  redrawDays();
 };
 
 document.getElementById('btnDay').onclick = () => {
-  state.days.push({id:uid(), name:'Giorno '+(state.days.length+1), color:PALETTE[state.days.length % PALETTE.length]});
+  const prev = state.days[state.days.length-1];
+  const day = {id:uid(), name:'Giorno '+(state.days.length+1), color:PALETTE[state.days.length % PALETTE.length]};
+  /* si riparte dalla stessa base dove si è finito ieri, finché non la si cambia */
+  if(prev){
+    const carriedBase = prev.baseToId || prev.baseFromId || null;
+    day.baseFromId = carriedBase;
+    day.baseToId = carriedBase;
+  }
+  state.days.push(day);
   save(); render();
   document.getElementById('list').scrollTop = 1e6;
 };
@@ -3327,37 +3596,48 @@ document.getElementById('file').onchange = e => {
 };
 
 /* ============ navigazione ============ */
-/* Cinque viste di pari livello: Tappe · Spese · Prenot. · Calendario · Diario,
-   tutte mostrate nel pannello. La mappa è sempre presente dietro/accanto:
-   non è più una vista a sé, la si scopre nascondendo il pannello con il tab
+/* Quattro viste di pari livello: Tappe · Spese · Prenot. · Diario, tutte
+   mostrate nel pannello. La mappa è sempre presente dietro/accanto: non è
+   più una vista a sé, la si scopre nascondendo il pannello con il tab
    Mappa (vedi tabMap più sotto). */
 const tabList = document.getElementById('tabList'),
       tabCost = document.getElementById('tabCost'),
       tabBook = document.getElementById('tabBook'),
-      tabCal  = document.getElementById('tabCal'),
       tabDiary = document.getElementById('tabDiary'),
       tabMap  = document.getElementById('tabMap');
 const listEl = document.getElementById('list'), costEl = document.getElementById('costs');
 let view = 'list';
 
-/* il tab Mappa non cambia vista: si accende quando il pannello è nascosto
-   e si vede solo la mappa, si spegne appena il pannello torna visibile. */
-function updateMapTabState(){
-  tabMap.classList.toggle('on', !document.body.classList.contains('panel-open'));
+const barActs = document.querySelector('.bar-acts');
+
+/* Un solo tab acceso alla volta: o la vista sotto (Tappe/Spese/…) o Mappa,
+   mai insieme. La barra "＋ Giorno/Spesa/Prenotazione" non ha senso quando
+   si vede solo la mappa (non c'è nulla sotto a cui aggiungere niente), quindi
+   sparisce con lei. */
+function updateTabsState(){
+  const mapOnly = !document.body.classList.contains('panel-open');
+  tabMap.classList.toggle('on', mapOnly);
+  /* nessun pulsante "＋ Giorno/Spesa/Prenotazione" visibile (es. in Diario)
+     => la barra non deve restare come striscia vuota */
+  const anyAct = !document.getElementById('btnDay').hidden ||
+                 !document.getElementById('btnExpense').hidden ||
+                 !document.getElementById('btnBooking').hidden;
+  barActs.hidden = mapOnly || !anyAct;
+  [[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabDiary,'diary']]
+    .forEach(([b,k]) => b.classList.toggle('on', !mapOnly && view === k));
 }
 
 function setView(v){
   view = v;
-  const cost = v === 'cost', book = v === 'book', cal = v === 'cal', diary = v === 'diary';
-  const geo  = !cost && !book && !cal && !diary;   // solo l'Itinerario lavora sui luoghi
+  const cost = v === 'cost', book = v === 'book', diary = v === 'diary';
   listEl.hidden = !(v === 'list');
   costEl.hidden = !cost;
   document.getElementById('books').hidden = !book;
-  document.getElementById('calBox').hidden = !cal;
   document.getElementById('diaryBox').hidden = !diary;
-  /* ricerca luoghi e strumenti mappa non hanno senso su spese, prenotazioni, calendario e diario */
-  document.getElementById('mapTools').hidden = !geo;
-  document.getElementById('searchBox').hidden = !geo;
+  /* Inquadra/Comprimi/Espandi valgono per Itinerario e Diario (entrambi mostrano
+     i giorni come sezioni); "Aggiungi tappa" ha senso solo in Itinerario. */
+  document.getElementById('viewToolbar').hidden = !(v === 'list' || diary);
+  document.getElementById('btnAddPlace').hidden = v !== 'list';
   /* "＋ Giorno" serve solo dove si vedono i giorni */
   document.getElementById('btnDay').hidden = v !== 'list';
   document.getElementById('btnExpense').hidden = !cost;
@@ -3365,17 +3645,13 @@ function setView(v){
   /* cambiare vista implica volerla vedere: se il pannello era stato chiuso
      con la maniglia, lo riapro */
   document.body.classList.add('panel-open');
-  updateMapTabState();
-  [[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabCal,'cal'],[tabDiary,'diary']]
-    .forEach(([b,k]) => b.classList.toggle('on', v === k));
+  updateTabsState();
   if(cost) drawCosts();
   if(book) drawBooks();
-  if(cal) drawCalendar();
   if(diary) drawDiary();
   map.invalidateSize();
   setTimeout(() => map.invalidateSize(), 300);
 }
-tabCal.onclick  = () => setView('cal');
 tabList.onclick = () => setView('list');
 tabCost.onclick = () => setView('cost');
 tabBook.onclick = () => setView('book');
@@ -3386,7 +3662,7 @@ document.getElementById('btnExpense').onclick = openExpense;
 /* nasconde/mostra tutto il pannello, lasciando solo la mappa */
 tabMap.onclick = () => {
   document.body.classList.toggle('panel-open');
-  updateMapTabState();
+  updateTabsState();
   map.invalidateSize();
   setTimeout(() => map.invalidateSize(), 300);
 };
@@ -3395,7 +3671,7 @@ tabMap.onclick = () => {
 function closeSheetMobile(){
   if(window.matchMedia('(max-width:880px)').matches){
     document.body.classList.remove('panel-open');
-    updateMapTabState();
+    updateTabsState();
   }
 }
 

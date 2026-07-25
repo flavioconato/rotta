@@ -68,7 +68,7 @@ sovrascrive mai in silenzio quello che hai aperto: se il file non corrisponde
 a un viaggio già presente diventa un nuovo viaggio nell'elenco; se corrisponde
 a uno che hai già, l'app chiede conferma prima di sovrascriverlo.
 
-## 6. Date, vista Calendario e meteo
+## 6. Date e meteo
 
 Ogni giorno può avere una data reale (tocca il campo data nell'intestazione,
 vista Itinerario). Se la imposti sul **primo** giorno, l'app propone di
@@ -76,22 +76,15 @@ calcolare in automatico quelle dei giorni successivi (+1 al giorno): restano
 comunque tutte modificabili singolarmente, utile per una sosta di più notti
 nello stesso posto.
 
-La nuova vista **📅** mostra un riquadro per giorno con data, numero di tappe,
-la tappa principale e un'icona 🏨 (piena se hai già segnato un alloggio quel
-giorno, spenta se manca ancora). Toccando un riquadro torni all'Itinerario con
-quel giorno evidenziato.
-
-Se un giorno ha una data entro le prossime due settimane, compare anche il
-meteo previsto (temperatura e un'icona sole/nuvola/pioggia — dati
+Se un giorno ha una data entro le prossime due settimane, nell'intestazione
+compare anche una piccola icona meteo (☀️/⛅/🌧️ ecc. — dati
 [Open-Meteo](https://open-meteo.com), gratuiti, aggiornati poche volte al
-giorno). Oltre quella finestra non si inventa nulla: resta un trattino. Il
-badge mostra sempre la condizione **peggiore** della giornata — se piove anche
-solo un'ora, segna pioggia — proprio per farla notare a colpo d'occhio.
-Quando è prevista pioggia **e** il giorno ha già tappe segnate come
-"alternativa se piove", il badge lo segnala con un ☂ — un modo rapido per
-sapere se serve ancora un piano B.
+giorno) accanto a info e comprimi. Oltre quella finestra non si inventa
+nulla: l'icona resta assente. Mostra sempre la condizione **peggiore** della
+giornata — se piove anche solo un'ora, segna pioggia — proprio per farla
+notare a colpo d'occhio.
 
-Toccando il badge si apre il meteo completo di quella giornata: temperatura,
+Toccandola si apre il meteo completo di quella giornata: temperatura,
 probabilità e quantità di pioggia, vento, alba e tramonto, e l'andamento ora
 per ora.
 
@@ -153,6 +146,41 @@ del viaggio.
 Per un ricordo non pianificato in anticipo, si crea prima una tappa come al
 solito dall'Itinerario (anche solo un punto generico su un'area, non serve
 per forza il luogo preciso) e la si segna subito come fatta.
+
+## 9quinquies. Le Basi (v16)
+
+Una **Base** è dove si dorme: l'hotel, il B&B, l'appartamento. Ogni giorno ha
+una **base di partenza** e una **base di ritorno** (di solito la stessa, a
+meno che quel giorno non ci si sposti in un'altra città/alloggio).
+
+Le basi si scelgono toccando le pillole "Parte da" / "Arriva a" che aprono
+e chiudono il nastro delle tappe di ogni giorno, ai due estremi. Restano
+memorizzate: create quella di Edimburgo il primo giorno, richiamatela con
+un tocco per tutti i giorni successivi in cui dormite lì, senza doverla
+ricercare da capo ogni volta. "➕ Nuova base…" nel menu che si apre
+toccando la pillola avvia la stessa ricerca usata per le tappe (o "tocca
+la mappa").
+
+Creare una base genera in automatico anche la prenotazione **Alloggio**
+corrispondente in Prenotazioni, già con il nome compilato: basta finirla
+con check-in, check-out, costo e codice.
+
+Così le tappe di un giorno restano solo quelle effettive — bar, musei,
+sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
+ogni singola giornata.
+
+## 9sexies. Novità di questa versione (v16)
+
+- Le tappe nel nastro sono ora card compatte (foto quadrata piccola, nome e
+  descrizione troncata): toccandole si apre la scheda intera con foto grande,
+  descrizione completa, link e i pulsanti Modifica/Elimina.
+- L'intestazione di ogni giorno è più snella: data e nome raggruppati a
+  sinistra, meteo/info/altre azioni/comprimi come 4 icone uguali e
+  equidistanti a destra.
+- Tolta la vista **Calendario**: era ridondante con l'Itinerario, che ormai
+  mostra già data, meteo e le stesse azioni di ogni giorno in un colpo
+  d'occhio.
+- Palette leggermente più chiara e leggibile.
 
 ## 9quater. Novità di questa versione (v15)
 
