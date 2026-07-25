@@ -139,7 +139,22 @@ Cosa **non** funziona offline, perché richiede per forza un server:
 Tutto il resto — tappe, note, foto, spese, prenotazioni, allegati — funziona
 senza rete.
 
-## 9. Aggiornare l'app in futuro
+## 9. Diario di viaggio
+
+L'icona **📔** apre il Diario: qui si segna cosa avete fatto *davvero*, durante
+o dopo il viaggio.
+
+Ogni tappa dell'Itinerario ha un pulsante **Segna come fatta**: una volta
+toccato, nel Diario compare uno spazio per scrivere com'è andata (diverso
+dalla nota di pianificazione) e una piccola galleria dove caricare le foto
+di quel momento — fino a 6 per tappa, per non appesantire troppo l'archivio
+del viaggio.
+
+Per un ricordo non pianificato in anticipo, si crea prima una tappa come al
+solito dall'Itinerario (anche solo un punto generico su un'area, non serve
+per forza il luogo preciso) e la si segna subito come fatta.
+
+## 10. Aggiornare l'app in futuro
 
 Se ti passo una versione nuova di `index.html`, caricala su GitHub al posto di
 quella vecchia (**Add file → Upload files**, stesso nome, *Commit*). Cambia

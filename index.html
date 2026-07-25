@@ -89,6 +89,7 @@ button:active{transform:scale(.97)}
     transition:left .34s var(--ease), box-shadow .2s;
   }
   #btnPanel:hover{box-shadow:0 8px 24px rgba(171,187,138,.22)}
+  #btnPanel .lab{display:none}
   body:not(.panel-open) #btnPanel{left:var(--gap)}
 }
 #map{height:100%;width:100%;background:var(--paper-2);filter:saturate(1.05) contrast(1.02)}
@@ -348,7 +349,6 @@ body.picking::after{
 .bk-flag.late{background:rgba(197,106,69,.18);color:#f0a082;border:1px solid rgba(197,106,69,.45)}
 .bk .stop-note{margin-left:27px}
 .bk .links{margin-left:27px}
-.tabs button{padding:9px 2px;font-size:11.5px}
 .pop-img{
   display:block;width:calc(100% + 28px);margin:-12px -14px 8px;
   height:130px;object-fit:cover;border-radius:16px 16px 0 0
@@ -458,6 +458,34 @@ body.hide-legs .leg-lab{display:none}
 .alt-node svg{width:13px;height:13px;fill:var(--c,var(--fog))}
 .alt-body{flex:1;min-width:0}
 .alt-body .stop-name{font-size:13.5px;font-weight:600;text-align:left;width:100%}
+/* ---------- vista diario ---------- */
+.diary-stop{
+  position:relative;background:linear-gradient(155deg,var(--ink-2),var(--ink-2) 70%,var(--ink-3));
+  border:1px solid var(--ink-3);border-radius:var(--r);padding:12px 14px;margin:2px 19px 12px;
+  display:flex;flex-direction:column;gap:9px;transition:opacity .2s
+}
+.diary-stop.pending{opacity:.55}
+.diary-top{display:flex;gap:9px;align-items:center}
+.diary-note{min-height:64px}
+.toggle-mini{
+  flex:none;font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.04em;
+  padding:5px 10px;border-radius:999px;border:1px solid var(--ink-3);background:var(--ink-2);
+  color:var(--fog);transition:.15s
+}
+.toggle-mini:hover{border-color:var(--sage);color:var(--paper)}
+.toggle-mini.on{background:rgba(124,146,96,.2);border-color:var(--moss);color:#9fce7e}
+.diary-gallery{display:flex;flex-wrap:wrap;gap:7px}
+.diary-photo{position:relative;width:76px;height:76px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--ink-3)}
+.diary-photo img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.diary-photo-del{
+  position:absolute;top:2px;right:2px;background:rgba(10,8,5,.72);color:var(--paper);
+  border-radius:50%;width:18px;height:18px;font-size:10px;line-height:1;display:grid;place-items:center
+}
+.diary-add{
+  width:76px;height:76px;flex:none;border-radius:var(--r-sm);border:1px dashed var(--ink-4);
+  color:var(--fog);font-size:22px;display:grid;place-items:center;background:transparent;transition:.15s
+}
+.diary-add:hover{border-color:var(--sage);color:var(--paper)}
 .toggle{
   display:flex;gap:9px;align-items:flex-start;width:100%;text-align:left;margin-bottom:7px;
   border:1px solid var(--ink-3);border-radius:var(--r-sm);background:var(--ink-2);padding:11px 12px;
@@ -572,10 +600,16 @@ body.hide-legs .leg-lab{display:none}
   background:linear-gradient(to top,var(--ink) 72%,rgba(30,26,20,0));
   transition:width .34s var(--ease)
 }
-.tabs{display:flex;gap:3px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:999px;padding:3px}
-.tabs button{flex:1;padding:9px 4px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--fog);white-space:nowrap;transition:.2s var(--ease)}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
+.tabs button{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:8px 2px;border-radius:13px;color:var(--fog);transition:.2s var(--ease)
+}
 .tabs button.on{background:linear-gradient(135deg,#fff,var(--paper));color:var(--ink);box-shadow:0 6px 16px rgba(0,0,0,.3)}
-.tabs button:hover:not(.on){color:var(--paper)}
+.tabs button:hover:not(.on){color:var(--paper);background:var(--ink-3)}
+.tab-ic{width:24px;height:24px;fill:currentColor;overflow:visible;flex:none}
+.tab-ic .trail{opacity:.5}
+.tab-lab{font-size:8.5px;font-weight:700;letter-spacing:.01em;line-height:1.15;text-align:center;max-width:100%}
 .bar-acts{display:flex;gap:7px}
 .act{
   flex:1;border-radius:var(--r-sm);padding:11px;font-weight:600;font-size:13px;text-align:center;
@@ -584,13 +618,16 @@ body.hide-legs .leg-lab{display:none}
 .act:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(0,0,0,.35)}
 .act.ghost{flex:0 0 46px;background:var(--ink-2);color:var(--paper);border:1px solid var(--ink-3);font-size:15px}
 .act.ghost:hover{border-color:var(--sage);color:var(--sage);box-shadow:none}
+#btnPanel{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;font-size:12.5px;font-weight:600}
+#btnPanel svg{width:17px;height:17px;fill:currentColor;flex:none}
 .scroll{padding-bottom:118px}
 @media (min-width:881px){
   .bar{background:none;left:var(--gap);bottom:var(--gap);width:400px}
   .tabs, .bar-acts{
-    background:rgba(30,26,20,.92);border-radius:999px;
+    background:rgba(30,26,20,.92);
     box-shadow:0 14px 40px rgba(0,0,0,.55);backdrop-filter:blur(10px)
   }
+  .tabs{border-radius:18px}
   .bar-acts{padding:4px;border-radius:18px}
 }
 @media (max-width:880px){
@@ -646,24 +683,65 @@ body.hide-legs .leg-lab{display:none}
     <div class="scroll" id="costs" hidden></div>
     <div class="scroll" id="books" hidden></div>
     <div class="scroll" id="calBox" hidden></div>
+    <div class="scroll" id="diaryBox" hidden></div>
   </aside>
   <div id="map"></div>
 </div>
 
-<!-- barra fissa: sempre visibile, in tutte e tre le viste -->
+<!-- barra fissa: sempre visibile, in tutte le viste. Icone grandi e quadrate
+     con l'etichetta sotto, come nelle app moderne. -->
 <div class="bar">
   <div class="tabs">
-    <button id="tabList" class="on">Itinerario</button>
-    <button id="tabCost">Spese</button>
-    <button id="tabBook">Prenot.</button>
-    <button id="tabCal" title="Calendario">📅</button>
+    <button id="tabList" class="on" title="Tappe" aria-label="Tappe">
+      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
+        <path class="trail" d="M3 21c1.5-5 3-8.5 6-12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="1.6 3" stroke-linecap="round"/>
+        <path d="M22 2 15 22 11 13 2 9z"/>
+      </svg>
+      <span class="tab-lab">Tappe</span>
+    </button>
+    <button id="tabCost" title="Spese" aria-label="Spese">
+      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 6.8A2.8 2.8 0 0 1 5.8 4h10.4A2.8 2.8 0 0 1 19 6.8V8h-2.7A3.3 3.3 0 0 0 13 11.3v1.4A3.3 3.3 0 0 0 16.3 16H19v1.2A2.8 2.8 0 0 1 16.2 20H5.8A2.8 2.8 0 0 1 3 17.2V6.8z"/>
+        <path d="M16.3 9.5H20a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-3.7a1.8 1.8 0 0 1-1.8-1.8v-1.4a1.8 1.8 0 0 1 1.8-1.8z"/>
+        <circle cx="16.9" cy="12" r="1.05" fill="var(--ink)"/>
+      </svg>
+      <span class="tab-lab">Spese</span>
+    </button>
+    <button id="tabBook" title="Prenotazioni" aria-label="Prenotazioni">
+      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="6" width="18" height="12" rx="2.4"/>
+        <path d="M14.5 6v2.2M14.5 10.4v2.2M14.5 14.6v2.2" stroke="var(--ink)" stroke-width="1.5" stroke-linecap="round" opacity=".8"/>
+      </svg>
+      <span class="tab-lab">Prenot.</span>
+    </button>
+    <button id="tabCal" title="Calendario" aria-label="Calendario">
+      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 4.5a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.5a2 2 0 0 0-2-2h-1v-1a1 1 0 1 0-2 0v1H8v-1a1 1 0 1 0-2 0v1H5z"/>
+        <path d="M3 9.5h18" stroke="var(--ink)" stroke-width="1.6" opacity=".9"/>
+        <circle cx="8" cy="14" r="1.15" fill="var(--ink)" opacity=".85"/>
+        <circle cx="12" cy="14" r="1.15" fill="var(--ink)" opacity=".85"/>
+        <circle cx="16" cy="14" r="1.15" fill="var(--ink)" opacity=".85"/>
+      </svg>
+      <span class="tab-lab">Calendario</span>
+    </button>
+    <button id="tabDiary" title="Diario di viaggio" aria-label="Diario di viaggio">
+      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 6.2c-2-1.4-4.7-1.9-7-1.5a1 1 0 0 0-.8 1v12.4c0 .6.5 1.05 1.1.96 2.1-.3 4.6.2 6.4 1.5.2.1.5.1.7 0 1.8-1.3 4.3-1.8 6.4-1.5.6.09 1.1-.36 1.1-.96V5.7a1 1 0 0 0-.8-1c-2.3-.4-5 .1-7 1.5z"/>
+        <path d="M12 6.2V19" stroke="var(--ink)" stroke-width="1.3" opacity=".8"/>
+      </svg>
+      <span class="tab-lab">Diario di viaggio</span>
+    </button>
   </div>
   <div class="bar-acts">
     <!-- nasconde/mostra tutto il pannello, lasciando solo la mappa. Dentro
          .bar-acts così su cellulare è sempre raggiungibile e visibile come
          gli altri comandi; su desktop diventa una maniglia sul bordo del
-         pannello (vedi CSS #btnPanel nel media query min-width:881px). -->
-    <button class="act ghost" id="btnPanel" title="Mostra o nascondi la mappa">🗺</button>
+         pannello (vedi CSS #btnPanel nel media query min-width:881px), dove
+         l'etichetta si nasconde per mancanza di spazio. -->
+    <button class="act ghost" id="btnPanel" title="Mostra o nascondi la mappa">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+      <span class="lab">Vai alla mappa</span>
+    </button>
     <button class="act" id="btnDay" title="Aggiungi un giorno">＋ Giorno</button>
     <button class="act" id="btnExpense" title="Registra una spesa" hidden>＋ Spesa</button>
     <button class="act" id="btnBooking" title="Aggiungi una prenotazione" hidden>＋ Prenotazione</button>
@@ -705,6 +783,11 @@ body.hide-legs .leg-lab{display:none}
     <button class="toggle" id="fAlt" type="button">
       <span class="tick">✓</span>
       <span><b>Tappa alternativa</b><span class="info-btn" tabindex="0" data-info="Le tappe alternative non fanno parte del percorso principale del giorno: non vengono numerate né collegate dal tragitto, restano sul posto come opzione di riserva pronta a subentrare in caso di meteo avverso o di altri imprevisti — chiusure, code, cambi di programma dell'ultimo minuto.">ⓘ</span></span>
+    </button>
+    <label>Diario</label>
+    <button class="toggle" id="fVisited" type="button">
+      <span class="tick">✓</span>
+      <span><b>Visitata</b><span class="info-btn" tabindex="0" data-info="Segna questa tappa come effettivamente visitata: comparirà nel Diario, dove puoi scrivere com'è andata davvero e aggiungere le foto del viaggio.">ⓘ</span></span>
     </button>
     <label>Immagine <span class="info-btn" tabindex="0" data-info="Per le tappe senza foto, l'app cerca da sola alcune proposte su Wikimedia Commons in base alla posizione: toccane una per usarla — funziona bene per monumenti e luoghi noti, meno per posti piccoli o poco conosciuti, e vicino a un punto preciso può capitare qualche foto estranea, quindi controlla prima di scegliere. Puoi comunque sempre caricarne una dal telefono o dal computer, oppure incollare il link di un'immagine già pubblicata online.">ⓘ</span></label>
     <div class="img-row">
@@ -902,7 +985,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v11';
+const APP_VERSION = 'v12';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -1260,18 +1343,39 @@ async function cloudizeAttachments(tripState){
       obj[urlField+'Src'] = v;
     })());
   };
+  /* stessa idea di 'swap' ma per un array di foto (le diaryPhotos di una tappa):
+     una cache {src,url} per indice, così solo le foto nuove o cambiate vengono ricaricate. */
+  const swapArray = (obj, field, cacheField, pathPrefix) => {
+    const arr = obj[field] || [];
+    const cache = obj[cacheField] || [];
+    const next = [];
+    arr.forEach((v, i) => {
+      if(!v || !/^data:/.test(v)){ next[i] = null; return; }
+      if(cache[i] && cache[i].src === v){ next[i] = cache[i]; return; }
+      jobs.push((async () => {
+        const ref = fbStorage.ref('trips/'+tripState.shareId+'/'+pathPrefix+'-'+i);
+        await ref.put(dataURLtoBlob(v));
+        next[i] = {src: v, url: await ref.getDownloadURL()};
+      })());
+    });
+    obj[cacheField] = next;
+  };
   (tripState.places||[]).forEach(p => swap(p, 'img', 'imgUrl', 'place-'+p.id));
+  (tripState.places||[]).forEach(p => swapArray(p, 'diaryPhotos', 'diaryPhotoCache', 'diary-'+p.id));
   (tripState.bookings||[]).forEach(b => swap(b, 'file', 'fileUrl', 'book-'+b.id));
   await Promise.all(jobs);
 }
 
 /* Il documento Firestore porta gli URL degli allegati, mai il base64: una sola
-   foto supererebbe il limite di 1MB per documento. */
+   foto supererebbe il limite di 1MB per documento — vale per l'immagine di una
+   tappa come per le foto del Diario, che possono essere più d'una. */
 function cloudPayload(tripState){
   const places = (tripState.places||[]).map(p => {
     const c = {...p};
     if(c.imgUrl) c.img = c.imgUrl;
     delete c.imgUrl; delete c.imgUrlSrc;
+    if(c.diaryPhotoCache) c.diaryPhotos = c.diaryPhotoCache.filter(Boolean).map(x => x.url);
+    delete c.diaryPhotoCache;
     return c;
   });
   const bookings = (tripState.bookings||[]).map(b => {
@@ -1304,7 +1408,14 @@ async function localizeAttachments(tripState){
     if(!v || !/^https?:/.test(v)) return;
     jobs.push(urlToDataURL(v).then(d => { obj[field] = d; }).catch(() => {}));
   };
+  const pullArray = (obj, field) => {
+    (obj[field] || []).forEach((v, i) => {
+      if(!v || !/^https?:/.test(v)) return;
+      jobs.push(urlToDataURL(v).then(d => { obj[field][i] = d; }).catch(() => {}));
+    });
+  };
   (tripState.places||[]).forEach(p => pull(p, 'img'));
+  (tripState.places||[]).forEach(p => pullArray(p, 'diaryPhotos'));
   (tripState.bookings||[]).forEach(b => pull(b, 'file'));
   await Promise.all(jobs);
 }
@@ -2115,6 +2226,115 @@ function drawCalendar(){
   state.days.forEach((d,i) => grid.appendChild(calTile(d, i)));
 }
 
+/* ============ diario di viaggio ============ */
+/* Riusa le tappe già pianificate: "Visitata" (toggle fVisited nella scheda,
+   o il pulsante rapido qui sotto) le fa comparire qui con nota-ricordo e foto.
+   Nessun modello dati parallelo: una tappa "macro-area" o non pianificata è
+   semplicemente una tappa come un'altra, creata dall'Itinerario. */
+const DIARY_PHOTO_MAX = 6; // oltre le foto delle tappe, per non far esplodere IndexedDB
+
+function drawDiary(){
+  const box = document.getElementById('diaryBox');
+  box.innerHTML = '';
+  const orphans = state.places.filter(p => !p.dayId || !dayOf(p.dayId));
+  if(!state.days.length && !orphans.length){
+    box.innerHTML = '<p class="empty" style="padding:14px 16px">Nessuna tappa. Aggiungine dalla vista Itinerario, poi segnale come "Visitata" per farle comparire qui.</p>';
+    return;
+  }
+  if(orphans.length) box.appendChild(diaryDayBlock({id:null, name:'Da assegnare', color:'#8FA3B0'}, orphans));
+  state.days.forEach(d => box.appendChild(diaryDayBlock(d, all(d.id))));
+}
+
+function diaryDayBlock(d, list){
+  const sec = document.createElement('section');
+  sec.className = 'day';
+  const done = list.filter(p => p.visited).length;
+  const head = document.createElement('div');
+  head.className = 'day-head';
+  head.innerHTML =
+    '<span class="swatch" style="background:'+d.color+'"></span>' +
+    '<span class="day-name">'+esc(d.name)+'</span>' +
+    '<span class="day-stat mono">'+(list.length ? done+' / '+list.length+' fatte' : '—')+'</span>';
+  sec.appendChild(head);
+  const body = document.createElement('div');
+  body.className = 'day-body';
+  if(!list.length){
+    const e = document.createElement('p');
+    e.className = 'empty';
+    e.textContent = 'Nessuna tappa in questo giorno.';
+    body.appendChild(e);
+  } else {
+    list.forEach(p => body.appendChild(diaryStopCard(p, d.color)));
+  }
+  sec.appendChild(body);
+  return sec;
+}
+
+function diaryStopCard(p, color){
+  const div = document.createElement('div');
+  div.className = 'diary-stop' + (p.visited ? '' : ' pending');
+  div.style.setProperty('--c', color);
+  div.innerHTML =
+    '<div class="diary-top">' +
+      '<span class="alt-node" title="'+esc(typeOf(p).label)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+typeOf(p).d+'"/></svg></span>' +
+      '<button class="stop-name">'+esc(p.name)+'</button>' +
+      '<button class="toggle-mini'+(p.visited?' on':'')+'">'+(p.visited?'✓ Visitata':'Segna come fatta')+'</button>' +
+    '</div>';
+  div.querySelector('.stop-name').onclick = () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); };
+  div.querySelector('.toggle-mini').onclick = () => {
+    p.visited = !p.visited;
+    if(p.visited && !p.visitedAt) p.visitedAt = Date.now();
+    save(); drawDiary();
+  };
+  if(!p.visited) return div;
+
+  const note = document.createElement('textarea');
+  note.className = 'field diary-note';
+  note.placeholder = 'Com\'è andata davvero? Cosa ricordi di questa tappa…';
+  note.value = p.diaryNote || '';
+  note.onchange = () => { p.diaryNote = note.value; save(); };
+  div.appendChild(note);
+  div.appendChild(diaryGallery(p));
+  return div;
+}
+
+function diaryGallery(p){
+  const gal = document.createElement('div');
+  gal.className = 'diary-gallery';
+  (p.diaryPhotos||[]).forEach((src,i) => {
+    const ph = document.createElement('div');
+    ph.className = 'diary-photo';
+    ph.innerHTML = '<img src="'+esc(src)+'" alt=""><button class="diary-photo-del" title="Rimuovi">✕</button>';
+    ph.querySelector('img').onclick = () => openViewer(src, p.name, 'image/jpeg');
+    ph.querySelector('.diary-photo-del').onclick = () => {
+      p.diaryPhotos.splice(i,1); save(); drawDiary();
+    };
+    gal.appendChild(ph);
+  });
+  if((p.diaryPhotos||[]).length < DIARY_PHOTO_MAX){
+    const file = document.createElement('input');
+    file.type = 'file'; file.accept = 'image/*'; file.multiple = true; file.hidden = true;
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'diary-add'; add.title = 'Aggiungi foto'; add.textContent = '＋';
+    add.onclick = () => file.click();
+    file.onchange = () => {
+      const room = DIARY_PHOTO_MAX - (p.diaryPhotos||[]).length;
+      const files = [...file.files].slice(0, room);
+      file.value = '';
+      if(!files.length) return;
+      p.diaryPhotos = p.diaryPhotos || [];
+      let pending = files.length;
+      files.forEach(f => shrinkImage(f, data => {
+        if(data) p.diaryPhotos.push(data);
+        if(--pending === 0){ save(); drawDiary(); }
+      }));
+    };
+    gal.appendChild(add);
+    gal.appendChild(file);
+  }
+  return gal;
+}
+
 /* ============ apri su Google Maps ============ */
 /* Maps URLs (api=1, nessuna chiave): origin + destination + waypoints in ordine.
    Il pipe va codificato %7C, la virgola %2C. Limite pratico ~9 waypoint per link,
@@ -2830,17 +3050,19 @@ function edit(id){
 
   const rainB = document.getElementById('fRain'), altB = document.getElementById('fAlt'),
         cityB = document.getElementById('fCity'), chainB = document.getElementById('fChain'),
-        kidB = document.getElementById('fKid');
+        kidB = document.getElementById('fKid'), visitedB = document.getElementById('fVisited');
   rainB.classList.toggle('on', !!editing.rain);
   altB.classList.toggle('on', !!editing.alt);
   cityB.classList.toggle('on', !!editing.city);
   chainB.classList.toggle('on', inChain(editing));
   kidB.classList.toggle('on', !!editing.kid);
+  visitedB.classList.toggle('on', !!editing.visited);
   rainB.onclick = () => rainB.classList.toggle('on');
   altB.onclick = () => altB.classList.toggle('on');
   cityB.onclick = () => cityB.classList.toggle('on');
   chainB.onclick = () => chainB.classList.toggle('on');
   kidB.onclick = () => kidB.classList.toggle('on');
+  visitedB.onclick = () => visitedB.classList.toggle('on');
 
   const tg = document.getElementById('fType');  tg.innerHTML = '';
   Object.entries(TYPES).forEach(([k,v]) => {
@@ -2885,6 +3107,9 @@ document.getElementById('save').onclick = () => {
   editing.kid  = document.getElementById('fKid').classList.contains('on');
   editing.alt  = document.getElementById('fAlt').classList.contains('on');
   editing.city = document.getElementById('fCity').classList.contains('on');
+  const wasVisited = !!editing.visited;
+  editing.visited = document.getElementById('fVisited').classList.contains('on');
+  if(editing.visited && !wasVisited && !editing.visitedAt) editing.visitedAt = Date.now();
   editing.chain = document.getElementById('fChain').classList.contains('on');
   editing.links = [...document.querySelectorAll('#fLinks .link-row')].map(r => ({
     label: r.querySelector('.lab').value.trim(),
@@ -3057,19 +3282,21 @@ document.getElementById('file').onchange = e => {
 const tabList = document.getElementById('tabList'),
       tabCost = document.getElementById('tabCost'),
       tabBook = document.getElementById('tabBook'),
-      tabCal  = document.getElementById('tabCal');
+      tabCal  = document.getElementById('tabCal'),
+      tabDiary = document.getElementById('tabDiary');
 const listEl = document.getElementById('list'), costEl = document.getElementById('costs');
 let view = 'list';
 
 function setView(v){
   view = v;
-  const cost = v === 'cost', book = v === 'book', cal = v === 'cal';
-  const geo  = !cost && !book && !cal;   // solo l'Itinerario lavora sui luoghi
+  const cost = v === 'cost', book = v === 'book', cal = v === 'cal', diary = v === 'diary';
+  const geo  = !cost && !book && !cal && !diary;   // solo l'Itinerario lavora sui luoghi
   listEl.hidden = !(v === 'list');
   costEl.hidden = !cost;
   document.getElementById('books').hidden = !book;
   document.getElementById('calBox').hidden = !cal;
-  /* ricerca luoghi e strumenti mappa non hanno senso su spese, prenotazioni e calendario */
+  document.getElementById('diaryBox').hidden = !diary;
+  /* ricerca luoghi e strumenti mappa non hanno senso su spese, prenotazioni, calendario e diario */
   document.getElementById('mapTools').hidden = !geo;
   document.getElementById('searchBox').hidden = !geo;
   /* "＋ Giorno" serve solo dove si vedono i giorni */
@@ -3079,11 +3306,12 @@ function setView(v){
   /* cambiare vista implica volerla vedere: se il pannello era stato chiuso
      con la maniglia, lo riapro */
   document.body.classList.add('panel-open');
-  [[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabCal,'cal']]
+  [[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabCal,'cal'],[tabDiary,'diary']]
     .forEach(([b,k]) => b.classList.toggle('on', v === k));
   if(cost) drawCosts();
   if(book) drawBooks();
   if(cal) drawCalendar();
+  if(diary) drawDiary();
   map.invalidateSize();
   setTimeout(() => map.invalidateSize(), 300);
 }
@@ -3091,12 +3319,17 @@ tabCal.onclick  = () => setView('cal');
 tabList.onclick = () => setView('list');
 tabCost.onclick = () => setView('cost');
 tabBook.onclick = () => setView('book');
+tabDiary.onclick = () => setView('diary');
 document.getElementById('btnBooking').onclick = () => openBooking(null);
 document.getElementById('btnExpense').onclick = openExpense;
 
-/* maniglia: nasconde/mostra tutto il pannello, lasciando solo la mappa */
+/* maniglia: nasconde/mostra tutto il pannello, lasciando solo la mappa.
+   L'etichetta (visibile solo su mobile, su desktop è una maniglia stretta
+   senza testo) riflette l'azione che il tocco successivo compirà. */
 document.getElementById('btnPanel').onclick = () => {
-  document.body.classList.toggle('panel-open');
+  const open = document.body.classList.toggle('panel-open');
+  const lab = document.querySelector('#btnPanel .lab');
+  if(lab) lab.textContent = open ? 'Vai alla mappa' : 'Torna alle tappe';
   map.invalidateSize();
   setTimeout(() => map.invalidateSize(), 300);
 };
