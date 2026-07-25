@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Rotta — mappa di viaggio</title>
+<title>Waynder — mappa di viaggio</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#1E1A14">
 <meta name="description" content="Itinerari su mappa con tappe, spese condivise e prenotazioni. Funziona offline.">
@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Rotta">
+<meta name="apple-mobile-web-app-title" content="Waynder">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,17 +80,6 @@ button:active{transform:scale(.97)}
     border:1px solid var(--ink-3);border-radius:var(--r-lg);
     box-shadow:0 40px 90px -30px rgba(0,0,0,.7),0 2px 0 rgba(255,255,255,.03) inset;
   }
-  #btnPanel{
-    position:fixed;z-index:1300;top:50%;left:calc(400px + var(--gap)*2 + 7px);transform:translate(-50%,-50%);
-    width:27px;height:58px;border-radius:10px;padding:0;flex:none;
-    background:linear-gradient(180deg,var(--ink-3),var(--ink-2));
-    border:1px solid var(--ink-4);
-    box-shadow:0 10px 24px rgba(0,0,0,.45);
-    transition:left .34s var(--ease), box-shadow .2s;
-  }
-  #btnPanel:hover{box-shadow:0 8px 24px rgba(171,187,138,.22)}
-  #btnPanel .lab{display:none}
-  body:not(.panel-open) #btnPanel{left:var(--gap)}
 }
 #map{height:100%;width:100%;background:var(--paper-2);filter:saturate(1.05) contrast(1.02)}
 @media (min-width:881px){
@@ -613,7 +602,7 @@ body.hide-legs .leg-lab{display:none}
   background:linear-gradient(to top,var(--ink) 72%,rgba(30,26,20,0));
   transition:width .34s var(--ease)
 }
-.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
 .tabs button{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   padding:8px 2px;border-radius:13px;color:var(--fog);transition:.2s var(--ease)
@@ -631,8 +620,6 @@ body.hide-legs .leg-lab{display:none}
 .act:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(0,0,0,.35)}
 .act.ghost{flex:0 0 46px;background:var(--ink-2);color:var(--paper);border:1px solid var(--ink-3);font-size:15px}
 .act.ghost:hover{border-color:var(--sage);color:var(--sage);box-shadow:none}
-#btnPanel{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;font-size:12.5px;font-weight:600}
-#btnPanel svg{width:17px;height:17px;fill:currentColor;flex:none}
 .scroll{padding-bottom:118px}
 @media (min-width:881px){
   .bar{background:none;left:var(--gap);bottom:var(--gap);width:400px}
@@ -748,23 +735,22 @@ body.hide-legs .leg-lab{display:none}
       </svg>
       <span class="tab-lab">Diario di viaggio</span>
     </button>
+    <!-- non cambia vista: mostra/nasconde tutto il pannello lasciando solo la
+         mappa. Vive tra i tab (non più come pulsante separato) così su desktop
+         non finisce mai a sovrapporsi ai comandi di .bar-acts quando il
+         pannello si chiude. Colorato = si vede solo la mappa in questo momento. -->
+    <button id="tabMap" title="Mostra solo la mappa" aria-label="Mostra solo la mappa">
+      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
+      </svg>
+      <span class="tab-lab">Mappa</span>
+    </button>
   </div>
   <div class="bar-acts">
-    <!-- nasconde/mostra tutto il pannello, lasciando solo la mappa. Dentro
-         .bar-acts così su cellulare è sempre raggiungibile e visibile come
-         gli altri comandi; su desktop diventa una maniglia sul bordo del
-         pannello (vedi CSS #btnPanel nel media query min-width:881px), dove
-         l'etichetta si nasconde per mancanza di spazio. -->
-    <button class="act ghost" id="btnPanel" title="Mostra o nascondi la mappa">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-      <span class="lab">Vai alla mappa</span>
-    </button>
     <button class="act" id="btnDay" title="Aggiungi un giorno">＋ Giorno</button>
     <button class="act" id="btnExpense" title="Registra una spesa" hidden>＋ Spesa</button>
     <button class="act" id="btnBooking" title="Aggiungi una prenotazione" hidden>＋ Prenotazione</button>
-    <button class="act ghost" id="btnExport" title="Scarica il file del viaggio">↓</button>
-    <button class="act ghost" id="btnImport" title="Apri un file salvato">↑</button>
-    <button class="act ghost install" id="btnInstall" hidden title="Installa Rotta sul dispositivo">⤓</button>
+    <button class="act ghost install" id="btnInstall" hidden title="Installa Waynder sul dispositivo">⤓</button>
     <input type="file" id="file" accept="application/json" hidden>
   </div>
 </div>
@@ -875,6 +861,10 @@ body.hide-legs .leg-lab{display:none}
     <div id="tripsList"></div>
     <div class="sheet-actions">
       <button class="btn" id="btnNewTrip">＋ Nuovo viaggio</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="btnExport" style="flex:1" title="Scarica il file di questo viaggio">↓ Esporta</button>
+      <button class="btn ghost" id="btnImport" style="flex:1" title="Apri un file salvato in precedenza">↑ Importa</button>
     </div>
     <div class="sheet-actions">
       <button class="btn ghost" id="tripsClose" style="flex:1">Chiudi</button>
@@ -999,7 +989,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v13';
+const APP_VERSION = 'v14';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -3335,24 +3325,31 @@ document.getElementById('file').onchange = e => {
       badge(storageOK ? 'saved' : 'unsaved');
       if(state.places.length) map.fitBounds(L.latLngBounds(state.places.map(p=>[p.lat,p.lng])).pad(.2));
       subscribeShared(state.shareId);
-    }catch(err){ alert('Il file non è un itinerario di Rotta.'); }
+    }catch(err){ alert('Il file non è un itinerario di Waynder.'); }
   };
   r.readAsText(f);
   e.target.value = '';
 };
 
 /* ============ navigazione ============ */
-/* Quattro viste di pari livello: Itinerario · Spese · Prenot. · Calendario,
+/* Cinque viste di pari livello: Tappe · Spese · Prenot. · Calendario · Diario,
    tutte mostrate nel pannello. La mappa è sempre presente dietro/accanto:
-   non è più una vista a sé, la si scopre nascondendo il pannello con la
-   maniglia #btnPanel (vedi più sotto). */
+   non è più una vista a sé, la si scopre nascondendo il pannello con il tab
+   Mappa (vedi tabMap più sotto). */
 const tabList = document.getElementById('tabList'),
       tabCost = document.getElementById('tabCost'),
       tabBook = document.getElementById('tabBook'),
       tabCal  = document.getElementById('tabCal'),
-      tabDiary = document.getElementById('tabDiary');
+      tabDiary = document.getElementById('tabDiary'),
+      tabMap  = document.getElementById('tabMap');
 const listEl = document.getElementById('list'), costEl = document.getElementById('costs');
 let view = 'list';
+
+/* il tab Mappa non cambia vista: si accende quando il pannello è nascosto
+   e si vede solo la mappa, si spegne appena il pannello torna visibile. */
+function updateMapTabState(){
+  tabMap.classList.toggle('on', !document.body.classList.contains('panel-open'));
+}
 
 function setView(v){
   view = v;
@@ -3373,6 +3370,7 @@ function setView(v){
   /* cambiare vista implica volerla vedere: se il pannello era stato chiuso
      con la maniglia, lo riapro */
   document.body.classList.add('panel-open');
+  updateMapTabState();
   [[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabCal,'cal'],[tabDiary,'diary']]
     .forEach(([b,k]) => b.classList.toggle('on', v === k));
   if(cost) drawCosts();
@@ -3390,20 +3388,20 @@ tabDiary.onclick = () => setView('diary');
 document.getElementById('btnBooking').onclick = () => openBooking(null);
 document.getElementById('btnExpense').onclick = openExpense;
 
-/* maniglia: nasconde/mostra tutto il pannello, lasciando solo la mappa.
-   L'etichetta (visibile solo su mobile, su desktop è una maniglia stretta
-   senza testo) riflette l'azione che il tocco successivo compirà. */
-document.getElementById('btnPanel').onclick = () => {
-  const open = document.body.classList.toggle('panel-open');
-  const lab = document.querySelector('#btnPanel .lab');
-  if(lab) lab.textContent = open ? 'Vai alla mappa' : 'Torna alle tappe';
+/* nasconde/mostra tutto il pannello, lasciando solo la mappa */
+tabMap.onclick = () => {
+  document.body.classList.toggle('panel-open');
+  updateMapTabState();
   map.invalidateSize();
   setTimeout(() => map.invalidateSize(), 300);
 };
 /* usata dopo un'azione sulla mappa (aprire una tappa, spostarla…): su mobile
    chiude il pannello per liberare la mappa, innocua su desktop */
 function closeSheetMobile(){
-  if(window.matchMedia('(max-width:880px)').matches) document.body.classList.remove('panel-open');
+  if(window.matchMedia('(max-width:880px)').matches){
+    document.body.classList.remove('panel-open');
+    updateMapTabState();
+  }
 }
 
 /* ============ installazione e funzionamento offline ============ */

@@ -1,4 +1,4 @@
-# Rotta — installazione come app
+# Waynder — installazione come app
 
 Cinque file, una cartella. Vanno pubblicati insieme su un indirizzo HTTPS: il
 funzionamento offline richiede un service worker, che i browser attivano solo
@@ -33,7 +33,7 @@ Quell'indirizzo è la tua app. Salvalo.
 
 Stesso indirizzo con **Chrome** o **Edge**. Nella barra degli indirizzi appare
 un'icona di installazione a destra (un monitor con una freccia), oppure
-**⋮ → Installa Rotta**. Ottieni una finestra propria e l'icona nel menu Start.
+**⋮ → Installa Waynder**. Ottieni una finestra propria e l'icona nel menu Start.
 
 Su Firefox e Safari desktop l'installazione non è supportata: l'app funziona
 lo stesso nella scheda del browser, con salvataggio e offline attivi.
@@ -153,6 +153,17 @@ del viaggio.
 Per un ricordo non pianificato in anticipo, si crea prima una tappa come al
 solito dall'Itinerario (anche solo un punto generico su un'area, non serve
 per forza il luogo preciso) e la si segna subito come fatta.
+
+## 9ter. Novità di questa versione (v14)
+
+- L'app si chiama **Waynder**: nuovo nome e nuova icona (schermata Home,
+  scheda del browser, finestra installata).
+- Il pulsante che mostra solo la mappa non è più un tasto a parte che poteva
+  finire sopra "＋ Giorno": ora è il sesto tab nella barra, accanto a Tappe/
+  Spese/Prenot./Calendario/Diario, e si accende quando la mappa è a schermo
+  intero.
+- **Esporta** e **Importa** il file del viaggio si trovano ora dentro "I tuoi
+  viaggi", non più come icone fisse in fondo su ogni schermata.
 
 ## 9bis. Novità di questa versione (v13)
 

@@ -1,6 +1,6 @@
 {
-  "name": "Rotta — mappa di viaggio",
-  "short_name": "Rotta",
+  "name": "Waynder — mappa di viaggio",
+  "short_name": "Waynder",
   "description": "Itinerari su mappa con tappe, spese condivise e prenotazioni. Funziona offline.",
   "start_url": "./index.html",
   "scope": "./",
