@@ -154,6 +154,18 @@ Per un ricordo non pianificato in anticipo, si crea prima una tappa come al
 solito dall'Itinerario (anche solo un punto generico su un'area, non serve
 per forza il luogo preciso) e la si segna subito come fatta.
 
+## 9quater. Novità di questa versione (v15)
+
+- Nuova palette sui toni del petrolio, in tema con l'icona.
+- Tolto il pulsante "Nomi" (occupava spazio prezioso in alto e faceva andare
+  tutto a capo); i nomi sulla mappa restano visibili come prima, si
+  nascondono solo automaticamente se sei molto lontano con lo zoom.
+- "I tuoi viaggi · Condividi · Unisciti" e "Inquadra tutto · Comprimi ·
+  Espandi" ora sono due righe da 3 pulsanti allineati in una griglia.
+- Il nome del viaggio in alto è più piccolo, per lasciare spazio al resto.
+- "Aggiungi una tappa": il campo di ricerca e il pulsante per toccare la
+  mappa stanno ora sulla stessa riga invece che uno sopra l'altro.
+
 ## 9ter. Novità di questa versione (v14)
 
 - L'app si chiama **Waynder**: nuovo nome e nuova icona (schermata Home,
