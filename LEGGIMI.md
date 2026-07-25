@@ -154,6 +154,20 @@ Per un ricordo non pianificato in anticipo, si crea prima una tappa come al
 solito dall'Itinerario (anche solo un punto generico su un'area, non serve
 per forza il luogo preciso) e la si segna subito come fatta.
 
+## 9bis. Novità di questa versione (v13)
+
+- **Condividi** e **Unisciti con un codice** ora sono due pulsanti sempre
+  visibili in alto, non più nascosti dentro "I tuoi viaggi" (che resta solo
+  per passare da un viaggio all'altro).
+- Le **spese** si possono modificare toccandole, non solo eliminare e
+  ricreare da zero.
+- Ogni giorno dell'Itinerario mostra ora il nome bene in vista, con data e
+  pulsanti "Inquadra / Maps / Elimina" più grandi e leggibili sotto.
+- Una nuova tappa si aggiunge di default allo stesso giorno appena usato
+  (prima finiva sempre nel Giorno 1).
+- Il badge 🏨 nel Calendario ora tiene conto anche delle prenotazioni di
+  tipo Alloggio, non solo delle tappe segnate come "Dormire".
+
 ## 10. Aggiornare l'app in futuro
 
 Se ti passo una versione nuova di `index.html`, caricala su GitHub al posto di
