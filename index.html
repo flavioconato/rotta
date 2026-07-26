@@ -2,7 +2,11 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- niente pinch-zoom nativo della PAGINA: sulla mappa il pizzico deve
+     zoomare solo Leaflet. Senza maximum-scale/user-scalable=no, un pizzico
+     sulla mappa fa scalare anche l'intera pagina (doppio zoom, schermata che
+     "salta") perché sia il browser che Leaflet reagiscono allo stesso gesto. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Waynder — mappa di viaggio</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#1A363F">
@@ -42,6 +46,10 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+/* stesso motivo del meta viewport: elimina anche il doppio-tap-zoom del
+   browser fuori dalla mappa, di riserva sui browser che ignorano
+   user-scalable=no per accessibilità */
+html{touch-action:manipulation}
 html,body{margin:0;height:100%}
 body{
   font-family:"Public Sans",system-ui,sans-serif;
@@ -84,10 +92,69 @@ button:active{transform:scale(.97)}
     box-shadow:0 40px 90px -30px rgba(0,0,0,.7),0 2px 0 rgba(255,255,255,.03) inset;
   }
 }
+.map-wrap{position:relative;height:100%;width:100%}
 #map{height:100%;width:100%;background:var(--paper-2);filter:saturate(1.05) contrast(1.02)}
 @media (min-width:881px){
   #map{border-radius:var(--r-lg);box-shadow:0 40px 90px -30px rgba(0,0,0,.7)}
 }
+
+/* ---------- filtri mappa (vista "solo mappa") ---------- */
+/* stack verticale in alto a destra, sopra i pin ma sotto sheet/veil (z:2000).
+   Bottoni tondi come lo zoom di Leaflet (in basso a destra), non pillole con
+   testo: a 44px il testo diventa illeggibile e compete con i pin. */
+.map-filters{
+  position:absolute;z-index:850;
+  top:calc(14px + env(safe-area-inset-top,0px));right:14px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.mf-wrap{position:relative}
+.map-fbtn{
+  position:relative;width:44px;height:44px;border-radius:50%;
+  border:1px solid var(--ink-3);background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  display:grid;place-items:center;color:var(--fog);cursor:pointer;
+  box-shadow:0 6px 16px rgba(34,48,58,.18);
+  transition:background .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease),transform .15s var(--ease);
+}
+.map-fbtn:active{transform:scale(.94)}
+/* icona del bottone 1: SVG diretto dentro il bottone (nessun wrapper, a
+   differenza del bottone 2 che alterna icona/testo dentro .mf-ic) */
+.map-fbtn > svg:not(.mf-ring){width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.map-fbtn > svg:not(.mf-ring) .trail{opacity:.55}
+.map-fbtn > svg:not(.mf-ring) .dot{fill:currentColor;stroke:none}
+.map-fbtn .mf-ic{display:grid;place-items:center;width:22px;height:22px}
+.map-fbtn .mf-ic svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.map-fbtn .mf-ic svg .trail{opacity:.55}
+.map-fbtn .mf-ic svg .dot{fill:currentColor;stroke:none}
+.map-fbtn .mf-txt{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;width:auto;height:auto}
+.map-fbtn.on-days{background:linear-gradient(135deg,#E0454B,#D3323A);border-color:transparent;color:#fff}
+.map-fbtn.on-brain{background:linear-gradient(135deg,var(--sage),var(--sage-2));border-color:transparent;color:#fff}
+.map-fbtn.on-day{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:transparent;color:#3A2707}
+/* anello di progresso del bottone-giorno: pieno = "sei al giorno N su M",
+   invisibile quando il filtro è spento */
+.mf-ring{
+  position:absolute;inset:-4px;pointer-events:none;width:52px;height:52px;
+  transform:rotate(-90deg);
+}
+.mf-ring circle{
+  fill:none;stroke:var(--ochre-2);stroke-width:2.4;stroke-linecap:round;
+  stroke-dasharray:132;stroke-dashoffset:132;opacity:0;
+  transition:stroke-dashoffset .25s var(--ease),opacity .2s var(--ease);
+}
+.map-fbtn.on-day .mf-ring circle{opacity:1}
+/* etichetta a comparsa: dice a parole lo stato appena impostato, poi svanisce.
+   Le icone restano lette una volta capito il significato, ma la prima volta
+   (o coi tanti giorni di un viaggio lungo) il testo toglie ogni dubbio. */
+.mf-flyout{
+  position:absolute;top:50%;right:calc(100% + 10px);
+  transform:translateY(-50%) translateX(6px);
+  background:rgba(34,48,58,.94);color:#fff;font-size:12.5px;font-weight:600;
+  white-space:nowrap;padding:7px 13px;border-radius:999px;
+  box-shadow:0 10px 24px rgba(0,0,0,.28);
+  opacity:0;pointer-events:none;
+  transition:opacity .22s var(--ease),transform .22s var(--ease);
+}
+.mf-flyout.show{opacity:1;transform:translateY(-50%) translateX(0)}
 
 /* ---------- header ---------- */
 .head{padding:19px 19px 13px;border-bottom:1px solid var(--ink-3);position:relative}
@@ -752,7 +819,7 @@ body.hide-legs .leg-lab{display:none}
 }
 @media (max-width:880px){
   .app{grid-template-columns:1fr;grid-template-rows:1fr}
-  #map{grid-area:1/1}
+  .map-wrap{grid-area:1/1}
   .panel{
     grid-area:1/1;transform:translateY(100%);
     transition:transform .34s var(--ease);border-right:0;
@@ -834,7 +901,25 @@ body.hide-legs .leg-lab{display:none}
     <div class="scroll" id="books" hidden></div>
     <div class="scroll" id="diaryBox" hidden></div>
   </aside>
-  <div id="map"></div>
+  <div class="map-wrap">
+    <div id="map"></div>
+    <!-- visibili solo in "vista solo mappa" (vedi updateTabsState): due filtri
+         indipendenti e ciclici, non due tab, quindi bottoni tondi come lo zoom
+         sotto di loro, non pillole con testo che a 44px diventerebbe illeggibile. -->
+    <div class="map-filters" id="mapFilters" hidden>
+      <div class="mf-wrap">
+        <button class="map-fbtn" id="fltStops" type="button" aria-label="Filtro tappe: tutto"></button>
+        <span class="mf-flyout" id="fltStopsFly" aria-live="polite"></span>
+      </div>
+      <div class="mf-wrap">
+        <button class="map-fbtn" id="fltDay" type="button" aria-label="Filtro giorno: tutti">
+          <svg class="mf-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21"/></svg>
+          <span class="mf-ic"></span>
+        </button>
+        <span class="mf-flyout" id="fltDayFly" aria-live="polite"></span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- barra fissa: sempre visibile, in tutte le viste. Icone grandi e quadrate
@@ -1161,7 +1246,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v27';
+const APP_VERSION = 'v28';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -1185,7 +1270,7 @@ const tripKey = id => 'rotta:trip:' + id;
 let state = null, pickMode = false, editing = null, moving = null, freshPlaceId = null;
 let tripIndex = [];
 const routeCache = new Map();
-/* giorni (per id, o null per "da assegnare") ripiegati nell'Itinerario:
+/* giorni (per id, o null per "Brainstorming") ripiegati nell'Itinerario:
    preferenza di sola sessione, non salvata nel viaggio */
 const collapsedDays = new Set();
 
@@ -1736,6 +1821,22 @@ const all = id => state.places.filter(p=>p.dayId===id);
 const stops = id => all(id).filter(p=>!offRoute(p));  // percorso numerato
 const alts  = id => all(id).filter(p=>offRoute(p));   // alternative meteo + segnaposti
 
+/* percorso reale della giornata: base di partenza (se c'è) + tappe in catena +
+   base di arrivo (se c'è). Le basi non vengono numerate come tappe (restano le
+   pillole "Parte da"/"Arriva a" nel nastro), ma sono il punto vero da cui parte
+   e a cui torna il calcolo di tempi/km — prima venivano ignorate e il primo/
+   ultimo tratto verso l'alloggio non compariva mai. */
+function routeList(d){
+  if(!d.id) return stops(d.id);
+  const from = baseOf(d.baseFromId), to = baseOf(d.baseToId);
+  const out = [];
+  if(from) out.push({...from, isBase:true});
+  out.push(...stops(d.id));
+  if(to) out.push({...to, isBase:true});
+  // stessa base senza tappe in mezzo (es. giorno di riposo): niente tratta fittizia
+  return out.filter((p,i) => i===0 || p.id !== out[i-1].id);
+}
+
 /* l'ultimo giorno assegnato manualmente: le tappe nuove ripartono da lì invece
    che sempre dal Giorno 1, utile quando se ne aggiungono tante di fila allo
    stesso giorno (il caso più comune). */
@@ -1865,6 +1966,7 @@ async function roadLine(list){
 function render(){
   drawMap();
   drawList();
+  renderMapFilters();
   refreshLegs();
   refreshWeather();
 }
@@ -1874,7 +1976,16 @@ const SPEED = {walking:4.5, driving:55};
 /* Regola cittadina: si va a piedi solo se ENTRAMBI gli estremi sono tappe cittadine.
    Così la prima cittadina si raggiunge in auto, dentro il blocco ci si muove a piedi,
    e dall'ultima cittadina si riparte in auto verso una tappa fuori città. */
-function legMode(a,b){ return (a.city && b.city) ? 'walking' : 'driving'; }
+/* una base non ha un campo "città" da impostare a mano (non ha nemmeno una
+   scheda di modifica): decido a piedi/in auto guardando solo la distanza dalla
+   tappa adiacente. Sotto la soglia di una passeggiata urbana (1,5 km) è a
+   piedi, altrimenti in auto: niente da configurare, funziona per il B&B nel
+   centro storico come per l'agriturismo fuori città. */
+const BASE_WALK_KM = 1.5;
+function legMode(a,b){
+  if(a.isBase || b.isBase) return km(a,b) <= BASE_WALK_KM ? 'walking' : 'driving';
+  return (a.city && b.city) ? 'walking' : 'driving';
+}
 function dur(mins){
   mins = Math.max(1, Math.round(mins));
   if(mins < 60) return mins+' min';
@@ -1926,7 +2037,7 @@ async function refreshLegs(){
   refreshing = true;
   const jobs = [];
   state.days.forEach(d => {
-    const l = stops(d.id);
+    const l = routeList(d);
     for(let i=1;i<l.length;i++){
       const a=l[i-1], b=l[i];
       if(!legCache.has(legKey(a,b,legMode(a,b)))) jobs.push([a,b]);
@@ -2147,51 +2258,99 @@ function midOfLine(line){
   return L.latLng(line[line.length-1][0], line[line.length-1][1]);
 }
 
+/* icona neutra (grigio-ardesia, la stessa del glifo "Dormire") per il pin di
+   una base sulla mappa: niente numero, popup minimo, mai il pulsante
+   "Modifica" della tappa (edit() non sa nulla delle basi). */
+function baseMarker(b){
+  const icon = L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-32],
+    html:'<div class="pin poi" style="background:var(--fog)">' +
+           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+TYPES.sleep.d+'"/></svg>' +
+         '</div>' +
+         '<span class="pin-lab dim">'+esc(b.name)+'</span>'});
+  const m = L.marker([b.lat,b.lng],{icon, zIndexOffset:-300, opacity:.9});
+  m.bindPopup('<span class="pop-k">Base</span><span class="pop-t">'+esc(b.name)+'</span>');
+  return m;
+}
+
+/* ============ filtri della vista "solo mappa" ============ */
+/* Due filtri indipendenti, attivi solo quando si vede solo la mappa (i due
+   bottoni flottanti in alto a destra): stopFilter sceglie la categoria di
+   tappe, dayFilter isola un singolo giorno. Persistono finché non si
+   riapre il pannello (vedi updateTabsState). */
+let stopFilter = 'all';   // 'all' | 'days' | 'brainstorm'
+let dayFilter  = null;    // indice in state.days, o null = tutti i giorni
+
+/* quando è isolato un giorno, mostrare TUTTO il Brainstorming dell'intero
+   viaggio sulla mappa di quel giorno è inutile (spesso sono sparsi per
+   nazioni diverse): resta solo quello entro un raggio ragionevole dalle
+   tappe di quel giorno, come suggerimenti plausibili da assegnarci. */
+const BRAINSTORM_RADIUS_KM = 50;
+function visibleOrphans(){
+  const orphans = state.places.filter(p=>!p.dayId || !dayOf(p.dayId));
+  if(dayFilter == null) return orphans;
+  const day = state.days[dayFilter];
+  const anchor = day ? all(day.id) : [];
+  if(!anchor.length) return orphans;
+  return orphans.filter(o => anchor.some(s => km(s,o) <= BRAINSTORM_RADIUS_KM));
+}
+
 function drawMap(){
   layer.clearLayers();
-  state.days.forEach(d => {
-    const list = stops(d.id);
+  const showDays = stopFilter !== 'brainstorm';
+  const showOrphans = stopFilter !== 'days';
 
-    list.forEach((p,i) => layer.addLayer(marker(p, i+1, d.color)));
-    alts(d.id).forEach(p => layer.addLayer(marker(p, '', d.color)));
+  if(showDays){
+    const usedBaseIds = new Set();
+    state.days.forEach((d,di) => {
+      if(dayFilter != null && di !== dayFilter) return;
+      const list = stops(d.id);
 
-    if(list.length > 1){
-      for(let i=1;i<list.length;i++){
-        const a = list[i-1], b = list[i];
-        const t = legTime(a,b);
-        const walk = t.mode === 'walking';
-        const seg = L.polyline([[a.lat,a.lng],[b.lat,b.lng]],{
-          color:d.color, weight: walk?3:3.5, opacity:.85,
-          dashArray: walk ? '2 7' : null,
-          lineCap: walk ? 'round' : 'butt'
-        });
-        layer.addLayer(seg);
-        const mid = L.latLng((a.lat+b.lat)/2, (a.lng+b.lng)/2);
-        const lab = L.marker(mid,{
-          interactive:false,
-          zIndexOffset:-200,
-          icon:L.divIcon({className:'', iconSize:[0,0], html:
-            '<span class="leg-lab'+(walk?' walk':'')+'" style="--c:'+d.color+'">'
-            + (walk?'🚶':'🚗') + ' ' + (t.real?'':'~') + dur(t.mins) + ' · ' + fmt(t.dist)
-            + '</span>'})
-        });
-        layer.addLayer(lab);
+      list.forEach((p,i) => layer.addLayer(marker(p, i+1, d.color)));
+      alts(d.id).forEach(p => layer.addLayer(marker(p, '', d.color)));
+      if(d.baseFromId) usedBaseIds.add(d.baseFromId);
+      if(d.baseToId) usedBaseIds.add(d.baseToId);
 
-        /* la tratta in auto mostra sempre il percorso reale su strada, mai il
-           collegamento puntinato in linea d'aria: se la rete manca resta comunque
-           visibile la linea diretta come stima, senza differenza di stile */
-        if(!walk) roadLine([a,b]).then(r => {
-          if(!r || !layer.hasLayer(seg)) return;
-          seg.setLatLngs(r.line);
-          /* l'etichetta va spostata sul punto a metà della traccia reale: con una
-             deviazione come Edimburgo-Glasgow-Loch Lomond il punto medio geometrico
-             cade lontano dalla strada, e il numero resta appeso nel vuoto */
-          if(layer.hasLayer(lab)) lab.setLatLng(midOfLine(r.line));
-        });
+      const route = routeList(d);
+      if(route.length > 1){
+        for(let i=1;i<route.length;i++){
+          const a = route[i-1], b = route[i];
+          const t = legTime(a,b);
+          const walk = t.mode === 'walking';
+          const seg = L.polyline([[a.lat,a.lng],[b.lat,b.lng]],{
+            color:d.color, weight: walk?3:3.5, opacity:.85,
+            dashArray: walk ? '2 7' : null,
+            lineCap: walk ? 'round' : 'butt'
+          });
+          layer.addLayer(seg);
+          const mid = L.latLng((a.lat+b.lat)/2, (a.lng+b.lng)/2);
+          const lab = L.marker(mid,{
+            interactive:false,
+            zIndexOffset:-200,
+            icon:L.divIcon({className:'', iconSize:[0,0], html:
+              '<span class="leg-lab'+(walk?' walk':'')+'" style="--c:'+d.color+'">'
+              + (walk?'🚶':'🚗') + ' ' + (t.real?'':'~') + dur(t.mins) + ' · ' + fmt(t.dist)
+              + '</span>'})
+          });
+          layer.addLayer(lab);
+
+          /* la tratta in auto mostra sempre il percorso reale su strada, mai il
+             collegamento puntinato in linea d'aria: se la rete manca resta comunque
+             visibile la linea diretta come stima, senza differenza di stile */
+          if(!walk) roadLine([a,b]).then(r => {
+            if(!r || !layer.hasLayer(seg)) return;
+            seg.setLatLngs(r.line);
+            /* l'etichetta va spostata sul punto a metà della traccia reale: con una
+               deviazione come Edimburgo-Glasgow-Loch Lomond il punto medio geometrico
+               cade lontano dalla strada, e il numero resta appeso nel vuoto */
+            if(layer.hasLayer(lab)) lab.setLatLng(midOfLine(r.line));
+          });
+        }
       }
-    }
-  });
-  state.places.filter(p=>!p.dayId || !dayOf(p.dayId)).forEach(p => layer.addLayer(marker(p,'?', '#8FA3B0')));
+    });
+    usedBaseIds.forEach(id => { const b = baseOf(id); if(b) layer.addLayer(baseMarker(b)); });
+  }
+
+  if(showOrphans) visibleOrphans().forEach(p => layer.addLayer(marker(p,'?', '#8FA3B0')));
   scaleLabels();
 }
 
@@ -2269,9 +2428,9 @@ function drawList(){
   box.innerHTML = '';
   const orphans = state.places.filter(p=>!p.dayId || !dayOf(p.dayId));
   state.days.forEach(d => box.appendChild(dayBlock(d, stops(d.id))));
-  /* "Da assegnare" in fondo: i giorni veri sono quello che si vuole vedere
+  /* "Brainstorming" in fondo: i giorni veri sono quello che si vuole vedere
      subito aprendo l'app, non le tappe ancora da smistare */
-  if(orphans.length) box.appendChild(dayBlock({id:null,name:'Da assegnare',color:'#8FA3B0'}, orphans));
+  if(orphans.length) box.appendChild(dayBlock({id:null,name:'Brainstorming',color:'#8FA3B0'}, orphans));
 }
 
 /* pillola "Parte da"/"Arriva a" ai due estremi del nastro: stessa base per
@@ -2309,14 +2468,17 @@ function dayBlock(d, list){
   sec.className = 'day';
   sec.dataset.day = d.id || '';
 
+  /* i totali contano anche le tratte da/verso la base, non solo tra le tappe:
+     è lì che comincia e finisce davvero la giornata. */
+  const route = d.id ? routeList(d) : list;
   let tot = 0, totMin = 0, onFoot = 0;
-  for(let i=1;i<list.length;i++){
-    const t = legTime(list[i-1], list[i]);
+  for(let i=1;i<route.length;i++){
+    const t = legTime(route[i-1], route[i]);
     tot += t.dist; totMin += t.mins;
     if(t.mode === 'walking') onFoot += t.dist;
   }
 
-  /* "da assegnare" usa id null: la chiave di comprimi/espandi tollera anche quello.
+  /* "Brainstorming" usa id null: la chiave di comprimi/espandi tollera anche quello.
      Un giorno vero (d.id) mostra sempre almeno le pillole "Parte da"/"Arriva a"
      nel nastro, quindi è sempre comprimibile anche a tappe zero. */
   const altList = d.id ? alts(d.id) : [];
@@ -2364,9 +2526,9 @@ function dayBlock(d, list){
           const f = all(d.id); if(f.length) map.fitBounds(L.latLngBounds(f.map(p=>[p.lat,p.lng])).pad(.25));
           closeSheetMobile();
         }},
-        {label:'Apri in Google Maps', onClick: () => openInGmaps(d, list)},
+        {label:'Apri in Google Maps', onClick: () => openInGmaps(d, routeList(d))},
         {label:'Elimina il giorno', danger:true, onClick: () => {
-          if(!confirm('Elimino "'+d.name+'"? Le sue tappe tornano in “Da assegnare”.')) return;
+          if(!confirm('Elimino "'+d.name+'"? Le sue tappe tornano in “Brainstorming”.')) return;
           state.places.forEach(p => { if(p.dayId===d.id) p.dayId = null; });
           state.days = state.days.filter(x=>x.id!==d.id);
           save(); render();
@@ -2529,7 +2691,7 @@ function drawDiary(){
     return;
   }
   state.days.forEach(d => box.appendChild(diaryDayBlock(d, all(d.id))));
-  if(orphans.length) box.appendChild(diaryDayBlock({id:null, name:'Da assegnare', color:'#8FA3B0'}, orphans));
+  if(orphans.length) box.appendChild(diaryDayBlock({id:null, name:'Brainstorming', color:'#8FA3B0'}, orphans));
 }
 
 function diaryDayBlock(d, list){
@@ -3362,7 +3524,7 @@ function edit(id){
   if(!editing.img) autoImage(); // niente foto salvata: provo a trovarne una da sola
   document.getElementById('fCoord').textContent = editing.lat.toFixed(5)+', '+editing.lng.toFixed(5);
   const sel = document.getElementById('fDay');
-  sel.innerHTML = '<option value="">Da assegnare</option>' + state.days.map(d=>'<option value="'+d.id+'">'+esc(d.name)+'</option>').join('');
+  sel.innerHTML = '<option value="">Brainstorming</option>' + state.days.map(d=>'<option value="'+d.id+'">'+esc(d.name)+'</option>').join('');
   sel.value = editing.dayId || '';
 
   const rainB = document.getElementById('fRain'), altB = document.getElementById('fAlt'),
@@ -3600,7 +3762,7 @@ document.getElementById('btnFit').onclick = () => {  if(!state.places.length) re
 function redrawDays(){ if(view === 'diary') drawDiary(); else drawList(); }
 document.getElementById('btnCollapseAll').onclick = () => {
   state.days.forEach(d => collapsedDays.add(d.id));
-  collapsedDays.add(null); // "Da assegnare"
+  collapsedDays.add(null); // "Brainstorming"
   redrawDays();
 };
 document.getElementById('btnExpandAll').onclick = () => {
@@ -3697,6 +3859,16 @@ function updateTabsState(){
   barActs.hidden = mapOnly || !anyAct;
   [[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabDiary,'diary']]
     .forEach(([b,k]) => b.classList.toggle('on', !mapOnly && view === k));
+
+  /* i due filtri della mappa vivono solo qui: fuori da "solo mappa" il resto
+     dell'app (Itinerario, Diario…) deve sempre mostrare tutto senza sorprese,
+     quindi si azzerano appena si riapre il pannello. */
+  document.getElementById('mapFilters').hidden = !mapOnly;
+  if(!mapOnly && (stopFilter !== 'all' || dayFilter !== null)){
+    stopFilter = 'all'; dayFilter = null;
+    renderMapFilters();
+    drawMap();
+  }
 }
 
 const EYEBROW = {list:'Itinerario', cost:'Spese condivise', book:'Prenotazioni', diary:'Diario di viaggio'};
@@ -3750,6 +3922,111 @@ function closeSheetMobile(){
     updateTabsState();
   }
 }
+
+/* ============ bottoni filtro della mappa ============ */
+/* Icone lineari coerenti con .tab-ic (stroke 1.7, currentColor). "Solo
+   giornaliere" riusa esattamente l'icona del tab Tappe qui sotto: stesso
+   segno, stesso significato. Niente cervello per "brainstorming": a 22px
+   diventa una macchia illeggibile, meglio una lampadina con raggi. */
+const MF_ICONS = {
+  all: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+         '<path d="M12 4.5 20 9 12 13.5 4 9z"/>' +
+         '<path d="M4.5 12 12 16.5 19.5 12"/>' +
+         '<path d="M4.5 16 12 20.5 19.5 16" stroke-dasharray="2 2.6"/>' +
+       '</svg>',
+  days: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<path class="trail" d="M6 19.5c3.4-.6 4.6-2.6 3.4-4.3-1.2-1.7-4-1.2-4.4.7-.5 2.4 3.2 3.3 6.4 2.6 3-.6 4.6-2.2 5.6-4.6" stroke-dasharray="2 3.2"/>' +
+          '<path d="M18.5 3.4c-1.9 0-3.4 1.5-3.4 3.4 0 2.5 3.4 5.9 3.4 5.9s3.4-3.4 3.4-5.9c0-1.9-1.5-3.4-3.4-3.4z"/>' +
+          '<circle class="dot" cx="18.5" cy="6.8" r="1.25"/>' +
+          '<circle class="dot" cx="5.2" cy="20.1" r="1.5"/>' +
+        '</svg>',
+  brainstorm: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+                '<path d="M9 17.2h6"/><path d="M9.6 19.6h4.8"/>' +
+                '<path d="M12 2.3v2"/><path d="M4.6 5.6l1.5 1.5"/><path d="M19.4 5.6l-1.5 1.5"/>' +
+                '<path d="M8.6 16.4c-.9-1.1-1.9-2.2-1.9-4.4a5.3 5.3 0 1 1 10.6 0c0 2.2-1 3.3-1.9 4.4"/>' +
+              '</svg>',
+  calendar: '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+              '<path d="M4.5 5.5h15v14h-15z"/><path d="M4.5 9.7h15"/>' +
+              '<path d="M8.5 3.5v3.4M15.5 3.5v3.4"/>' +
+            '</svg>'
+};
+
+const STOP_FILTER_CYCLE = ['all','days','brainstorm'];
+const STOP_FILTER_LABEL = {all:'Tutto', days:'Solo giornaliere', brainstorm:'Solo Brainstorming'};
+const STOP_FILTER_CLASS = {all:'', days:'on-days', brainstorm:'on-brain'};
+
+let mfFlyTimer = null;
+function showFlyout(el, text){
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(mfFlyTimer);
+  mfFlyTimer = setTimeout(() => el.classList.remove('show'), 1400);
+}
+
+const RING_CIRC = 2 * Math.PI * 21; // r=21 nel viewBox 48×48 di .mf-ring
+
+function renderMapFilters(){
+  const btnStops = document.getElementById('fltStops');
+  btnStops.className = 'map-fbtn ' + STOP_FILTER_CLASS[stopFilter];
+  btnStops.innerHTML = MF_ICONS[stopFilter];
+  btnStops.setAttribute('aria-label', 'Filtro tappe: '+STOP_FILTER_LABEL[stopFilter].toLowerCase());
+
+  const btnDay = document.getElementById('fltDay');
+  const icSpan = btnDay.querySelector('.mf-ic');
+  const ring = btnDay.querySelector('.mf-ring circle');
+  const n = state.days.length;
+  if(dayFilter == null || !n){
+    btnDay.classList.remove('on-day');
+    icSpan.className = 'mf-ic';
+    icSpan.innerHTML = MF_ICONS.calendar;
+    ring.style.strokeDashoffset = String(RING_CIRC);
+    btnDay.setAttribute('aria-label', 'Filtro giorno: tutti');
+  }else{
+    btnDay.classList.add('on-day');
+    icSpan.className = 'mf-ic mf-txt';
+    icSpan.textContent = 'G'+(dayFilter+1);
+    ring.style.strokeDashoffset = String(RING_CIRC * (1 - (dayFilter+1)/n));
+    btnDay.setAttribute('aria-label', 'Filtro giorno: giorno '+(dayFilter+1)+' di '+n);
+  }
+}
+
+document.getElementById('fltStops').onclick = () => {
+  const i = STOP_FILTER_CYCLE.indexOf(stopFilter);
+  stopFilter = STOP_FILTER_CYCLE[(i+1) % STOP_FILTER_CYCLE.length];
+  renderMapFilters();
+  drawMap();
+  showFlyout(document.getElementById('fltStopsFly'), STOP_FILTER_LABEL[stopFilter]);
+};
+
+/* click = avanza di un giorno nel ciclo; long-press = azzera subito, utile
+   con tanti giorni per non dover ciclare fino in fondo */
+let dayPressTimer = null, dayLongPressed = false;
+const fltDayBtn = document.getElementById('fltDay');
+fltDayBtn.addEventListener('pointerdown', () => {
+  dayLongPressed = false;
+  dayPressTimer = setTimeout(() => {
+    dayLongPressed = true;
+    if(dayFilter !== null){
+      dayFilter = null;
+      renderMapFilters();
+      drawMap();
+      showFlyout(document.getElementById('fltDayFly'), 'Tutti i giorni');
+    }
+  }, 550);
+});
+['pointerup','pointerleave','pointercancel'].forEach(ev =>
+  fltDayBtn.addEventListener(ev, () => clearTimeout(dayPressTimer)));
+fltDayBtn.onclick = () => {
+  if(dayLongPressed){ dayLongPressed = false; return; }
+  const n = state.days.length;
+  if(!n) return;
+  dayFilter = dayFilter == null ? 0 : (dayFilter + 1 >= n ? null : dayFilter + 1);
+  renderMapFilters();
+  drawMap();
+  const day = dayFilter != null ? state.days[dayFilter] : null;
+  const label = day ? 'G'+(dayFilter+1)+' · '+(day.date ? fmtCalDate(day.date) : day.name) : 'Tutti i giorni';
+  showFlyout(document.getElementById('fltDayFly'), label);
+};
 
 /* ============ installazione e funzionamento offline ============ */
 /* Versione dell'applicazione: se il service worker registrato ne dichiara una

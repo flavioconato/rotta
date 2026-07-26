@@ -169,6 +169,27 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9septies. Novità di questa versione (v28)
+
+- Le tappe senza giorno si chiamano ora **Brainstorming** (prima "Da
+  assegnare"): stesso posto in fondo all'Itinerario, solo un nome più chiaro
+  per delle idee ancora da smistare su un giorno.
+- Le **Basi** ora entrano davvero nel percorso: il tempo/km di ogni giornata
+  parte dalla base (non più dalla prima tappa) e torna alla base di arrivo.
+  A piedi o in auto si decide da solo in base alla distanza (sotto 1,5 km
+  è a piedi), senza bisogno di configurare nulla.
+- Nella vista **solo mappa** sono comparsi due bottoni tondi in alto a
+  destra, sopra i controlli di zoom:
+  - il primo cicla tra *tutto* / *solo tappe del giorno* / *solo
+    Brainstorming* (icona a strati, tappe, lampadina);
+  - il secondo isola un giorno alla volta (G1, G2…), con un anello che
+    riempendosi mostra a che punto del ciclo sei; un tocco lungo torna
+    subito a "tutti i giorni" senza dover ciclare fino in fondo. Isolando
+    un giorno, il Brainstorming mostrato si restringe a quello nel raggio
+    di 50 km, invece di tutte le idee sparse per il viaggio.
+- Corretto lo zoom instabile su telefono: un pizzico sulla mappa non fa più
+  "saltare" anche l'intera pagina.
+
 ## 9sexies. Novità di questa versione (v16)
 
 - Le tappe nel nastro sono ora card compatte (foto quadrata piccola, nome e
