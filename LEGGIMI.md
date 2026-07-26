@@ -25,8 +25,8 @@ Quell'indirizzo è la tua app. Salvalo.
 ## 2. Installare su Android
 
 1. Apri l'indirizzo con **Chrome**.
-2. Compare il pulsante verde **⤓ Installa** in alto tra i comandi: premilo.
-   Se non compare: menu **⋮ → Installa app** (o *Aggiungi a schermata Home*).
+2. Tocca **⋯** in alto a destra nel pannello → **⤓ Installa l'app**.
+   Se la voce non c'è: menu **⋮ → Installa app** (o *Aggiungi a schermata Home*).
 3. Trovi l'icona tra le app. Si apre a schermo intero, senza barra del browser.
 
 ## 3. Installare su PC
