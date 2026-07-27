@@ -171,6 +171,19 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9undecies. Novità di questa versione (v49)
+
+- Corretto un difetto di impaginazione: caricando in **Brainstorming** molte
+  idee in un colpo solo (es. con "Ispirami"/"Non sai ancora dove andare?" su
+  un'intera nazione), il pannello Tappe poteva allargarsi oltre lo schermo e
+  l'ingranaggio del menù in alto a destra (☰ Menù del viaggio) restava
+  tagliato fuori dalla vista, irraggiungibile finché non si chiudeva e
+  riapriva l'app.
+- Il popup **"Non sai ancora dove andare?"** ora è raggiungibile in
+  qualunque momento da **☰ → ✨ Non sai ancora dove andare?**, non solo alla
+  primissima apertura di un viaggio vuoto: se lo chiudi con "Magari dopo" e
+  poi ci ripensi, non serve più svuotare il viaggio per rivederlo.
+
 ## 9decies. Novità di questa versione (v32)
 
 - **Ispirami** ora attinge prima a un database curato a mano di 102 paesi
