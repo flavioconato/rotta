@@ -1441,6 +1441,21 @@ body.hide-legs .leg-lab{display:none}
   </div>
 </div>
 
+<div class="veil" id="emptyInspVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="eiTitle">
+    <h2 id="eiTitle">✨ Non sai ancora dove andare?</h2>
+    <p class="hint" style="padding:0 0 10px">Lasciati ispirare: scrivi una nazione o una città e carico subito in Brainstorming le tappe più interessanti. Poi le sistemi come vuoi.</p>
+    <div class="insp-bar">
+      <input class="field" id="eiQ" placeholder="Italia, Roma, Giappone…" autocomplete="off">
+      <button class="btn" id="eiGo" type="button" style="flex:0 0 auto;padding:12px 18px">Cerca</button>
+    </div>
+    <p class="hint" id="eiStatus" style="padding-top:10px"></p>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="eiClose" type="button" style="flex:1">Magari dopo</button>
+    </div>
+  </div>
+</div>
+
 <div class="veil" id="veil" hidden>
   <div class="sheet" role="dialog" aria-modal="true">
     <h2 id="shTitle">Tappa</h2>
@@ -1678,7 +1693,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v47';
+const APP_VERSION = 'v48';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -1893,6 +1908,7 @@ async function boot(){
   badge(storageOK ? 'saved' : 'unsaved');
   render();
   startupView();
+  maybeSuggestInspire();
   subscribeShared(state.shareId);
 }
 
@@ -1914,6 +1930,7 @@ async function switchTrip(id, opts){
   if(view === 'book') drawBooks();
   badge(storageOK ? 'saved' : 'unsaved');
   if(opts.close !== false) closeTripsSheet();
+  maybeSuggestInspire();
   subscribeShared(state.shareId);
 }
 
@@ -1939,6 +1956,7 @@ async function newTrip(opts){
   } else {
     drawTrips();
   }
+  maybeSuggestInspire();
   subscribeShared(null);
 }
 
@@ -3084,11 +3102,12 @@ document.getElementById('inspMore').onclick = () => {
   insp.shown = Math.min(insp.shown + INSP_PAGE, insp.pool.length);
   inspRender();
 };
-/* il testo della descrizione finisce nelle note: è già un piccolo appunto */
-document.getElementById('inspAdd').onclick = () => {
+/* il testo della descrizione finisce nelle note: è già un piccolo appunto.
+   Condivisa fra la scheda Ispirami (dove si spuntano i singoli luoghi) e il
+   popup "non sai dove andare" (dove si butta dentro tutto in un colpo). */
+function addInspItems(items){
   let n = 0;
-  [...insp.sel].sort((a,b) => a-b).forEach(i => {
-    const it = insp.pool[i];
+  items.forEach(it => {
     if(!it) return;
     /* niente doppioni: se c'è già una tappa con quel nome a due passi, salto */
     if(state.places.some(p => p.name.toLowerCase() === it.name.toLowerCase() && km(p, it) < .3)) return;
@@ -3113,12 +3132,61 @@ document.getElementById('inspAdd').onclick = () => {
     });
     n++;
   });
+  return n;
+}
+document.getElementById('inspAdd').onclick = () => {
+  const n = addInspItems([...insp.sel].sort((a,b) => a-b).map(i => insp.pool[i]));
   insp.sel.clear();
   document.getElementById('inspVeil').hidden = true;
   save(); render();
   toast(n ? n + (n === 1 ? ' idea aggiunta' : ' idee aggiunte') + ' in Brainstorming' : 'Erano già tutte nell\'itinerario');
   if(n) coach('brainstorm');
 };
+
+/* ============ popup "non sai ancora dove andare?" ============ */
+/* Compare una volta sola per viaggio, solo se è ancora completamente vuoto:
+   chiede un posto e — senza passare dalla scheda con le spunte — butta
+   dentro in Brainstorming tutto quello che trova, con lo stesso identico
+   meccanismo di Ispirami (stessa distinzione automatica paese/città). */
+function openEmptyInspire(){
+  document.getElementById('eiQ').value = '';
+  document.getElementById('eiStatus').textContent = '';
+  document.getElementById('emptyInspVeil').hidden = false;
+  autoFocus(document.getElementById('eiQ'));
+}
+function maybeSuggestInspire(){
+  if(state.places.length || state.inspireSuggested) return;
+  /* il benvenuto ha la precedenza: due popup insieme sarebbero troppi */
+  if(!document.getElementById('wcVeil').hidden) return;
+  state.inspireSuggested = true;
+  save();
+  openEmptyInspire();
+}
+async function emptyInspireSearch(){
+  const q = document.getElementById('eiQ').value.trim();
+  const status = document.getElementById('eiStatus');
+  if(q.length < 3) return;
+  status.textContent = 'Cerco…';
+  try{
+    const t = await inspResolve(q);
+    if(!t){ status.textContent = 'Non trovo questo posto. Prova a scriverlo diversamente.'; return; }
+    const pool = await inspFetch(t, t.cityish ? 'sights' : 'cities');
+    if(!pool || !pool.length){ status.textContent = 'Nessun suggerimento per questo posto.'; return; }
+    const n = addInspItems(pool);
+    document.getElementById('emptyInspVeil').hidden = true;
+    save(); render();
+    toast(n ? n + (n === 1 ? ' tappa aggiunta' : ' tappe aggiunte') + ' in Brainstorming' : 'Erano già tutte nell\'itinerario');
+    if(n) coach('brainstorm');
+  }catch(e){
+    status.textContent = 'Ricerca non riuscita: serve la rete. Riprova fra poco.';
+  }
+}
+document.getElementById('eiGo').onclick = emptyInspireSearch;
+document.getElementById('eiQ').addEventListener('keydown', e => { if(e.key === 'Enter') emptyInspireSearch(); });
+document.getElementById('eiClose').onclick = () => { document.getElementById('emptyInspVeil').hidden = true; };
+document.getElementById('emptyInspVeil').addEventListener('click', e => {
+  if(e.target === document.getElementById('emptyInspVeil')) document.getElementById('emptyInspVeil').hidden = true;
+});
 
 /* ============ percorsi su strada ============ */
 async function roadLine(list){
@@ -5758,6 +5826,7 @@ function openWelcome(){
 document.getElementById('wcStart').onclick = () => {
   document.getElementById('wcVeil').hidden = true;
   lsSet(OB_KEY, '1');
+  maybeSuggestInspire();
 };
 
 const moreVeil = document.getElementById('moreVeil');
