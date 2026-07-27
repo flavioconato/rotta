@@ -481,6 +481,11 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 body[data-view="cost"] .empty::before{background:rgba(231,169,60,.14);border-color:rgba(231,169,60,.35)}
 body[data-view="book"] .empty::before{background:rgba(30,127,166,.12);border-color:rgba(30,127,166,.3)}
 body[data-view="diary"] .empty::before{background:rgba(27,122,94,.12);border-color:rgba(27,122,94,.3)}
+body[data-view="list"] .empty::before{background:rgba(229,72,77,.12);border-color:rgba(229,72,77,.32)}
+/* segnaposto di Brainstorming a viaggio del tutto vuoto: invita a Ispirami,
+   quindi si comporta come un pulsante (non il generico "nessuna tappa" muto) */
+.empty-cta{cursor:pointer;transition:border-color .18s,background .18s}
+.empty-cta:hover,.empty-cta:focus-visible{border-color:var(--route);background:rgba(229,72,77,.06)}
 
 .pin-lab{
   position:absolute;top:36px;left:17px;
@@ -1451,6 +1456,7 @@ body.hide-legs .leg-lab{display:none}
       <button class="btn" id="eiGo" type="button" style="flex:0 0 auto;padding:12px 18px">Cerca</button>
     </div>
     <p class="hint" id="eiStatus" style="padding-top:10px"></p>
+    <div class="insp-list" id="eiCandList" hidden></div>
     <div class="sheet-actions">
       <button class="btn ghost" id="eiClose" type="button" style="flex:1">Magari dopo</button>
     </div>
@@ -1694,7 +1700,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v49';
+const APP_VERSION = 'v50';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2580,19 +2586,46 @@ async function wikiNearby(lang, lat, lng, radius){
 const INSP_SUB = {city:'Città', castle:'Castello', museum:'Museo', view:'Panorama', nature:'Natura',
   beach:'Mare', transit:'Trasporto', shop:'Acquisti', food:'Mangiare', trek:'Trekking', place:'Da vedere'};
 
+/* il db curato (scritto a mano) non ha una foto per ogni voce: dove manca,
+   si chiede a Wikipedia "cosa c'è a due passi da queste coordinate" — stesso
+   principio di wikiNearby, ma una sola pagina (la più vicina) e già con
+   l'anteprima dentro la stessa risposta, invece di due chiamate separate. */
+async function wikiThumbNear(lat, lng, radius){
+  for(const lang of ['it', 'en']){
+    try{
+      const u = 'https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*' +
+        '&generator=geosearch&ggscoord=' + lat + '%7C' + lng + '&ggsradius=' + radius + '&ggslimit=1' +
+        '&prop=pageimages&piprop=thumbnail&pithumbsize=480';
+      const j = await (await fetch(u)).json();
+      const page = Object.values(j.query?.pages || {})[0];
+      if(page?.thumbnail?.source) return page.thumbnail.source;
+    }catch(e){ /* si passa alla lingua successiva, o si rinuncia */ }
+  }
+  return null;
+}
+/* tenta di riempire il buco per ognuno: quelli senza nessuna pagina vicina
+   restano senza foto e verranno scartati da chi ha chiamato questa funzione */
+async function fillMissingThumbs(items, radius){
+  const misses = items.filter(i => !i.thumb);
+  if(!misses.length) return items;
+  await Promise.all(misses.map(async i => { i.thumb = await wikiThumbNear(i.lat, i.lng, radius || 400); }));
+  return items;
+}
+
 /* il luogo scritto dall'utente: dove sta, quanto è grande e se è una città o
-   una zona più larga */
-async function inspResolve(q){
-  const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&extratags=1&addressdetails=1&q=' + encodeURIComponent(q);
-  const hit = (await (await fetch(url)).json())[0];
-  if(!hit) return null;
+   una zona più larga. Più scritte omonime nel mondo (Roma c'è anche in
+   Georgia, USA) o forme ambigue ("San Giorgio" sono decine di paesi):
+   inspGeocode ne prende fino a N e lascia scegliere quello giusto, invece di
+   fidarsi ciecamente del primo risultato di Nominatim. */
+function hitToTarget(hit){
   const CITYISH = /^(city|town|village|hamlet|suburb|quarter|neighbourhood|borough|municipality)$/;
   const t = hit.type || '';
   const cityish = CITYISH.test(t) || CITYISH.test(hit.addresstype || '') ||
                   CITYISH.test(hit.extratags?.linked_place || '') || CITYISH.test(hit.extratags?.place || '');
   const bb = (hit.boundingbox || []).map(Number);   // [sud, nord, ovest, est]
   return {
-    name: (hit.display_name || q).split(',').slice(0, 2).join(',').trim(),
+    name: (hit.display_name || '').split(',').slice(0, 2).join(',').trim(),
+    full: hit.display_name || '',
     lat:+hit.lat, lng:+hit.lon, cityish,
     bbox: bb.length === 4 && bb.every(n => !isNaN(n)) ? bb : null,
     qid: (hit.extratags?.wikidata || '').match(/^Q\d+$/) ? hit.extratags.wikidata : null,
@@ -2603,6 +2636,25 @@ async function inspResolve(q){
     countryCode: (hit.address?.country_code || '').toUpperCase(),
     regionName: hit.address?.state || hit.address?.region || null
   };
+}
+async function inspGeocode(q, limit){
+  const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=' + limit +
+    '&extratags=1&addressdetails=1&q=' + encodeURIComponent(q);
+  let hits = [];
+  try{ hits = await (await fetch(url)).json(); }catch(e){ return []; }
+  return hits.map(hitToTarget);
+}
+/* riga cliccabile "potrebbe essere questo": stessa card di un suggerimento,
+   ma senza spunta né foto — qui si sceglie il posto, non la tappa */
+function inspCandidateRow(c, onPick){
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'insp-item';
+  b.innerHTML = '<span class="insp-ic">📍</span><span class="insp-bd">' +
+    '<span class="insp-name">' + esc(c.name) + '</span>' +
+    '<span class="insp-sub">' + esc(c.full) + ' · ' + c.kind + '</span></span>';
+  b.onclick = () => onPick(c);
+  return b;
 }
 
 /* Un suggerimento è buono se ha una FOTO e se qualcuno si è preso la briga di
@@ -2906,15 +2958,14 @@ async function inspCities(t){
       if(a.desc) i.desc = a.desc;
     });
   }));
-  /* un centro che non ha nemmeno una foto raramente è una destinazione: resta
-     solo se è abbastanza grande da essere una tappa comunque */
   items = items.filter(i => i.pop >= 300);   // via ruderi e abbazie isolate
   /* Per un viaggio conta quanto un posto è conosciuto, non quanta gente ci
      abita: Siena ha meno abitanti di Guidonia Montecelio ma una voce di
      Wikipedia in decine di lingue. Gli abitanti restano il secondo criterio. */
   items.sort((x, y) => ((y.langs || 0) - (x.langs || 0)) || (y.pop - x.pop));
-  const withPhoto = items.filter(i => i.thumb || i.pop >= 20000);
-  return withPhoto.length >= 10 ? withPhoto : items;
+  /* niente foto, niente tappa: senza non entra, punto — una card vuota sembra
+     un errore di caricamento più che un suggerimento */
+  return items.filter(i => i.thumb);
 }
 /* ============ Ispirami: database curato locale ============ */
 /* Un centinaio di paesi scelti e scritti a mano (non generati al volo da
@@ -2990,6 +3041,11 @@ async function inspFetchStatic(t, mode){
       ? attractions.filter(a => wanted.includes((a.region || '').toLowerCase()))
       : attractions;
 
+    /* niente foto, niente tappa: vale per il db curato come già per Wikipedia
+       (vedi inspWorthy più sopra) — una card senza immagine sembra rotta. Il
+       db scritto a mano non ha una foto per ogni voce: prima si tenta di
+       colmare il buco chiedendo a Wikipedia cosa c'è vicino a quelle
+       coordinate (fillMissingThumbs), e solo chi resta senza viene escluso. */
     const cityItems = cityPool.map(c => ({
       name: c.name, lat: c.lat, lng: c.lng, type: 'city',
       desc: c.region || '', langs: 0, len: 0,
@@ -2997,20 +3053,32 @@ async function inspFetchStatic(t, mode){
       wiki: null, pop: (c.attractions || []).length
     }));
     const attrItems = attrPool.map(inspiraPlaceToItem);
-    return [...cityItems, ...attrItems].sort((x, y) => (y.pop || 0) - (x.pop || 0));
+    const combined = await fillMissingThumbs([...cityItems, ...attrItems]);
+    return combined.filter(i => i.thumb).sort((x, y) => (y.pop || 0) - (x.pop || 0));
   }
 
   /* modalità "cose da vedere": prima provo una città vera e propria del db,
      poi — se il punto cercato è un parco o un sito isolato, non una città —
-     le attrazioni nazionali vicine */
+     le attrazioni nazionali vicine. Stesso rattoppo delle foto mancanti; se
+     anche dopo il tentativo la città trovata resta vuota, si scende alle
+     attrazioni nazionali e infine a Wikipedia/Wikidata (vedi inspFetch),
+     invece di mostrare card senza immagine. */
   const citiesWithSights = (country.citta_principali || []).filter(c => (c.attractions || []).length);
   const dest = inspiraNearestCity(citiesWithSights, t);
-  if(dest) return dest.attractions.map(inspiraPlaceToItem);
+  if(dest){
+    const items = await fillMissingThumbs(dest.attractions.map(inspiraPlaceToItem));
+    const withPhoto = items.filter(i => i.thumb);
+    if(withPhoto.length) return withPhoto;
+  }
 
-  const nearby = attractions
-    .filter(a => a.lat != null && a.lng != null && km(t, a) < 20)
-    .sort((a, b) => km(t, a) - km(t, b));
-  if(nearby.length) return nearby.map(inspiraPlaceToItem);
+  const nearby = await fillMissingThumbs(
+    attractions
+      .filter(a => a.lat != null && a.lng != null && km(t, a) < 20)
+      .sort((a, b) => km(t, a) - km(t, b))
+      .map(inspiraPlaceToItem)
+  );
+  const nearbyWithPhoto = nearby.filter(i => i.thumb);
+  if(nearbyWithPhoto.length) return nearbyWithPhoto;
 
   return null;
 }
@@ -3057,29 +3125,19 @@ function inspCount(){
   b.textContent = insp.sel.size ? 'Aggiungi ' + insp.sel.size : 'Aggiungi';
 }
 
-async function inspSearch(mode){
-  const q = document.getElementById('inspQ').value.trim();
-  if(q.length < 3) return;
+async function inspLoadPool(mode){
   const list = document.getElementById('inspList');
   const say = m => { list.innerHTML = '<p class="hint" style="padding:14px 0">' + m + '</p>'; };
-  say('Cerco…');
-  document.getElementById('inspMore').hidden = true;
+  insp.mode = mode || insp.mode;
+  document.getElementById('inspHead').hidden = false;
+  document.getElementById('inspWhere').textContent = insp.target.name + ' · ' + insp.target.kind +
+    (insp.mode === 'sights' && !insp.target.cityish ? ' · guardo entro 10 km dal centro' : '');
+  document.getElementById('inspModeCities').classList.toggle('on', insp.mode === 'cities');
+  document.getElementById('inspModeSights').classList.toggle('on', insp.mode === 'sights');
+  say(insp.mode === 'cities'
+    ? 'Cerco le città e controllo i confini della zona…'
+    : 'Cerco le cose da vedere, con foto e voce su Wikipedia…');
   try{
-    if(insp.q !== q || !insp.target){
-      const t = await inspResolve(q);
-      if(!t){ list.innerHTML = '<p class="hint" style="padding:14px 0">Non trovo questo posto. Prova a scriverlo diversamente.</p>'; return; }
-      insp.target = t; insp.q = q;
-      if(!mode) mode = t.cityish ? 'sights' : 'cities';
-    }
-    insp.mode = mode || insp.mode;
-    document.getElementById('inspHead').hidden = false;
-    document.getElementById('inspWhere').textContent = insp.target.name + ' · ' + insp.target.kind +
-      (insp.mode === 'sights' && !insp.target.cityish ? ' · guardo entro 10 km dal centro' : '');
-    document.getElementById('inspModeCities').classList.toggle('on', insp.mode === 'cities');
-    document.getElementById('inspModeSights').classList.toggle('on', insp.mode === 'sights');
-    say(insp.mode === 'cities'
-      ? 'Cerco le città e controllo i confini della zona…'
-      : 'Cerco le cose da vedere, con foto e voce su Wikipedia…');
     insp.pool = await inspFetch(insp.target, insp.mode);
     insp.sel.clear();
     insp.shown = Math.min(INSP_PAGE, insp.pool.length);
@@ -3087,6 +3145,38 @@ async function inspSearch(mode){
   }catch(e){
     list.innerHTML = '<p class="hint" style="padding:14px 0">Ricerca non riuscita: i suggerimenti arrivano da Wikipedia e serve la rete. Riprova fra poco.</p>';
   }
+}
+
+async function inspSearch(mode){
+  const q = document.getElementById('inspQ').value.trim();
+  if(q.length < 3) return;
+  const list = document.getElementById('inspList');
+  document.getElementById('inspMore').hidden = true;
+  /* stessa query di prima e un target già confermato: si cambia solo modalità
+     (Città/Cose da vedere), niente da rivedere sul posto */
+  if(insp.q === q && insp.target){
+    await inspLoadPool(mode || insp.mode);
+    return;
+  }
+  document.getElementById('inspHead').hidden = true;
+  list.innerHTML = '<p class="hint" style="padding:14px 0">Cerco…</p>';
+  let cands = [];
+  try{ cands = await inspGeocode(q, 5); }
+  catch(e){
+    list.innerHTML = '<p class="hint" style="padding:14px 0">Ricerca non riuscita: serve la rete. Riprova fra poco.</p>';
+    return;
+  }
+  if(!cands.length){
+    list.innerHTML = '<p class="hint" style="padding:14px 0">Non trovo questo posto. Prova a scriverlo diversamente.</p>';
+    return;
+  }
+  /* si conferma sempre il posto giusto prima di caricare qualunque cosa:
+     "Roma" esiste anche in Georgia (USA), "San Giorgio" in dozzine di paesi */
+  list.innerHTML = '<p class="hint" style="padding:6px 0 10px">Quale intendevi?</p>';
+  cands.forEach(c => list.appendChild(inspCandidateRow(c, picked => {
+    insp.target = picked; insp.q = q;
+    inspLoadPool(mode || (picked.cityish ? 'sights' : 'cities'));
+  })));
 }
 
 document.getElementById('btnInspire').onclick = () => {
@@ -3121,9 +3211,13 @@ function addInspItems(items){
     /* voci dal database curato locale: niente pagina Wikipedia, ma spesso una
        fonte (di solito Wikivoyage) e il "perché non perderselo" editoriale */
     if(it.source) links.push({url: it.source, label:'Fonte'});
-    /* la miniatura di Wikipedia si ingrandisce cambiando la misura scritta
-       nell'indirizzo: la stessa foto, ma buona da vedere nella scheda */
-    const big = it.thumb ? it.thumb.replace(/\/(\d+)px-/, '/1024px-') : '';
+    /* la miniatura arriva già pronta dall'anteprima chiesta all'API: niente
+       trucchi per ingrandirla cambiando la misura scritta nell'indirizzo.
+       Wikimedia la rifiuta con un 400 per molte foto ad alta risoluzione
+       (mostra dimensioni "a bucket": 1280/1920 sì, 1024 e sotto no, a seconda
+       del file) — risultato, una card su tre finiva col segnaposto invece
+       della foto vera. Quella richiesta all'API è già valida per certo. */
+    const big = it.thumb || '';
     const note = [it.desc, it.why].filter(Boolean).join(' — ');
     state.places.push({
       id:uid(), name:it.name, lat:it.lat, lng:it.lng, dayId:null, img: big,
@@ -3152,6 +3246,8 @@ document.getElementById('inspAdd').onclick = () => {
 function openEmptyInspire(){
   document.getElementById('eiQ').value = '';
   document.getElementById('eiStatus').textContent = '';
+  const candBox = document.getElementById('eiCandList');
+  candBox.hidden = true; candBox.innerHTML = '';
   document.getElementById('emptyInspVeil').hidden = false;
   autoFocus(document.getElementById('eiQ'));
 }
@@ -3163,14 +3259,31 @@ function maybeSuggestInspire(){
   save();
   openEmptyInspire();
 }
+/* cerca il posto scritto e mostra fino a 5 corrispondenze da confermare:
+   "Roma" esiste anche in Georgia (USA), meglio farsi dire quale delle due
+   prima di buttare dentro qualunque cosa (vedi inspSearch per lo stesso
+   principio nella scheda Ispirami completa) */
 async function emptyInspireSearch(){
   const q = document.getElementById('eiQ').value.trim();
   const status = document.getElementById('eiStatus');
+  const candBox = document.getElementById('eiCandList');
   if(q.length < 3) return;
   status.textContent = 'Cerco…';
+  candBox.hidden = true; candBox.innerHTML = '';
+  let cands = [];
+  try{ cands = await inspGeocode(q, 5); }
+  catch(e){ status.textContent = 'Ricerca non riuscita: serve la rete. Riprova fra poco.'; return; }
+  if(!cands.length){ status.textContent = 'Non trovo questo posto. Prova a scriverlo diversamente.'; return; }
+  status.textContent = 'Quale intendevi?';
+  candBox.hidden = false;
+  cands.forEach(c => candBox.appendChild(inspCandidateRow(c, emptyInspireLoad)));
+}
+async function emptyInspireLoad(t){
+  const status = document.getElementById('eiStatus');
+  const candBox = document.getElementById('eiCandList');
+  candBox.hidden = true; candBox.innerHTML = '';
+  status.textContent = 'Carico ' + t.name + '…';
   try{
-    const t = await inspResolve(q);
-    if(!t){ status.textContent = 'Non trovo questo posto. Prova a scriverlo diversamente.'; return; }
     const pool = await inspFetch(t, t.cityish ? 'sights' : 'cities');
     if(!pool || !pool.length){ status.textContent = 'Nessun suggerimento per questo posto.'; return; }
     const n = addInspItems(pool);
@@ -3753,8 +3866,10 @@ function drawList(){
   const orphans = state.places.filter(p=>!p.dayId || !dayOf(p.dayId));
   state.days.forEach(d => box.appendChild(dayBlock(d, stops(d.id))));
   /* "Brainstorming" in fondo: i giorni veri sono quello che si vuole vedere
-     subito aprendo l'app, non le tappe ancora da smistare */
-  if(orphans.length) box.appendChild(dayBlock({id:null,name:'Brainstorming',color:'#8FA3B0'}, orphans));
+     subito aprendo l'app, non le tappe ancora da smistare. Sempre presente,
+     come Giorno 1, anche a zero idee: da vuoto è il punto in cui si invita
+     a Ispirami (vedi dayBlock). */
+  box.appendChild(dayBlock({id:null,name:'Brainstorming',color:'#8FA3B0'}, orphans));
 }
 
 /* pillola "Parte da"/"Arriva a" ai due estremi del nastro: stessa base per
@@ -3894,9 +4009,23 @@ function dayBlock(d, list){
   };
 
   if(!hasContent){
-    const e = document.createElement('p');
+    const e = document.createElement('div');
     e.className = 'empty';
-    e.textContent = 'Nessuna tappa. Tocca il tondo rosso in basso a destra per cercarne una, oppure la lente sulla mappa.';
+    /* finché il viaggio è del tutto vuoto, Brainstorming stesso invita a
+       Ispirami invece del generico "nessuna tappa": un tocco apre la stessa
+       ricerca del popup "non sai ancora dove andare?". Appena entra la prima
+       tappa (qui o in un giorno) torna al messaggio neutro: da lì in poi si
+       riapre da ☰ → "Non sai ancora dove andare?". */
+    if(!state.places.length){
+      e.classList.add('empty-cta');
+      e.setAttribute('role','button');
+      e.tabIndex = 0;
+      e.innerHTML = 'Ancora nessuna tappa inserita.<br><b>Lasciati ispirare</b><br>Tocca qui, scrivi una nazione o una città e ti proponiamo subito le idee migliori.';
+      e.onclick = openEmptyInspire;
+      e.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openEmptyInspire(); } };
+    } else {
+      e.textContent = 'Nessuna idea in Brainstorming al momento.';
+    }
     body.appendChild(e);
     return sec;
   }

@@ -171,6 +171,27 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9duodecies. Novità di questa versione (v50)
+
+- **Brainstorming** ora c'è sempre nell'Itinerario, come Giorno 1, anche a
+  viaggio vuoto: finché non hai messo nemmeno una tappa, al suo posto invita
+  a **"Lasciati ispirare"** — un tocco apre la stessa ricerca del popup "Non
+  sai ancora dove andare?". Appena entra la prima tappa (lì o in un giorno)
+  torna il messaggio neutro: da lì in poi si riapre solo da ☰.
+- **Ispirami** e "Non sai ancora dove andare?" ora chiedono conferma prima
+  di caricare qualunque cosa: scrivendo "Roma" o un nome ambiguo, propongono
+  fino a 5 corrispondenze reali (con regione/nazione per distinguerle — la
+  Roma del Lazio da quella in Texas, per dire) e si sceglie quella giusta
+  con un tocco, invece di fidarsi ciecamente della prima trovata.
+- Foto quasi garantita per ogni idea aggiunta in Brainstorming: il database
+  curato non ne aveva per ogni voce, ora chi ne è privo tenta prima di
+  prenderne una da Wikipedia in base alle coordinate; chi resta senza non
+  entra più nell'elenco (stessa regola già in vigore per i risultati live).
+  Corretto anche un difetto che ingrandiva la miniatura cambiando a mano la
+  misura nell'indirizzo: Wikimedia la rifiutava spesso per le foto ad alta
+  risoluzione, mostrando il segnaposto al posto della foto vera anche
+  quando una foto valida esisteva.
+
 ## 9undecies. Novità di questa versione (v49)
 
 - Corretto un difetto di impaginazione: caricando in **Brainstorming** molte
