@@ -12,7 +12,9 @@ su HTTPS e mai aprendo il file con doppio clic.
 3. Nella pagina del repository vuoto: **uploading an existing file**.
 4. Trascina **tutti** i file di questa cartella insieme:
    `index.html`, `manifest.webmanifest`, `sw.js`,
-   `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `favicon.png`
+   `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `favicon.png`,
+   più l'intera cartella **`ispira`** (il database di Ispirami: un file per
+   paese, trascinala così com'è, GitHub mantiene la struttura).
 5. In fondo, **Commit changes**.
 6. **Settings** (in alto) → **Pages** (colonna a sinistra).
    Sotto *Source* scegli **Deploy from a branch**; *Branch*: **main**, cartella
@@ -168,6 +170,23 @@ con check-in, check-out, costo e codice.
 Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
+
+## 9decies. Novità di questa versione (v32)
+
+- **Ispirami** ora attinge prima a un database curato a mano di 102 paesi
+  (scritto e verificato, non solo pescato al volo da Wikipedia): quasi 9.000
+  luoghi imperdibili, con una piccola spiegazione del perché, sia dentro le
+  città principali sia come attrazioni del paese intero (parchi nazionali,
+  siti isolati...). Se il paese cercato non è tra questi, l'app torna come
+  prima a interrogare Wikipedia e Wikidata in diretta.
+  - Cercando un **paese** (es. "Italia") arrivano insieme le sue città e le
+    sue attrazioni nazionali.
+  - Cercando una **città** (es. "Roma") arrivano i suoi monumenti.
+  - Cercando uno **stato o una regione** dentro un paese coperto (es.
+    "California", "Toscana") tutto si restringe a quella zona.
+  - Ogni paese è un file a sé (`ispira/IT.json`, `ispira/FR.json`…),
+    scaricato solo quando serve: ampliare una singola nazione in futuro non
+    tocca le altre 101.
 
 ## 9nonies. Novità di questa versione (v30)
 

@@ -1678,7 +1678,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v45';
+const APP_VERSION = 'v47';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2577,7 +2577,12 @@ async function inspResolve(q){
     lat:+hit.lat, lng:+hit.lon, cityish,
     bbox: bb.length === 4 && bb.every(n => !isNaN(n)) ? bb : null,
     qid: (hit.extratags?.wikidata || '').match(/^Q\d+$/) ? hit.extratags.wikidata : null,
-    kind: cityish ? 'città' : ((t === 'country' || hit.addresstype === 'country') ? 'paese' : 'zona')
+    kind: cityish ? 'città' : ((t === 'country' || hit.addresstype === 'country') ? 'paese' : 'zona'),
+    /* per pescare nel database curato locale, per codice paese ISO e per nome
+       dello stato/regione (Nominatim li mette già a disposizione gratis, nella
+       stessa risposta) */
+    countryCode: (hit.address?.country_code || '').toUpperCase(),
+    regionName: hit.address?.state || hit.address?.region || null
   };
 }
 
@@ -2892,7 +2897,109 @@ async function inspCities(t){
   const withPhoto = items.filter(i => i.thumb || i.pop >= 20000);
   return withPhoto.length >= 10 ? withPhoto : items;
 }
-const inspFetch = (t, mode) => mode === 'cities' ? inspCities(t) : inspSights(t);
+/* ============ Ispirami: database curato locale ============ */
+/* Un centinaio di paesi scelti e scritti a mano (non generati al volo da
+   Wikipedia), con una selezione di luoghi davvero imperdibili invece di
+   "tutto ciò che ha una pagina". Quando copre il paese cercato ha la
+   precedenza sulle query live: è più curato e, una volta scaricato la prima
+   volta, funziona anche offline. Per il resto del mondo restano
+   Wikipedia/Wikidata come prima.
+   Un file per paese (./ispira/IT.json, ./ispira/FR.json…) invece di un unico
+   blob: si scarica solo il paese che serve, ed espandere una sola nazione in
+   futuro non tocca le altre 100. Un piccolo indice (./ispira/index.json)
+   dice quali codici paese sono coperti, senza dover tentare un fetch a vuoto
+   per ognuno dei 195 paesi del mondo. */
+let inspiraIndexPromise = null;
+function loadInspiraIndex(){
+  if(!inspiraIndexPromise) inspiraIndexPromise = fetch('./ispira/index.json')
+    .then(r => r.ok ? r.json() : {})
+    .catch(() => ({}));
+  return inspiraIndexPromise;
+}
+const inspiraCountryCache = {};
+async function loadInspiraCountry(cc){
+  if(inspiraCountryCache[cc]) return inspiraCountryCache[cc];
+  const idx = await loadInspiraIndex();
+  if(!idx[cc]) return null;
+  const p = fetch('./ispira/' + cc + '.json')
+    .then(r => r.ok ? r.json() : null)
+    .catch(() => null);
+  inspiraCountryCache[cc] = p;
+  return p;
+}
+/* dalla scheda del db al formato usato ovunque in Ispirami */
+function inspiraPlaceToItem(p){
+  return {
+    name: p.name, lat: p.lat, lng: p.lng,
+    desc: p.short_description, why: p.why_unmissable,
+    type: inspTypeFromDesc(p.short_description, p.name),
+    langs: 0, len: 0, thumb: p.photo_url || null, wiki: null, source: p.source || null
+  };
+}
+/* la città del db (con le sue attrazioni proprie) più vicina al punto
+   cercato, entro un raggio ragionevole: non serve che i nomi coincidano
+   (Vienna/Wien, Monaco/München), bastano le coordinate, le stesse ovunque
+   le si chiami */
+function inspiraNearestCity(cities, t){
+  const q = (t.name.split(',')[0] || '').toLowerCase();
+  const byName = cities.find(c => c.name.toLowerCase() === q);
+  if(byName) return byName;
+  let best = null, bestKm = 25;
+  cities.forEach(c => {
+    const dist = km(t, c);
+    if(dist < bestKm){ best = c; bestKm = dist; }
+  });
+  return best;
+}
+async function inspFetchStatic(t, mode){
+  if(!t.countryCode) return null;
+  const country = await loadInspiraCountry(t.countryCode);
+  if(!country) return null;
+  const allCities = [...(country.citta_principali || []), ...(country.citta_minori || [])];
+  const attractions = country.attrazioni || [];
+
+  if(mode === 'cities'){
+    /* se la ricerca era per uno stato/regione dentro il paese, restringo
+       città e attrazioni nazionali a quella zona; se non trovo nessuna
+       città di quella regione, presumo che si stesse cercando il paese
+       intero e mostro tutto */
+    const wanted = [t.regionName, (t.name || '').split(',')[0]].filter(Boolean).map(s => s.toLowerCase());
+    const inRegionCities = allCities.filter(c => wanted.includes((c.region || '').toLowerCase()));
+    const isRegionSearch = inRegionCities.length > 0;
+    const cityPool = isRegionSearch ? inRegionCities : allCities;
+    const attrPool = isRegionSearch
+      ? attractions.filter(a => wanted.includes((a.region || '').toLowerCase()))
+      : attractions;
+
+    const cityItems = cityPool.map(c => ({
+      name: c.name, lat: c.lat, lng: c.lng, type: 'city',
+      desc: c.region || '', langs: 0, len: 0,
+      thumb: (c.attractions || []).find(p => p.photo_url)?.photo_url || null,
+      wiki: null, pop: (c.attractions || []).length
+    }));
+    const attrItems = attrPool.map(inspiraPlaceToItem);
+    return [...cityItems, ...attrItems].sort((x, y) => (y.pop || 0) - (x.pop || 0));
+  }
+
+  /* modalità "cose da vedere": prima provo una città vera e propria del db,
+     poi — se il punto cercato è un parco o un sito isolato, non una città —
+     le attrazioni nazionali vicine */
+  const citiesWithSights = (country.citta_principali || []).filter(c => (c.attractions || []).length);
+  const dest = inspiraNearestCity(citiesWithSights, t);
+  if(dest) return dest.attractions.map(inspiraPlaceToItem);
+
+  const nearby = attractions
+    .filter(a => a.lat != null && a.lng != null && km(t, a) < 20)
+    .sort((a, b) => km(t, a) - km(t, b));
+  if(nearby.length) return nearby.map(inspiraPlaceToItem);
+
+  return null;
+}
+const inspFetch = async (t, mode) => {
+  const local = await inspFetchStatic(t, mode);
+  if(local && local.length) return local;
+  return mode === 'cities' ? inspCities(t) : inspSights(t);
+};
 
 function inspRender(){
   const box = document.getElementById('inspList');
@@ -2991,12 +3098,16 @@ document.getElementById('inspAdd').onclick = () => {
       if(title) links.push({url:'https://' + lang + '.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g,'_')), label:'Wikipedia'});
 
     }
+    /* voci dal database curato locale: niente pagina Wikipedia, ma spesso una
+       fonte (di solito Wikivoyage) e il "perché non perderselo" editoriale */
+    if(it.source) links.push({url: it.source, label:'Fonte'});
     /* la miniatura di Wikipedia si ingrandisce cambiando la misura scritta
        nell'indirizzo: la stessa foto, ma buona da vedere nella scheda */
     const big = it.thumb ? it.thumb.replace(/\/(\d+)px-/, '/1024px-') : '';
+    const note = [it.desc, it.why].filter(Boolean).join(' — ');
     state.places.push({
       id:uid(), name:it.name, lat:it.lat, lng:it.lng, dayId:null, img: big,
-      notes: it.desc ? it.desc.charAt(0).toUpperCase() + it.desc.slice(1) : '', links, type:it.type, chain:true,
+      notes: note ? note.charAt(0).toUpperCase() + note.slice(1) : '', links, type:it.type, chain:true,
       /* i musei restano una buona idea anche se piove */
       rain: it.type === 'museum', city:false
     });
