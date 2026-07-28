@@ -482,19 +482,6 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 /* mentre il riquadro vola al suo posto, il tip vero resta invisibile ma
    ingombrante: serve la sua posizione finale per calcolare il volo */
 .sec-tip.tour-target{visibility:hidden}
-/* Su telefono l'app lavora in verticale, come Instagram. Il PWA installato lo
-   blocca davvero (screen.orientation.lock); nel browser non si può, e ruotare
-   a forza la pagina sformerebbe la mappa: si chiede di raddrizzare. */
-.rotate-note{
-  position:fixed;inset:0;z-index:3000;background:var(--paper);display:none;
-  place-items:center;text-align:center;padding:28px
-}
-@media (max-width:960px) and (orientation:landscape) and (max-height:520px){
-  .rotate-note{display:grid}
-}
-.rotate-note svg{width:54px;height:54px;fill:none;stroke:var(--sage);stroke-width:1.5;margin:0 auto 18px;display:block}
-.rotate-note b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:20px;margin-bottom:7px}
-.rotate-note i{display:block;font-style:normal;font-size:13px;line-height:1.5;color:var(--fog);max-width:330px;margin:0 auto}
 /* invito a Ispirami nel Brainstorming vuoto: le stelline sono la firma della
    funzione, e vanno ripetute qui perché si capisca che è la stessa cosa */
 .ei-spark{display:block;font-size:26px;line-height:1;margin-bottom:9px}
@@ -1642,14 +1629,6 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
   </div>
 </div>
 
-<div class="rotate-note" aria-hidden="true">
-  <div>
-    <svg viewBox="0 0 24 24"><rect x="7.5" y="2.5" width="9" height="19" rx="2"/><path d="M10.6 19.2h2.8"/><path d="M3 9.5A9 9 0 0 1 8 3.6" stroke-dasharray="2 2.4"/></svg>
-    <b>Waynder si usa in verticale</b>
-    <i>La mappa e l'itinerario sono pensati per lo schermo dritto. Raddrizza il telefono e riprendi da dove eri.</i>
-  </div>
-</div>
-
 <div class="veil" id="wcVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="wcTitle">
     <h2 id="wcTitle" style="margin-bottom:4px">Benvenuto in Waynder</h2>
@@ -2028,7 +2007,7 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v51';
+const APP_VERSION = 'v52';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -6946,9 +6925,6 @@ function coach(key){
   setTimeout(close, 18000);
 }
 
-if(screen.orientation && screen.orientation.lock){
-  screen.orientation.lock('portrait').catch(() => {});
-}
 /* Ogni scheda si riapre da capo. Le schede sono lunghe e scorrono: chiudendone
    una dal fondo (è lì che stanno Salva e Annulla), la successiva ripartiva
    esattamente da quel punto e sembrava mezza vuota. Un solo osservatore su

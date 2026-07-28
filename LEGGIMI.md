@@ -171,6 +171,13 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9quaterdecies. Novità di questa versione (v52)
+
+- Tolto l'avviso "usa il telefono in verticale" e il blocco automatico della
+  rotazione introdotti in v51: sono spariti sia il messaggio a schermo
+  intero sia il forzare l'orientamento portrait, tornando al comportamento
+  precedente.
+
 ## 9terdecies. Novità di questa versione (v51)
 
 - La lente rossa sulla mappa non aggiunge più subito una tappa: al suo posto
