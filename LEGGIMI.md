@@ -171,6 +171,39 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9terdecies. Novità di questa versione (v51)
+
+- La lente rossa sulla mappa non aggiunge più subito una tappa: al suo posto
+  una riga di ricerca che **naviga** (scrivi "Tokyo" e la mappa ci si
+  posiziona sopra, senza toccare l'itinerario). Solo se il posto trovato ti
+  serve davvero lo aggiungi come tappa con un secondo tocco su "＋ Aggiungi
+  come tappa".
+- L'intestazione del pannello è ora su due righe: sopra il nome del viaggio
+  (che si modifica scrivendoci sopra e aveva bisogno di più spazio), sotto
+  una fila di icone sempre visibili — **Condividi/Unisciti**, **I tuoi
+  viaggi**, **Rivedi la guida**, oltre a comprimi — in tutte le sezioni, non
+  solo dentro il menù ☰.
+- Nuovo foglio **"Viaggiate insieme"** che riunisce Condividi questo viaggio
+  e Unisciti a un viaggio in un solo posto, raggiungibile dall'icona
+  dedicata in alto.
+- Alla primissima apertura compare una **guida animata** che spiega passo
+  passo mappa, itinerario, spese, prenotazioni e diario; si può rivedere
+  in ogni momento con l'icona "Rivedi la guida".
+- Il **colore del giorno** si cambia ora toccando il pallino accanto alla
+  data (si apre una tavolozza), invece di andare a cercarlo altrove.
+- Le idee in **Brainstorming** hanno una livrea unica (una sfumatura di
+  tutti i colori mescolati, non un colore a testa): si riconoscono a colpo
+  d'occhio come "non ancora un giorno" anche a viaggio pieno.
+- Nuovi contrassegni per le tappe: **Meteo avverso** (posti al coperto, buoni
+  per i giorni di pioggia) e **Bimbo** (posti comodi col passeggino), ognuno
+  con un pin dedicato e una spiegazione a tocco sulla (i).
+- **"Pagata da"** ora accetta più persone come "Per chi" (utile quando una
+  spesa, es. un hotel, è già stata saldata da tutti insieme).
+- Vista compressa per **Spese** e **Prenotazioni**: nasconde note, allegati e
+  dettagli secondari per vedere solo l'essenziale, una riga per voce.
+- Avviso "usa il telefono in verticale" quando lo giri in orizzontale nel
+  browser (l'app installata come PWA blocca già la rotazione da sola).
+
 ## 9duodecies. Novità di questa versione (v50)
 
 - **Brainstorming** ora c'è sempre nell'Itinerario, come Giorno 1, anche a

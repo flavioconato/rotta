@@ -23,6 +23,13 @@
 <style>
 
 :root{
+  /* Livrea del Brainstorming: una sola texture per TUTTE le idee, non un colore
+     a testa. È la palette intera mescolata di sbieco — si legge subito "questo
+     non è un giorno" — ma con tinte slavate: quando i giorni si riempiono, le
+     idee rimaste devono farsi da parte, non gridare. */
+  --brain-tex:linear-gradient(122deg,#C0985C 0%,#B3767F 20%,#8E7CAE 40%,#5F8AAE 60%,#5D9E94 80%,#8FA36E 100%);
+  --brain-tex-v:linear-gradient(180deg,#C0985C 0%,#B3767F 20%,#8E7CAE 40%,#5F8AAE 60%,#5D9E94 80%,#8FA36E 100%);
+  --brain-flat:#8E8FA0;
   --ink:#22303A;
   --ink-2:#EDEFEA;
   --ink-3:#DDE2DB;
@@ -171,6 +178,81 @@ button:active{transform:scale(.97)}
 .map-add:active{transform:scale(.94)}
 .map-add svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
+/* La lente rossa era un pulsante che portava via: cercavi un posto e quel posto
+   diventava subito una tappa, anche quando volevi soltanto andare a vedere
+   dov'è. Al suo posto una riga di ricerca che NAVIGA la mappa, come su
+   qualsiasi mappa: scrivi Tokyo e ti porta sopra Tokyo, e lì si ferma.
+   Aggiungerla come tappa è un secondo gesto, offerto ma non imposto. */
+.map-search{
+  position:absolute;z-index:860;
+  top:calc(14px + env(safe-area-inset-top,0px));left:14px;
+  width:min(400px,calc(100% - 86px))
+}
+.ms-bar{
+  display:flex;align-items:center;gap:8px;height:44px;padding:0 6px 0 13px;
+  border-radius:22px;background:#fff;
+  box-shadow:0 6px 20px rgba(34,48,58,.22),0 0 0 1px rgba(34,48,58,.07)
+}
+.ms-ic{flex:none;display:grid;place-items:center;color:#5E6E78}
+.ms-ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ms-bar input{
+  flex:1;min-width:0;border:0;background:none;color:#22303A;
+  font-family:inherit;font-size:14.5px
+}
+.ms-bar input::placeholder{color:#8494A2}
+.ms-bar input:focus{outline:none}
+.ms-x{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#5E6E78;font-size:13px}
+.ms-x:hover{background:#EDEFEA}
+.ms-x[hidden]{display:none}
+.ms-res{
+  margin-top:7px;background:#fff;border-radius:14px;overflow:hidden;overflow-y:auto;
+  max-height:min(44vh,320px);
+  box-shadow:0 14px 34px rgba(34,48,58,.26),0 0 0 1px rgba(34,48,58,.07)
+}
+.ms-res[hidden]{display:none}
+.ms-res button{
+  display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+  padding:11px 14px;font-size:13.5px;line-height:1.35;color:#22303A;
+  border-bottom:1px solid #EDEFEA;transition:background .12s
+}
+.ms-res button:last-child{border-bottom:0}
+.ms-res button:hover{background:#F7F8F4}
+.ms-res .rk{flex:none;color:#8494A2;margin-top:1px}
+.ms-res .rk svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ms-res b{display:block;font-weight:600}
+.ms-res i{display:block;font-style:normal;color:#5E6E78;font-size:11.5px;margin-top:1px}
+.ms-res .msg{padding:12px 14px;font-size:12.5px;color:#5E6E78;line-height:1.45}
+/* dopo il volo: la scheda del posto trovato, con l'unica cosa che si potrebbe
+   volerne fare. Non compare se non hai cercato niente. */
+.ms-found{
+  margin-top:7px;display:flex;align-items:center;gap:9px;background:#fff;
+  border-radius:14px;padding:8px 8px 8px 13px;
+  box-shadow:0 14px 34px rgba(34,48,58,.26),0 0 0 1px rgba(34,48,58,.07)
+}
+.ms-found[hidden]{display:none}
+.ms-found-txt{flex:1;min-width:0}
+.ms-found-txt b{display:block;font-size:13.5px;font-weight:700;color:#22303A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-found-txt i{display:block;font-style:normal;font-size:11px;color:#5E6E78;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-add{
+  flex:none;padding:9px 13px;border-radius:999px;font-size:12.5px;font-weight:700;
+  background:linear-gradient(135deg,#E0454B,#D3323A);color:#fff;white-space:nowrap
+}
+.ms-close{flex:none;width:30px;height:30px;border-radius:50%;color:#5E6E78;display:grid;place-items:center;font-size:12px}
+.ms-close:hover{background:#EDEFEA}
+/* il puntino del posto trovato: non è una tappa, è "guarda, è qui" */
+.ms-dot{
+  position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;
+  background:#2A93BE;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.35)
+}
+.ms-dot::after{
+  content:"";position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid #2A93BE;animation:msPulse 1.9s ease-out infinite
+}
+@keyframes msPulse{
+  0%{transform:scale(.6);opacity:.9}
+  100%{transform:scale(2);opacity:0}
+}
+
 /* ---------- comandi "aggiungi" (in basso a destra nel pannello) ---------- */
 /* Uno per sezione, sempre nello stesso punto: il pollice lo trova senza
    guardare e nessuna riga di barra ruba spazio all'elenco. */
@@ -213,6 +295,17 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
   background:linear-gradient(90deg,var(--route),var(--ochre) 26%,var(--sage) 52%,var(--moss) 74%,transparent 96%);opacity:.5
 }
 .head-row{display:flex;align-items:center;gap:9px}
+/* Cinque icone e il nome del viaggio sulla stessa riga non ci stanno: il
+   pannello è largo 400px e il titolo — che è l'intestazione della schermata,
+   ed è anche modificabile — si riduceva a otto caratteri. Sono due cose
+   diverse, e stanno su due righe: sopra come ti chiami questo viaggio, sotto
+   la fila di comandi. */
+.head-tools{display:flex;align-items:center;gap:8px;margin-top:9px}
+@media (max-width:400px){
+  .head-tools{gap:6px}
+  .head-ico{width:31px;height:31px;border-radius:10px}
+  .head-ico svg{width:17px;height:17px}
+}
 .head-ico{
   flex:none;width:33px;height:33px;border-radius:11px;display:grid;place-items:center;
   font-size:15px;background:var(--ink-2);border:1px solid var(--ink-3);transition:.16s var(--ease)
@@ -314,6 +407,102 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 .day-head-top{display:flex;align-items:center;gap:9px}
 .day-head-meta{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding-left:20px}
 .swatch{width:11px;height:11px;border-radius:3px;flex:none;box-shadow:0 0 0 4px rgba(255,255,255,.05),0 0 12px var(--c,transparent)}
+/* il colore del giorno si cambia toccandolo: è lì accanto alla data, dove uno
+   lo cerca, invece che dentro un menù. Area di tocco allargata con ::after:
+   11px di pallino sarebbero un bersaglio impossibile sul telefono. */
+.swatch.sw-btn{cursor:pointer;position:relative;transition:transform .14s}
+.swatch.sw-btn::after{content:'';position:absolute;inset:-9px}
+.swatch.sw-btn:hover{transform:scale(1.4)}
+.color-pop{
+  position:fixed;z-index:2400;background:var(--ink-2);border:1px solid var(--ink-3);
+  border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.55)
+}
+.color-pop[hidden]{display:none}
+.color-pop h4{
+  margin:0 0 10px;font-family:"JetBrains Mono",monospace;font-size:9.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--fog);font-weight:600
+}
+.color-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.color-grid button{width:36px;height:36px;border-radius:11px;border:2px solid transparent;transition:.14s}
+.color-grid button:hover{transform:scale(1.09)}
+.color-grid button.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.16)}
+.color-free{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--fog)}
+.color-free input{width:40px;height:32px;border:1px solid var(--ink-3);border-radius:9px;background:none;padding:2px;cursor:pointer}
+/* due strade per la stessa cosa (portare un viaggio da un telefono all'altro):
+   riga larga con sottotitolo, perché "condividi" e "unisciti" da soli non
+   dicono chi fa cosa */
+.hub-row{
+  display:flex;align-items:flex-start;gap:13px;width:100%;text-align:left;
+  padding:14px;border-radius:var(--r);border:1px solid var(--ink-3);
+  background:var(--ink-2);transition:.16s var(--ease);margin-bottom:9px
+}
+.hub-row:hover{border-color:var(--sage);transform:translateY(-1px)}
+.hub-ic{
+  flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--sage),var(--sage-2));color:#0F2830;font-size:18px
+}
+.hub-row h3{margin:0 0 3px;font-family:"Bricolage Grotesque",sans-serif;font-size:15px}
+.hub-row p{margin:0;font-size:12.5px;line-height:1.45;color:var(--fog)}
+/* ---------- tutorial guidato del primo avvio ---------- */
+/* Il velo blocca l'app mentre il tutorial parla: così nessuno tocca a metà
+   spiegazione e finisce in una schermata che il passo dopo non si aspetta. */
+.tour-veil{position:fixed;inset:0;z-index:2500;background:rgba(15,28,34,.5);opacity:0;transition:opacity .3s}
+.tour-veil.show{opacity:1}
+.tour-veil[hidden]{display:none}
+.tour-card{
+  position:fixed;z-index:2600;box-sizing:border-box;
+  width:min(420px,calc(100vw - 32px));
+  background:var(--paper);border:1px solid var(--ink-3);border-radius:20px;
+  padding:18px 19px 15px;box-shadow:0 30px 70px rgba(0,0,0,.5);
+  opacity:0;transform:translateY(14px) scale(.96);
+  transition:opacity .32s var(--ease),transform .38s var(--ease)
+}
+.tour-card.show{opacity:1;transform:none}
+.tour-card[hidden]{display:none}
+.tour-top{display:flex;align-items:center;gap:11px;margin-bottom:11px}
+.tour-ic{
+  flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+  background:var(--tc,linear-gradient(135deg,var(--sage),var(--sage-2)));color:var(--tfg,#0F2830)
+}
+.tour-ic svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tour-ic .trail{opacity:.55}
+.tour-ic .dot{fill:currentColor;stroke:none}
+.tour-card h3{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-size:17px;letter-spacing:-.01em}
+.tour-card p{margin:0 0 7px;font-size:13px;line-height:1.5;color:var(--fog)}
+.tour-card p:last-of-type{margin-bottom:0}
+.tour-foot{display:flex;align-items:center;gap:10px;margin-top:15px}
+.tour-dots{display:flex;gap:5px;flex:1}
+.tour-dots i{width:6px;height:6px;border-radius:50%;background:var(--ink-3);transition:.2s}
+.tour-dots i.on{background:var(--sage);width:18px;border-radius:3px}
+.tour-skip{font-size:12px;color:var(--fog);text-decoration:underline;text-underline-offset:3px}
+.tour-next{
+  flex:none;padding:10px 18px;border-radius:999px;font-weight:700;font-size:13px;
+  background:linear-gradient(135deg,var(--sage),var(--sage-2));color:#0F2830
+}
+/* mentre il riquadro vola al suo posto, il tip vero resta invisibile ma
+   ingombrante: serve la sua posizione finale per calcolare il volo */
+.sec-tip.tour-target{visibility:hidden}
+/* Su telefono l'app lavora in verticale, come Instagram. Il PWA installato lo
+   blocca davvero (screen.orientation.lock); nel browser non si può, e ruotare
+   a forza la pagina sformerebbe la mappa: si chiede di raddrizzare. */
+.rotate-note{
+  position:fixed;inset:0;z-index:3000;background:var(--paper);display:none;
+  place-items:center;text-align:center;padding:28px
+}
+@media (max-width:960px) and (orientation:landscape) and (max-height:520px){
+  .rotate-note{display:grid}
+}
+.rotate-note svg{width:54px;height:54px;fill:none;stroke:var(--sage);stroke-width:1.5;margin:0 auto 18px;display:block}
+.rotate-note b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:20px;margin-bottom:7px}
+.rotate-note i{display:block;font-style:normal;font-size:13px;line-height:1.5;color:var(--fog);max-width:330px;margin:0 auto}
+/* invito a Ispirami nel Brainstorming vuoto: le stelline sono la firma della
+   funzione, e vanno ripetute qui perché si capisca che è la stessa cosa */
+.ei-spark{display:block;font-size:26px;line-height:1;margin-bottom:9px}
+.ei-go{
+  display:inline-block;margin-top:11px;padding:8px 15px;border-radius:999px;
+  background:linear-gradient(135deg,var(--sage),var(--sage-2));color:#0F2830;
+  font-weight:700;font-size:12.5px;letter-spacing:.01em
+}
 /* pallino colore + data raggruppati in un'unica pillola: si leggono come
    un solo blocco ("quando"), invece di due elementi scollegati */
 .day-date-wrap{
@@ -669,6 +858,7 @@ body.picking::after{
   border:1px solid var(--ink-3);padding:0;flex:none;
 }
 .img-cand:hover{border-color:var(--sage)}
+.img-cand.on{border-color:var(--sage);box-shadow:0 0 0 2px var(--sage)}
 .img-cand img{width:100%;height:100%;object-fit:cover;display:block}
 .btn{
   flex:1;border-radius:999px;padding:12px;font-weight:600;font-size:13.5px;text-align:center;
@@ -822,6 +1012,26 @@ body.hide-legs .leg-lab{display:none}
   border:1px solid var(--ink-3);border-radius:var(--r);padding:12px 14px;margin:2px 19px 12px;
   display:flex;flex-direction:column;gap:9px;transition:opacity .2s
 }
+/* ---------- livrea del Brainstorming ---------- */
+/* Il colore piatto resta per bordi e glifi (una sfumatura non può fare da
+   border-color), la texture prende tutte le superfici piene. */
+.stop.brain,.alt-item.brain,.diary-stop.brain{--c:var(--brain-flat)}
+.stop.brain .node,
+.stop.brain .stop-card::before,
+.alt-item.brain .alt-node{background:var(--brain-tex)}
+.stop.brain .node{box-shadow:0 4px 12px -2px rgba(0,0,0,.45),0 0 0 3px rgba(255,255,255,.05)}
+.alt-item.brain .alt-node{border-color:transparent}
+.alt-item.brain .alt-node svg{fill:#fff}
+/* il binario tratteggiato: la texture verticale ritagliata dai trattini */
+.stop.brain::before{
+  background:var(--brain-tex-v);opacity:.5;
+  -webkit-mask:repeating-linear-gradient(to bottom,#000 0 5px,transparent 5px 10px);
+  mask:repeating-linear-gradient(to bottom,#000 0 5px,transparent 5px 10px)
+}
+.diary-stop.brain::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  border-radius:var(--r) 0 0 var(--r);background:var(--brain-tex-v)
+}
 .diary-stop.pending{opacity:1;background:rgba(255,255,255,.62);border-style:dashed}
 .diary-stop.pending .diary-top{opacity:1}
 .diary-stop.pending .toggle-mini{opacity:.75}
@@ -926,6 +1136,20 @@ body.hide-legs .leg-lab{display:none}
 .exp-m{color:var(--fog);margin-top:2px;font-size:10px}
 .settle{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--ink-3);font-size:13px}
 .settle:last-child{border-bottom:0}
+/* --- vista compressa di Spese e Prenotazioni (pulsante ⇕ in testata) --- */
+/* Compresso non nasconde l'essenziale: toglie di mezzo quello che si legge una
+   volta e poi non serve più (chi ha pagato, codici, allegati, note), e lascia
+   una riga per voce. È la vista da "quanto ho speso in tutto", non da dettaglio. */
+body.fold-cost #costs .exp-m,
+body.fold-cost #costs .add-row{display:none}
+body.fold-cost #costs .exp{padding-top:8px;padding-bottom:8px}
+body.fold-book #books .bk-when span + span,
+body.fold-book #books .bk-ref,
+body.fold-book #books .bk-flags,
+body.fold-book #books .bk-att,
+body.fold-book #books .bk-body .stop-note,
+body.fold-book #books .bk-body .links{display:none}
+body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
 .settle span{margin-left:auto;color:#9A6A14;font-weight:600}
 .who-picks{display:flex;flex-wrap:wrap;gap:5px}
 .who-pick{
@@ -933,6 +1157,13 @@ body.hide-legs .leg-lab{display:none}
   background:var(--ink-2);color:var(--fog);transition:.15s
 }
 .who-pick.on{background:var(--moss);border-color:var(--moss);color:var(--ink);font-weight:600}
+/* "Pagata da" è diventato multiplo come "Per chi": un hotel può essere già
+   stato pagato da tutti, e la spesa serve solo a tenerne nota. Colore diverso
+   dal verde perché le due file di pillole sono una sotto l'altra e vanno lette
+   come due domande distinte: chi ha tirato fuori i soldi, e per chi. */
+.who-picks.pay .who-pick.on{background:var(--route);border-color:var(--route);color:#fff;font-weight:600}
+.req{color:var(--route);font-weight:700;margin-left:2px}
+.req-note{color:var(--fog);font-size:11.5px;margin:-4px 0 0}
 .pick-row{display:flex;gap:6px;margin-top:9px}
 .link-row{display:flex;gap:6px;margin-bottom:6px}
 .link-row .field{font-size:13px}
@@ -1140,6 +1371,8 @@ body.hide-legs .leg-lab{display:none}
   @media (max-height:480px){
     .head{padding:.5rem 1rem}
     #tripTitle{font-size:16px}
+    .head-tools{margin-top:6px}
+    .head-tools .head-ico{width:30px;height:30px}
     .bar{padding:7px 14px 10px}
     .fabs{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
     .sheet{max-height:96dvh;padding:16px 16px 14px}
@@ -1202,12 +1435,39 @@ body.hide-legs .leg-lab{display:none}
 
 <div class="app">
   <aside class="panel">
-    <!-- una riga sola: il nome della sezione lo dice già il tab acceso, e
-         "I tuoi viaggi" non ha bisogno di una parola scritta per riga. -->
+    <!-- Due righe: sopra il nome del viaggio (è l'intestazione della schermata,
+         e si modifica scrivendoci sopra), sotto la fila di comandi. Il nome
+         della sezione lo dice già il tab acceso. -->
     <div class="head">
       <div class="head-row">
         <input id="tripTitle" placeholder="Nome del viaggio" autocomplete="off">
         <span id="saveState" class="save-state mono"></span>
+      </div>
+      <div class="head-tools">
+        <!-- L'ingranaggio da solo era un sacco senza fondo: le tre cose che si
+             cercano davvero (condividere, cambiare viaggio, rileggere la guida)
+             stanno qui fuori, in chiaro, in tutte le sezioni. Nel ⚙ resta il
+             resto. -->
+        <button class="head-ico" id="btnShareHub" type="button" title="Condividi questo viaggio o unisciti a un altro" aria-label="Condividi o unisciti">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="18" cy="5.4" r="2.6"/><circle cx="18" cy="18.6" r="2.6"/><circle cx="6" cy="12" r="2.6"/>
+            <path d="M8.3 10.8 15.7 6.7M8.3 13.2l7.4 4.1"/>
+          </svg>
+        </button>
+        <button class="head-ico" id="btnTripsHub" type="button" title="I tuoi viaggi" aria-label="I tuoi viaggi">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="7.4" width="18" height="12.8" rx="2.4"/>
+            <path d="M9 7.4V5.2a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 15 5.2v2.2"/>
+            <path d="M3 13.4h18"/>
+          </svg>
+        </button>
+        <button class="head-ico" id="btnGuideHub" type="button" title="Rivedi la guida" aria-label="Rivedi la guida">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.8"/>
+            <path d="M9.7 9.4a2.35 2.35 0 1 1 3.5 2.05c-.75.45-1.2.9-1.2 1.75v.5"/>
+            <circle cx="12" cy="16.9" r="1" style="fill:currentColor;stroke:none"/>
+          </svg>
+        </button>
         <button class="head-ico" id="btnFold" type="button" title="Comprimi tutti i giorni" aria-label="Comprimi tutti i giorni">
           <svg class="ic-fold" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4.5 12h15"/><path d="M8.4 7.4 12 3.9l3.6 3.5"/><path d="M8.4 16.6 12 20.1l3.6-3.5"/>
@@ -1271,12 +1531,21 @@ body.hide-legs .leg-lab{display:none}
     <!-- visibili solo in "vista solo mappa" (vedi updateTabsState): due filtri
          indipendenti e ciclici, non due tab, quindi bottoni tondi come lo zoom
          sotto di loro, non pillole con testo che a 44px diventerebbe illeggibile. -->
-    <button class="map-add" id="mapAdd" type="button" title="Cerca e aggiungi una tappa" aria-label="Cerca e aggiungi una tappa">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="10.6" cy="10.2" r="5.8"/><path d="M14.9 14.5 20.2 19.8"/>
-        <path d="M10.6 7.6v5.2M8 10.2h5.2"/>
-      </svg>
-    </button>
+    <div class="map-search" id="mapSearch">
+      <div class="ms-bar">
+        <span class="ms-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="10.6" cy="10.4" r="6.2"/><path d="M15.2 15 20.4 20.2"/></svg>
+        </span>
+        <input id="msQ" placeholder="Cerca un posto sulla mappa…" autocomplete="off" aria-label="Cerca un posto sulla mappa">
+        <button class="ms-x" id="msClear" type="button" hidden title="Cancella" aria-label="Cancella">✕</button>
+      </div>
+      <div class="ms-res" id="msRes" hidden></div>
+      <div class="ms-found" id="msFound" hidden>
+        <div class="ms-found-txt"><b id="msFoundName"></b><i id="msFoundSub"></i></div>
+        <button class="ms-add" id="msAdd" type="button">＋ Aggiungi come tappa</button>
+        <button class="ms-close" id="msFoundX" type="button" title="Chiudi" aria-label="Chiudi">✕</button>
+      </div>
+    </div>
     <div class="map-filters" id="mapFilters">
       <div class="mf-wrap" id="fltStopsWrap">
         <button class="map-fbtn" id="fltStops" type="button" aria-label="Filtro tappe: tutto"></button>
@@ -1373,6 +1642,14 @@ body.hide-legs .leg-lab{display:none}
   </div>
 </div>
 
+<div class="rotate-note" aria-hidden="true">
+  <div>
+    <svg viewBox="0 0 24 24"><rect x="7.5" y="2.5" width="9" height="19" rx="2"/><path d="M10.6 19.2h2.8"/><path d="M3 9.5A9 9 0 0 1 8 3.6" stroke-dasharray="2 2.4"/></svg>
+    <b>Waynder si usa in verticale</b>
+    <i>La mappa e l'itinerario sono pensati per lo schermo dritto. Raddrizza il telefono e riprendi da dove eri.</i>
+  </div>
+</div>
+
 <div class="veil" id="wcVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="wcTitle">
     <h2 id="wcTitle" style="margin-bottom:4px">Benvenuto in Waynder</h2>
@@ -1389,7 +1666,7 @@ body.hide-legs .leg-lab{display:none}
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
     <h2 id="moreTitle">Menù del viaggio</h2>
     <div class="more-list">
-      <button class="chip" id="btnTrips" title="Apri, rinomina o crea un altro viaggio">🗂 I tuoi viaggi</button>
+      <button class="chip" id="btnTrips" title="Apri, rinomina o crea un altro viaggio">🧳 I tuoi viaggi</button>
       <button class="chip" id="btnShareTrip" title="Genera un codice per condividere questo viaggio con un altro dispositivo">🔗 Condividi questo viaggio</button>
       <button class="chip" id="btnJoinTrip" title="Scarica un viaggio condiviso incollando il suo codice">🔑 Unisciti a un viaggio</button>
       <button class="chip" id="btnInstall" hidden title="Installa Waynder sul dispositivo">⤓ Installa l'app</button>
@@ -1399,6 +1676,24 @@ body.hide-legs .leg-lab{display:none}
     <p class="more-ver mono">Waynder <span id="verTag"></span></p>
     <div class="sheet-actions">
       <button class="btn ghost" id="moreClose" style="flex:1">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="shareHubVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shareHubT">
+    <h2 id="shareHubT">Viaggiate insieme</h2>
+    <p class="hint" style="padding:0 0 13px">Waynder passa un viaggio da un telefono all'altro con un codice. Chi lo ha creato <b>condivide</b>, chi arriva <b>si unisce</b>: da quel momento vedete e modificate lo stesso itinerario.</p>
+    <button class="hub-row" id="hubShare" type="button">
+      <span class="hub-ic">🔗</span>
+      <span><h3>Condividi questo viaggio</h3><p>Genera il codice di <b id="hubTripName">questo viaggio</b> e passalo a chi viene con te.</p></span>
+    </button>
+    <button class="hub-row" id="hubJoin" type="button">
+      <span class="hub-ic">🔑</span>
+      <span><h3>Unisciti a un viaggio</h3><p>Hai ricevuto un codice? Incollalo qui e scarichi il viaggio di chi te l'ha mandato.</p></span>
+    </button>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="shareHubClose" style="flex:1">Chiudi</button>
     </div>
   </div>
 </div>
@@ -1477,23 +1772,20 @@ body.hide-legs .leg-lab{display:none}
       <span class="tick">✓</span>
       <span><b>Tappa in sequenza</b><span class="info-btn" tabindex="0" data-info="Acceso: la tappa prende un numero ed entra nel tragitto del giorno, con tempo e chilometri fino alla successiva. Spento: resta un pin del giorno senza numero, da vedere se c'è tempo — utile per un'idea di riserva o per un posto di passaggio.">i</span></span>
     </button>
-    <label>Contrassegni</label>
+    <label>Contrassegno · adatto con</label>
     <div class="tg-row">
     <button class="toggle" id="fRain" type="button">
       <span class="tick">✓</span>
-      <span><b>Adatta con meteo avverso</b><span class="info-btn" tabindex="0" data-info="Da usare per i posti che funzionano anche sotto la pioggia: musei, chiese, mercati coperti, terme. Quando la previsione del giorno dà pioggia, l'app accende l'icona del meteo per ricordarti che hai già delle tappe di riserva pronte.">i</span></span>
+      <span><b>Meteo avverso</b><span class="info-btn" tabindex="0" data-info="Da usare per i posti che funzionano anche sotto la pioggia: musei, chiese, mercati coperti, terme. Quando la previsione del giorno dà pioggia, l'app accende l'icona del meteo per ricordarti che hai già delle tappe di riserva pronte.">i</span></span>
     </button>
     <button class="toggle" id="fKid" type="button">
       <span class="tick">✓</span>
-      <span><b>Adatta con bimbo</b><span class="info-btn" tabindex="0" data-info="Da usare per i posti comodi con un bambino piccolo: si arriva col passeggino, non ci sono scale o sentieri difficili, e c'è qualcosa che lo diverte. Il pin porta il simbolo del passeggino, così scegli in fretta la tappa giusta quando la giornata si complica.">i</span></span>
+      <span><b>Bimbo</b><span class="info-btn" tabindex="0" data-info="Da usare per i posti comodi con un bambino piccolo: si arriva col passeggino, non ci sono scale o sentieri difficili, e c'è qualcosa che lo diverte. Il pin porta il simbolo del passeggino, così scegli in fretta la tappa giusta quando la giornata si complica.">i</span></span>
     </button>
     </div>
-    <label>Diario</label>
-    <button class="toggle" id="fVisited" type="button">
-      <span class="tick">✓</span>
-      <span><b>Visitata</b><span class="info-btn" tabindex="0" data-info="Da accendere quando ci sei stato davvero. La tappa passa nel Diario, dove puoi raccontare com'è andata e aggiungere le foto: l'itinerario resta il programma, il Diario diventa il ricordo.">i</span></span>
-    </button>
-    <label>Immagine <span class="info-btn" tabindex="0" data-info="Tre modi per mettere una foto: 🔍 cerca da sola le immagini pubbliche scattate in quel punto (bene per i monumenti noti, meno per i posti piccoli: controlla che sia davvero il posto giusto), 📁 prende una foto dal telefono o dal computer, oppure incolli qui il link di un'immagine già online.">i</span></label>
+    <!-- "Visitata" viveva qui: si segna dal Diario, dove ha senso (segna come
+         fatta, racconta, allega le foto), non nella scheda di programmazione. -->
+    <label>Immagine <span class="info-btn" tabindex="0" data-info="Se la tappa non ha una foto, l'app ne mette una da sé: la più vicina al punto fra quelle pubbliche di Wikimedia Commons. Non ti piace? Toccane un'altra tra le dieci proposte, o 🔍 per vederne altre. 📁 prende una foto dal telefono o dal computer, oppure incolli qui il link di un'immagine già online.">i</span></label>
     <div class="img-row">
       <input class="field" id="fImg" placeholder="Incolla il link di un'immagine…" autocomplete="off">
       <button class="act ghost" id="fImgAuto" type="button" title="Cerca una foto del luogo">🔍</button>
@@ -1576,8 +1868,23 @@ body.hide-legs .leg-lab{display:none}
     <h2 id="bSheetT">Nuova prenotazione</h2>
     <label>Tipo</label>
     <div class="type-grid" id="bType"></div>
-    <label for="bTitle">Titolo</label>
+    <label for="bTitle">Titolo <span class="req" title="Campo obbligatorio">*</span></label>
     <input class="field" id="bTitle" placeholder="Es. Volo Roma–Edimburgo, B&amp;B Fort William…" autocomplete="off">
+    <p class="req-note">È il nome con cui la riconoscerai nell'elenco. I campi con <span class="req">*</span> sono obbligatori, il resto lo aggiungi quando lo sai.</p>
+
+    <!-- Solo per l'Alloggio: titolo e indirizzo sono due cose diverse. Il titolo
+         può restare "Edimburgo" (spesso nasce così, creando la base), l'indirizzo
+         è dove si dorme davvero — e serve a spostare la base sul punto giusto
+         della mappa senza rinominarla. -->
+    <div id="bAddrRow" hidden>
+      <label for="bAddr">Indirizzo <span class="info-btn" tabindex="0" data-info="Il titolo è come chiami la tappa («Edimburgo»), l'indirizzo è dove dormi davvero. Scrivi via e numero e tocca 📍: la base resta chiamata Edimburgo ma sulla mappa si sposta esattamente sull'hotel, e i chilometri della giornata vengono contati da lì.">i</span></label>
+      <div class="img-row">
+        <input class="field" id="bAddr" placeholder="Via, numero, città…" autocomplete="off">
+        <button class="act ghost" id="bAddrGeo" type="button" title="Trova l'indirizzo e sposta la base sulla mappa">📍</button>
+      </div>
+      <p class="hint" id="bAddrNote" style="padding:6px 0 0" hidden></p>
+    </div>
+
     <label for="bWho">Fornitore o compagnia</label>
     <input class="field" id="bWho" placeholder="Ryanair, ScotRail, Booking…" autocomplete="off">
 
@@ -1635,6 +1942,23 @@ body.hide-legs .leg-lab{display:none}
   </div>
 </div>
 
+<div class="veil" id="bxVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bxT">
+    <h2 id="bxT">Registro anche la spesa?</h2>
+    <p class="hint" style="padding:0 0 12px"><b id="bxWhat"></b> · <b id="bxAmt"></b><br>Dimmi chi ha pagato e per chi, e la metto in Spese insieme alle altre. Poi i conti si pareggiano da sé.</p>
+    <label>Pagata da</label>
+    <div class="who-picks pay" id="bxBy"></div>
+    <div class="pick-row"><button class="chip" id="bxByAll">Tutti</button><button class="chip" id="bxByNone">Nessuno</button></div>
+    <label>Per chi</label>
+    <div class="who-picks" id="bxFor"></div>
+    <div class="pick-row"><button class="chip" id="bxForAll">Tutti</button><button class="chip" id="bxForNone">Nessuno</button></div>
+    <div class="sheet-actions">
+      <button class="btn" id="bxSave">Aggiungi in Spese</button>
+      <button class="btn ghost" id="bxSkip">Non tracciare questa spesa</button>
+    </div>
+  </div>
+</div>
+
 <div class="veil" id="stopViewVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true">
     <h2 id="svTitle">Tappa</h2>
@@ -1665,8 +1989,12 @@ body.hide-legs .leg-lab{display:none}
     <input class="field" id="xDesc" placeholder="Cena, benzina, biglietti…" autocomplete="off">
     <label for="xAmt">Importo</label>
     <input class="field" id="xAmt" type="text" inputmode="decimal" placeholder="0,00">
-    <label for="xBy">Pagata da</label>
-    <select class="field" id="xBy"></select>
+    <label>Pagata da <span class="info-btn" tabindex="0" data-info="Chi ha tirato fuori i soldi. Puoi indicare più persone: l'importo si divide in parti uguali fra loro. Se hanno pagato tutti per tutti — un hotel già saldato, per esempio — accendi tutti sopra e tutti sotto: la spesa resta a bilancio zero e serve solo a tenerne nota.">i</span></label>
+    <div class="who-picks pay" id="xBy"></div>
+    <div class="pick-row">
+      <button class="chip" id="xByAll">Tutti</button>
+      <button class="chip" id="xByNone">Nessuno</button>
+    </div>
     <label>Per chi</label>
     <div class="who-picks" id="xFor"></div>
     <div class="pick-row">
@@ -1700,7 +2028,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v50';
+const APP_VERSION = 'v51';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -1712,7 +2040,29 @@ const APP_VERSION = 'v50';
   if(bar) bar.hidden = true;
   if(dis) dis.onclick = () => { if(bar) bar.hidden = true; };
 })();
-const PALETTE = ['#E0A32E','#4C9BB0','#8B6BB1','#4C7A5A','#B8492C','#5A78C4','#C2557E','#7E8B99'];
+/* Il grigio è uscito dalla palette: era quasi identico al Brainstorming e sulla
+   mappa non si capiva più se un pin era un giorno o un'idea non smistata. Al
+   suo posto un turchese, che nella scala manca. */
+const PALETTE = ['#E0A32E','#4C9BB0','#8B6BB1','#4C7A5A','#B8492C','#5A78C4','#C2557E','#2FA39B'];
+const OLD_GREYS = ['#7e8b99','#8fa3b0','#8494a2'];
+/* i viaggi salvati prima avevano giorni grigi ("Rientro", l'ottavo giorno…):
+   restavano grigi per sempre. Al caricamento passano al colore che avrebbero
+   preso oggi, cioè quello della loro posizione nella palette. */
+function migrateDayColors(){
+  let touched = false;
+  (state.days || []).forEach((d, i) => {
+    if(d.color && OLD_GREYS.includes(String(d.color).toLowerCase())){
+      d.color = PALETTE[i % PALETTE.length];
+      touched = true;
+    }
+  });
+  return touched;
+}
+/* Brainstorming non ha un colore suo: ha TUTTI quelli della palette mescolati
+   in un'unica livrea, uguale per ogni idea (vedi --brain-tex nel foglio di
+   stile). BRAIN_SOLID è il ripiego dove serve un colore piatto. */
+const BRAIN_GRAD = 'linear-gradient(122deg,#C0985C 0%,#B3767F 20%,#8E7CAE 40%,#5F8AAE 60%,#5D9E94 80%,#8FA36E 100%)';
+const BRAIN_SOLID = '#8E8FA0';
 /* Da v7 l'app tiene più viaggi: ognuno vive sotto la propria chiave 'rotta:trip:<id>'
    nello stesso object store 'kv' di sempre (nessun bump di versione IndexedDB).
    'rotta:v1' è la vecchia chiave a viaggio singolo: resta lì solo per la migrazione
@@ -2247,6 +2597,11 @@ const TYPES = {
   trek:    {label:'Trekking',       d:'M13 3.5a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4zM8.4 21l2.1-5.1-1.9-1.7-1.2 3.3-1.9-.7 1.9-5.2 3.4-1.4 1.6 3.4 3.1 1.5-.9 1.9-2.6-1.3.9 2.2 1.9 4.5-2 .8-2-4.8L10.4 21H8.4zM18.6 21V8.6l-1.5 1.5-.9-1 3-2.9V21h-.6z'},
   walk:    {label:'Passeggiata',    d:'M13.5 3.2a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2zM9.8 21l2.3-5.4-1.7-2.3-1.6 3.6-1.9-.8 2.5-5.7 3.7-1.3 2.4 2.6 2.7 1.1-.8 1.9-3-1.2-1.2-1.3-.8 2.9 2.2 2.6 1.6 4.4-2 .7-1.6-4.2-2.1-2L11.9 21H9.8z'},
   city:    {label:'Città',          d:'M3 21V9l5-3v3l5-3v4h6v11H3zm2-2h3v-3H5v3zm0-5h3v-3H5v3zm5 5h3v-3h-3v3zm0-5h3v-3h-3v3zm5 5h4v-3h-4v3zm0-5h4v-3h-4v3z'},
+  monument:{label:'Monumento',      d:'M10.4 2h3.2l.7 12.4h-4.6L10.4 2zM7.4 15.9h9.2v2.1H7.4v-2.1zM5.6 19.4h12.8V22H5.6v-2.6z'},
+  church:  {label:'Luogo di culto', d:'M11.2 1.6h1.6v2.3H15v1.6h-2.2v2.9L20 12.9V22h-5.4v-4.7a2.6 2.6 0 0 0-5.2 0V22H4v-9.1l7.2-4.5V5.5H9V3.9h2.2V1.6z'},
+  ruins:   {label:'Sito archeologico', d:'M3.4 22V9.4a3.9 3.9 0 0 1 7.8 0V22H8.9V9.4a1.5 1.5 0 0 0-3.1 0V22H3.4zm10.2 0V4.2l2.3 1.1v3.2l2.1-.9v2.2l-2.1.9v4.1l2.1-.9v2.2l-2.1.9V22h-2.3z'},
+  square:  {label:'Piazza',         d:'M12 1.8a1.7 1.7 0 0 0-1.7 1.7c0 1 1.7 2.9 1.7 2.9s1.7-1.9 1.7-2.9A1.7 1.7 0 0 0 12 1.8zM11 7.6h2V17h-2V7.6zM6.2 19h11.6l2.4 3H3.8l2.4-3z'},
+  market:  {label:'Mercato',        d:'M2.6 3.4h18.8l1.5 4.8H1.1l1.5-4.8zM4.2 9.7h15.6V22h-5.7v-5.5H9.9V22H4.2V9.7z'},
   museum:  {label:'Museo',          d:'M12 2 2 7v2h20V7L12 2zM4 11v7H3v2h18v-2h-1v-7h-2v7h-3v-7h-2v7h-2v-7H9v7H6v-7H4z'},
   castle:  {label:'Castello',       d:'M3 21V6h2.5v2.5H8V6h2.75v2.5h2.5V6H16v2.5h2.5V6H21v15h-7v-4.5a2 2 0 0 0-4 0V21H3zm2-2h3v-3H5v3zm11 0h3v-3h-3v3z'},
   view:    {label:'Panorama',       d:'M3 19l5.5-8 3.5 5 2.5-3.5L21 19H3zm14.5-9.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4z'},
@@ -2447,10 +2802,16 @@ function inspTypeFromDesc(desc, title){
   const s = ((desc || '') + ' ' + (title || '')).toLowerCase();
   const has = re => re.test(s);
   if(has(/parlament|tribunal|prefettur|ministero|sede del/)) return 'place';
-  /* i musei prima: la Galleria degli Uffizi è "palazzo e museo", e conta il museo */
+  /* l'antico prima di tutto: "anfiteatro" e "teatro romano" contengono
+     "teatro", e finivano fra i musei */
+  if(has(/sito archeologic|archaeological|\brovine\b|\bruins\b|anfiteatr|teatro roman|foro roman|necropoli|acropoli|terme roman|villa roman|scavi\b|tempio (roman|greco|dorico)|area archeologic/)) return 'ruins';
+  /* i musei prima delle chiese: la Galleria degli Uffizi è "palazzo e museo", e conta il museo */
   if(has(/\bmuseo\b|\bmuseum\b|galleria|\bgallery\b|pinacotec|biblioteca|\blibrary\b|\bteatro\b|\btheatre\b/)) return 'museum';
+  if(has(/chiesa|cattedral|basilica|abbazia|duomo|church|cathedral|abbey|monaster|convento|santuario|\bpieve\b|tempio|sinagoga|mosche|\bmosque\b|\bshrine\b|\btemple\b/)) return 'church';
+  if(has(/monument|memorial|obelisc|mausoleo|cenotafio|arco di trionfo|arco trionfale|\bstatua\b|statua equestre|\bfontana\b|\bfountain\b|\bponte\b|\bbridge\b|\bcolonna\b|faro\b|\blighthouse\b/)) return 'monument';
   if(has(/\bcastell|\bcastle\b|fortezz|\bfortress\b|\bfort\b|\brocca\b|\btorre\b|\btower\b|palazz|\bpalace\b|reggia|château/)) return 'castle';
-  if(has(/chiesa|cattedral|basilica|abbazia|duomo|church|cathedral|abbey|monaster|convento|tempio|sinagoga|mosche/)) return 'museum';
+  if(has(/\bpiazza\b|\bpiazzale\b|\bsquare\b|\bplaza\b|\bplace\b de|centro storico|città vecchia|\bold town\b|lungomare|\bpromenade\b/)) return 'square';
+  if(has(/mercat|\bmarket\b|\bbazar\b|\bbazaar\b|\bsouk\b|\bmarché\b/)) return 'market';
   if(has(/spiaggia|beach|litoral|baia\b|bay\b/)) return 'beach';
   if(has(/punto panoramico|belvedere|viewpoint|panoram/)) return 'view';
   if(has(/montagn|mountain|monte\b|collina|hill\b|vetta|peak|vulcan|volcano|ghiacciai|glacier/)) return 'view';
@@ -2583,7 +2944,9 @@ async function wikiNearby(lang, lat, lng, radius){
     };
   });
 }
-const INSP_SUB = {city:'Città', castle:'Castello', museum:'Museo', view:'Panorama', nature:'Natura',
+const INSP_SUB = {city:'Città', castle:'Castello', museum:'Museo', church:'Luogo di culto',
+  monument:'Monumento', ruins:'Archeologia', square:'Piazza', market:'Mercato',
+  view:'Panorama', nature:'Natura',
   beach:'Mare', transit:'Trasporto', shop:'Acquisti', food:'Mangiare', trek:'Trekking', place:'Da vedere'};
 
 /* il db curato (scritto a mano) non ha una foto per ogni voce: dove manca,
@@ -3222,8 +3585,8 @@ function addInspItems(items){
     state.places.push({
       id:uid(), name:it.name, lat:it.lat, lng:it.lng, dayId:null, img: big,
       notes: note ? note.charAt(0).toUpperCase() + note.slice(1) : '', links, type:it.type, chain:true,
-      /* i musei restano una buona idea anche se piove */
-      rain: it.type === 'museum', city:false
+      /* al coperto: restano una buona idea anche se piove */
+      rain: it.type === 'museum' || it.type === 'church' || it.type === 'market', city:false
     });
     n++;
   });
@@ -3253,11 +3616,19 @@ function openEmptyInspire(){
 }
 function maybeSuggestInspire(){
   if(state.places.length || state.inspireSuggested) return;
-  /* il benvenuto ha la precedenza: due popup insieme sarebbero troppi */
+  /* il tutorial ha la precedenza: due cose che parlano insieme sono troppe */
+  if(tourRunning) return;
   if(!document.getElementById('wcVeil').hidden) return;
   state.inspireSuggested = true;
   save();
-  openEmptyInspire();
+  /* non addosso all'avvio: prima si guarda la mappa e si capisce dove si è,
+     poi — se ancora non si è messo niente — arriva la proposta */
+  setTimeout(() => {
+    if(state.places.length) return;
+    if(!document.getElementById('wcVeil').hidden) return;
+    if(![...document.querySelectorAll('.veil')].every(v => v.hidden)) return;
+    openEmptyInspire();
+  }, 5000);
 }
 /* cerca il posto scritto e mostra fino a 5 corrispondenze da confermare:
    "Roma" esiste anche in Georgia (USA), meglio farsi dire quale delle due
@@ -3754,7 +4125,7 @@ function drawMap(){
     usedBaseIds.forEach(id => { const b = baseOf(id); if(b) layer.addLayer(baseMarker(b)); });
   }
 
-  if(showOrphans) visibleOrphans().forEach(p => layer.addLayer(marker(p,'?', '#8FA3B0')));
+  if(showOrphans) visibleOrphans().forEach(p => layer.addLayer(marker(p,'?', BRAIN_GRAD)));
   scaleLabels();
 }
 
@@ -3869,7 +4240,7 @@ function drawList(){
      subito aprendo l'app, non le tappe ancora da smistare. Sempre presente,
      come Giorno 1, anche a zero idee: da vuoto è il punto in cui si invita
      a Ispirami (vedi dayBlock). */
-  box.appendChild(dayBlock({id:null,name:'Brainstorming',color:'#8FA3B0'}, orphans));
+  box.appendChild(dayBlock({id:null,name:'Brainstorming',color:BRAIN_SOLID,grad:BRAIN_GRAD}, orphans));
 }
 
 /* pillola "Parte da"/"Arriva a" ai due estremi del nastro: stessa base per
@@ -3912,6 +4283,44 @@ function baseStopLi(d, which, label, icon, next){
   return li;
 }
 
+/* ============ selettore di colore del giorno ============ */
+/* Otto tinte pronte (le stesse che l'app assegna da sé, cosí un viaggio
+   ricolorato a mano resta coerente) più la possibilità di sceglierne una
+   qualsiasi, per chi ha in testa un colore preciso. */
+let colorPop = null;
+function openColorPop(anchor, current, onPick){
+  if(!colorPop){
+    colorPop = document.createElement('div');
+    colorPop.className = 'color-pop';
+    colorPop.hidden = true;
+    document.body.appendChild(colorPop);
+  }
+  colorPop.innerHTML = '<h4>Colore del giorno</h4><div class="color-grid"></div>' +
+    '<div class="color-free">Oppure <input type="color" value="'+esc(current||PALETTE[0])+'"> a piacere</div>';
+  const grid = colorPop.querySelector('.color-grid');
+  PALETTE.forEach(c => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.style.background = c;
+    b.title = c;
+    if(c.toLowerCase() === (current||'').toLowerCase()) b.className = 'on';
+    b.onclick = () => { onPick(c); closeColorPop(); };
+    grid.appendChild(b);
+  });
+  const free = colorPop.querySelector('input[type=color]');
+  free.oninput = () => onPick(free.value);
+  colorPop.hidden = false;
+  const r = anchor.getBoundingClientRect(), pw = colorPop.offsetWidth || 200, ph = colorPop.offsetHeight || 160;
+  colorPop.style.left = Math.max(10, Math.min(r.left - 6, window.innerWidth - pw - 10)) + 'px';
+  colorPop.style.top = (r.bottom + ph + 12 > window.innerHeight ? Math.max(10, r.top - ph - 8) : r.bottom + 8) + 'px';
+  setTimeout(() => document.addEventListener('pointerdown', outsideColorPop, {once:true}), 0);
+}
+function closeColorPop(){ if(colorPop) colorPop.hidden = true; }
+function outsideColorPop(e){
+  if(colorPop && !colorPop.hidden && !colorPop.contains(e.target)) closeColorPop();
+  else if(colorPop && !colorPop.hidden) document.addEventListener('pointerdown', outsideColorPop, {once:true});
+}
+
 function dayBlock(d, list){
   const sec = document.createElement('section');
   sec.className = 'day';
@@ -3941,8 +4350,8 @@ function dayBlock(d, list){
   head.innerHTML =
     '<div class="day-head-top">' +
       (d.id
-        ? '<span class="day-date-wrap"><span class="swatch" style="background:'+d.color+'"></span><input type="date" class="day-date mono" value="'+(d.date||'')+'"></span>'
-        : '<span class="swatch" style="background:'+d.color+'"></span>') +
+        ? '<span class="day-date-wrap"><button type="button" class="swatch sw-btn" title="Cambia il colore del giorno" aria-label="Cambia il colore del giorno" style="background:'+d.color+'"></button><input type="date" class="day-date mono" value="'+(d.date||'')+'"></span>'
+        : '<span class="swatch" style="background:'+(d.grad||d.color)+'"></span>') +
       (d.id ? '<input class="day-name" value="'+esc(d.name)+'">' : '<span class="day-name">'+d.name+'</span>') +
       (d.id ?
         '<div class="day-head-actions">' +
@@ -3956,6 +4365,8 @@ function dayBlock(d, list){
   sec.appendChild(head);
 
   if(d.id){
+    const sw = head.querySelector('.sw-btn');
+    if(sw) sw.onclick = e => { e.stopPropagation(); openColorPop(sw, d.color, c => { d.color = c; save(); render(); }); };
     head.querySelector('.day-name').onchange = e => { d.name = e.target.value; save(); };
     head.querySelector('.day-date').onchange = e => {
       const v = e.target.value || null;
@@ -4020,7 +4431,7 @@ function dayBlock(d, list){
       e.classList.add('empty-cta');
       e.setAttribute('role','button');
       e.tabIndex = 0;
-      e.innerHTML = 'Ancora nessuna tappa inserita.<br><b>Lasciati ispirare</b><br>Tocca qui, scrivi una nazione o una città e ti proponiamo subito le idee migliori.';
+      e.innerHTML = '<span class="ei-spark">✨</span>Ancora nessuna tappa inserita.<br><b>Lasciati ispirare</b><br>Scrivi una nazione o una città e ti proponiamo subito le idee migliori.<br><span class="ei-go">✨ Proponimi delle idee</span>';
       e.onclick = openEmptyInspire;
       e.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openEmptyInspire(); } };
     } else {
@@ -4035,9 +4446,9 @@ function dayBlock(d, list){
   if(d.id) ol.appendChild(baseStopLi(d, 'baseFromId', 'Parte da', ICON_HOUSE_OUT, list[0] || null));
   list.forEach((p,i) => {
     const li = document.createElement('li');
-    li.className = 'stop';
+    li.className = 'stop' + (d.id ? '' : ' brain');
     li.dataset.place = p.id;
-    li.style.setProperty('--c', d.color);
+    li.style.setProperty('--c', d.id ? d.color : BRAIN_SOLID);
     let links = '';
     (p.links||[]).forEach(l => links += '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||new URL(l.url,'https://x').hostname.replace('www.',''))+' ↗</a>');
     li.innerHTML =
@@ -4094,9 +4505,9 @@ function dayBlock(d, list){
       wrap.innerHTML = '<div class="alt-head mono">'+g.head+' · '+g.items.length+'</div>';
       g.items.forEach(p => {
         const row = document.createElement('div');
-        row.className = 'alt-item';
+        row.className = 'alt-item' + (d.id ? '' : ' brain');
         row.dataset.place = p.id;
-        row.style.setProperty('--c', d.color);
+        row.style.setProperty('--c', d.id ? d.color : BRAIN_SOLID);
         let links = '';
         (p.links||[]).forEach(l => links += '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||new URL(l.url,'https://x').hostname.replace('www.',''))+' ↗</a>');
         row.innerHTML =
@@ -4337,7 +4748,7 @@ function drawDiary(){
     return;
   }
   state.days.forEach(d => box.appendChild(diaryDayBlock(d, all(d.id))));
-  if(orphans.length) box.appendChild(diaryDayBlock({id:null, name:'Brainstorming', color:'#8FA3B0'}, orphans));
+  if(orphans.length) box.appendChild(diaryDayBlock({id:null, name:'Brainstorming', color:BRAIN_SOLID, grad:BRAIN_GRAD}, orphans));
 }
 
 function diaryDayBlock(d, list){
@@ -4349,7 +4760,7 @@ function diaryDayBlock(d, list){
   head.className = 'day-head';
   head.innerHTML =
     '<div class="day-head-top">' +
-      '<span class="swatch" style="background:'+d.color+'"></span>' +
+      '<span class="swatch" style="background:'+(d.grad||d.color)+'"></span>' +
       '<span class="day-name">'+esc(d.name)+'</span>' +
       '<span class="day-stat mono">'+(list.length ? done+' / '+list.length+' fatte' : '—')+'</span>' +
       (list.length ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '') +
@@ -4364,7 +4775,7 @@ function diaryDayBlock(d, list){
     e.textContent = 'Nessuna tappa in questo giorno.';
     body.appendChild(e);
   } else {
-    list.forEach(p => body.appendChild(diaryStopCard(p, d.color)));
+    list.forEach(p => body.appendChild(diaryStopCard(p, d.id ? d.color : BRAIN_SOLID, !d.id)));
   }
   sec.appendChild(body);
   const toggleB = head.querySelector('.day-toggle');
@@ -4377,9 +4788,9 @@ function diaryDayBlock(d, list){
   return sec;
 }
 
-function diaryStopCard(p, color){
+function diaryStopCard(p, color, brain){
   const div = document.createElement('div');
-  div.className = 'diary-stop' + (p.visited ? '' : ' pending');
+  div.className = 'diary-stop' + (p.visited ? '' : ' pending') + (brain ? ' brain' : '');
   div.style.setProperty('--c', color);
   div.innerHTML =
     '<div class="diary-top">' +
@@ -4391,6 +4802,7 @@ function diaryStopCard(p, color){
   div.querySelector('.toggle-mini').onclick = () => {
     p.visited = !p.visited;
     if(p.visited && !p.visitedAt) p.visitedAt = Date.now();
+    if(p.visited) coach('diary');
     save(); drawDiary();
   };
   if(!p.visited) return div;
@@ -4500,11 +4912,18 @@ function openInGmaps(d, list){
 /* ============ spese condivise ============ */
 function normalize(){
   if(!state.id) state.id = uid();
+  migrateDayColors();
   if(!state.people) state.people = [];
   if(!state.expenses) state.expenses = [];
   if(!state.bookings) state.bookings = [];
   if(!state.bases) state.bases = [];
   if(!state.currency) state.currency = '€';
+  /* "pagata da" era una persona sola: ora è un elenco (un conto può essere
+     stato diviso alla cassa). Le spese vecchie diventano un elenco di uno. */
+  state.expenses.forEach(e => {
+    if(!Array.isArray(e.byIds)) e.byIds = e.byId ? [e.byId] : [];
+    delete e.byId;
+  });
   /* le versioni precedenti avevano "Con Francesco" come tipo: ora è un contrassegno */
   state.places.forEach(p => {
     if(p.type === 'kids'){ p.type = 'place'; p.kid = true; }
@@ -4523,7 +4942,12 @@ function balances(){
     const forIds = e.forIds.filter(id => b[id] !== undefined);
     if(!forIds.length) return;
     const share = e.amount / forIds.length;
-    if(b[e.byId] !== undefined) b[e.byId] += e.amount;
+    /* più di uno può aver pagato: l'uscita si divide fra loro in parti uguali */
+    const byIds = (e.byIds || []).filter(id => b[id] !== undefined);
+    if(byIds.length){
+      const paid = e.amount / byIds.length;
+      byIds.forEach(id => b[id] += paid);
+    }
     forIds.forEach(id => b[id] -= share);
   });
   return b;
@@ -4576,13 +5000,17 @@ function drawCosts(){
     h += '<p class="empty tight">Nessuna spesa registrata.</p>';
   } else {
     h += state.expenses.slice().reverse().map(e => {
-      const who = e.forIds.length === state.people.length && state.people.length
-        ? 'tutti' : e.forIds.map(personName).join(', ');
+      const tutti = n => n === state.people.length && state.people.length;
+      const who = tutti(e.forIds.length) ? 'tutti' : e.forIds.map(personName).join(', ');
+      const pay = e.byIds || [];
+      const payLab = !pay.length ? 'Nessuno segnato'
+        : tutti(pay.length) ? 'Tutti' : pay.map(personName).join(', ');
+      const verb = pay.length > 1 ? ' hanno pagato' : ' ha pagato';
       return '<div class="exp"><div class="exp-top">'+
         '<button class="exp-d" data-edx="'+e.id+'">'+esc(e.desc||'Spesa')+'</button>'+
         '<span class="exp-a mono">'+money(e.amount)+'</span>'+
         '<button class="icon-btn" data-delx="'+e.id+'" title="Elimina">✕</button></div>'+
-        '<div class="exp-m mono">'+esc(personName(e.byId))+' ha pagato · per '+esc(who)+'</div></div>';
+        '<div class="exp-m mono">'+esc(payLab)+(pay.length?verb:'')+' · per '+esc(who)+'</div></div>';
     }).join('');
   }
   h += '</div>';
@@ -4609,12 +5037,15 @@ function drawCosts(){
   np.onkeydown = e => { if(e.key === 'Enter') addP(); };
   box.querySelectorAll('[data-del]').forEach(b2 => b2.onclick = () => {
     const id = b2.dataset.del;
-    if(state.expenses.some(e => e.byId === id || e.forIds.includes(id))
+    if(state.expenses.some(e => (e.byIds||[]).includes(id) || e.forIds.includes(id))
        && !confirm(personName(id)+' compare in alcune spese. Rimuovere comunque?')) return;
     state.people = state.people.filter(p => p.id !== id);
-    state.expenses = state.expenses.filter(e => e.byId !== id);
-    state.expenses.forEach(e => e.forIds = e.forIds.filter(x => x !== id));
-    state.expenses = state.expenses.filter(e => e.forIds.length);
+    state.expenses.forEach(e => {
+      e.byIds = (e.byIds||[]).filter(x => x !== id);
+      e.forIds = e.forIds.filter(x => x !== id);
+    });
+    /* una spesa senza nessuno da una parte o dall'altra non vuol dire più niente */
+    state.expenses = state.expenses.filter(e => e.forIds.length && e.byIds.length);
     save(); drawCosts();
   });
   box.querySelectorAll('[data-delx]').forEach(b2 => b2.onclick = () => {
@@ -4631,36 +5062,43 @@ function openExpense(id){
   normalize();
   if(state.people.length < 2){ alert('Aggiungi almeno due partecipanti prima di registrare una spesa.'); return; }
   editingExpense = id ? state.expenses.find(e => e.id === id) : null;
-  const byS = document.getElementById('xBy');
-  byS.innerHTML = state.people.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('');
-  const forBox = document.getElementById('xFor');
-  const forIds = editingExpense ? editingExpense.forIds : state.people.map(p=>p.id);
-  forBox.innerHTML = state.people.map(p =>
-    '<button class="who-pick'+(forIds.includes(p.id)?' on':'')+'" data-id="'+p.id+'">'+esc(p.name)+'</button>').join('');
-  forBox.querySelectorAll('.who-pick').forEach(b2 => b2.onclick = () => b2.classList.toggle('on'));
+  const picks = (box, ids) => {
+    box.innerHTML = state.people.map(p =>
+      '<button class="who-pick'+(ids.includes(p.id)?' on':'')+'" type="button" data-id="'+p.id+'">'+esc(p.name)+'</button>').join('');
+    box.querySelectorAll('.who-pick').forEach(b2 => b2.onclick = () => b2.classList.toggle('on'));
+  };
+  /* di norma paga chi ha aperto la spesa (il primo dell'elenco) e vale per
+     tutti: sono i due casi di gran lunga più frequenti */
+  picks(document.getElementById('xBy'),
+    editingExpense ? (editingExpense.byIds || []) : [state.people[0].id]);
+  picks(document.getElementById('xFor'),
+    editingExpense ? editingExpense.forIds : state.people.map(p => p.id));
   document.getElementById('xTitle').textContent = editingExpense ? 'Modifica spesa' : 'Nuova spesa';
   document.getElementById('xDesc').value = editingExpense ? editingExpense.desc || '' : '';
   document.getElementById('xAmt').value = editingExpense ? String(editingExpense.amount).replace('.',',') : '';
-  byS.value = editingExpense ? editingExpense.byId : state.people[0].id;
   document.getElementById('xDel').hidden = !editingExpense;
   document.getElementById('xVeil').hidden = false;
   autoFocus(document.getElementById('xDesc'));
 }
 
-document.getElementById('xAll').onclick = () =>
-  document.querySelectorAll('#xFor .who-pick').forEach(b => b.classList.add('on'));
-document.getElementById('xNone').onclick = () =>
-  document.querySelectorAll('#xFor .who-pick').forEach(b => b.classList.remove('on'));
+const xPickAll = (sel, on) =>
+  document.querySelectorAll(sel + ' .who-pick').forEach(b => b.classList.toggle('on', on));
+document.getElementById('xAll').onclick = () => xPickAll('#xFor', true);
+document.getElementById('xNone').onclick = () => xPickAll('#xFor', false);
+document.getElementById('xByAll').onclick = () => xPickAll('#xBy', true);
+document.getElementById('xByNone').onclick = () => xPickAll('#xBy', false);
 document.getElementById('xCancel').onclick = () => { document.getElementById('xVeil').hidden = true; editingExpense = null; };
 document.getElementById('xSave').onclick = () => {
   const amt = parseFloat(document.getElementById('xAmt').value.replace(',','.'));
   const forIds = [...document.querySelectorAll('#xFor .who-pick.on')].map(b=>b.dataset.id);
+  const byIds  = [...document.querySelectorAll('#xBy .who-pick.on')].map(b=>b.dataset.id);
   if(!(amt > 0)){ alert('Inserisci un importo maggiore di zero.'); return; }
+  if(!byIds.length){ alert('Indica chi ha pagato.'); return; }
   if(!forIds.length){ alert('Indica per chi è la spesa.'); return; }
   const rec = {
     desc: document.getElementById('xDesc').value.trim(),
     amount: amt,
-    byId: document.getElementById('xBy').value,
+    byIds,
     forIds
   };
   if(editingExpense) Object.assign(editingExpense, rec);
@@ -4681,7 +5119,8 @@ document.getElementById('xDel').onclick = () => {
 /* Una foto da telefono pesa 3-5 MB: salvata così farebbe esplodere il file del viaggio
    e supererebbe il limite dello storage. La ridimensiono a 900 px lato lungo e la
    ricomprimo in JPEG prima di conservarla. */
-function shrinkImage(file, cb, maxPx){
+function shrinkImage(file, cb, maxPx, opt){
+  const o = opt || {};
   const rd = new FileReader();
   rd.onload = () => {
     const img = new Image();
@@ -4691,8 +5130,23 @@ function shrinkImage(file, cb, maxPx){
       if(w > max || h > max){ const s = max/Math.max(w,h); w = Math.round(w*s); h = Math.round(h*s); }
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
-      c.getContext('2d').drawImage(img, 0, 0, w, h);
-      cb(c.toDataURL('image/jpeg', 0.72));
+      const cx = c.getContext('2d');
+      /* fondo bianco: gli screenshot con trasparenza (PNG di conferme) altrimenti
+         diventano neri in JPEG e il QR si perde nel buio */
+      cx.fillStyle = '#fff'; cx.fillRect(0,0,w,h);
+      cx.imageSmoothingQuality = 'high';
+      cx.drawImage(img, 0, 0, w, h);
+      /* Le foto delle tappe possono stare strette. I biglietti no: dentro c'è un
+         QR, e un QR ricompresso troppo non si legge più al tornello. Per quelli
+         si parte da qualità alta e si scende solo se serve per stare nel budget,
+         invece di partire già schiacciati. */
+      let q = o.q || 0.72;
+      let out = c.toDataURL('image/jpeg', q);
+      while(o.budget && out.length > o.budget && q > 0.62){
+        q = Math.round((q - 0.06) * 100) / 100;
+        out = c.toDataURL('image/jpeg', q);
+      }
+      cb(out);
     };
     img.onerror = () => cb(null);
     img.src = rd.result;
@@ -4754,35 +5208,64 @@ async function findPlaceImages(lat, lng, radius, limit){
    NUOVE invece di ripetere le stesse sei. */
 let imgHunt = null;
 const IMG_RADII = [700, 2500, 8000];   // stesso punto, poi la zona, poi i dintorni
+const IMG_BATCH = 10;                  // provini per giro
 async function nextImageBatch(p){
   if(!imgHunt || imgHunt.id !== p.id) imgHunt = {id:p.id, pool:[], step:-1, seen:new Set(), done:false};
   const h = imgHunt;
   const fresh = () => h.pool.filter(c => !h.seen.has(c.thumb));
   /* finché il bacino corrente è esaurito allargo il raggio: prima le foto
      scattate sul posto, poi quelle della zona */
-  while(fresh().length < 6 && h.step < IMG_RADII.length - 1){
+  while(fresh().length < IMG_BATCH && h.step < IMG_RADII.length - 1){
     h.step++;
     const found = await findPlaceImages(p.lat, p.lng, IMG_RADII[h.step], 50);
     const known = new Set(h.pool.map(c => c.thumb));
     h.pool = h.pool.concat(found.filter(c => !known.has(c.thumb)));
   }
-  let batch = fresh().slice(0, 6);
+  let batch = fresh().slice(0, IMG_BATCH);
   /* niente di nuovo da nessuna parte: si ricomincia dalle prime, meglio che
      lasciare il riquadro vuoto */
   if(!batch.length && h.pool.length){
     h.seen.clear();
     h.wrapped = true;
-    batch = h.pool.slice(0, 6);
+    batch = h.pool.slice(0, IMG_BATCH);
   }
   batch.forEach(c => h.seen.add(c.thumb));
   h.more = fresh().length > 0 || h.step < IMG_RADII.length - 1;
   return batch;
 }
 
-/* avviata da sola quando si apre una tappa senza immagine, e a richiesta con 🔍:
-   mostra alcune miniature candidate, non applica nulla finché l'utente non
-   ne tocca una (vedi commento sopra sul perché non si può scegliere da sola) */
-async function autoImage(){
+/* Avviata da sola quando si apre una tappa senza immagine, e a richiesta con 🔍.
+   Prima la scheda arrivava con una fila di provini e nessuna foto scelta: la
+   maggior parte delle tappe finiva senza immagine, perché nessuno si mette a
+   toccare dieci quadratini. Ora la prima — la più vicina al punto, quindi la
+   più probabile — viene messa da sé, e le altre nove restano lì come
+   alternative da un tocco. */
+function applyImgCand(c){
+  document.getElementById('fImg').value = c.thumb;
+  pendingImgCredit = c;
+}
+function drawImgCands(found){
+  const cur = document.getElementById('fImg').value.trim();
+  const nota = imgHunt && imgHunt.wrapped
+    ? 'Sono finite: queste sono le prime di nuovo.'
+    : (imgHunt && imgHunt.more ? 'Tocca ancora 🔍 per vederne altre.' : 'Sono le ultime che ho trovato qui.');
+  const cred = pendingImgCredit;
+  const box = document.getElementById('fImgPrev');
+  box.innerHTML =
+    (cur ? '<img class="img-prev" src="'+esc(cur)+'" alt="Anteprima">' +
+      (cred ? '<p class="img-credit">Foto: '+esc(cred.author)+(cred.license?' · '+esc(cred.license):'')+' · Wikimedia Commons</p>' : '') : '') +
+    '<p class="hint" style="padding:8px 0 0">' +
+      (cur ? 'Scegline un’altra qui sotto, oppure caricala tu con 📁. ' : 'Tocca una foto per usarla. ') + nota +
+    '</p>' +
+    '<div class="img-cand-row">' + found.map((c,i) =>
+      '<button type="button" class="img-cand'+(c.thumb === cur ? ' on' : '')+'" data-i="'+i+'" title="Foto: '+esc(c.author)+(c.license?' · '+esc(c.license):'')+'"><img src="'+esc(c.thumb)+'" alt="" loading="lazy"></button>'
+    ).join('') + '</div>';
+  box.querySelectorAll('.img-cand').forEach(b => b.onclick = () => {
+    applyImgCand(found[+b.dataset.i]);
+    drawImgCands(found);
+  });
+}
+async function autoImage(auto){
   if(!editing) return;
   const id = editing.id, again = !!(imgHunt && imgHunt.id === id);
   document.getElementById('fImgPrev').innerHTML =
@@ -4792,27 +5275,15 @@ async function autoImage(){
      nel frattempo: non mostro risultati ormai fuori contesto */
   if(!editing || editing.id !== id || veil.hidden) return;
   if(!found.length){
-    imgPreview(document.getElementById('fImg').value.trim());
+    imgPreview(document.getElementById('fImg').value.trim(), pendingImgCredit);
     if(again) toast('Non ho trovato altre foto di questo posto');
     return;
   }
-  const nota = imgHunt.wrapped
-    ? 'Sono finite: queste sono le prime di nuovo.'
-    : (imgHunt.more ? 'Non ti piacciono? Tocca ancora 🔍 per altre.' : 'Sono le ultime che ho trovato qui.');
-  const box = document.getElementById('fImgPrev');
-  box.innerHTML = '<div class="img-cand-row">' + found.map((c,i) =>
-      '<button type="button" class="img-cand" data-i="'+i+'" title="Foto: '+esc(c.author)+(c.license?' · '+esc(c.license):'')+'"><img src="'+esc(c.thumb)+'" alt="" loading="lazy"></button>'
-    ).join('') +
-    '</div><p class="hint" style="padding:6px 0 0">Tocca una foto per usarla. ' + nota + '</p>';
-  box.querySelectorAll('.img-cand').forEach(b => b.onclick = () => {
-    const c = found[+b.dataset.i];
-    document.getElementById('fImg').value = c.thumb;
-    pendingImgCredit = c;
-    imgPreview(c.thumb, c);
-  });
+  if(auto === true && !document.getElementById('fImg').value.trim()) applyImgCand(found[0]);
+  drawImgCands(found);
 }
 
-document.getElementById('fImgAuto').onclick = autoImage;
+document.getElementById('fImgAuto').onclick = () => autoImage(false);
 document.getElementById('fImgAuto').title = 'Cerca foto del luogo — toccalo di nuovo per vederne altre';
 document.getElementById('fImgPick').onclick = () => document.getElementById('fImgFile').click();
 document.getElementById('fImgFile').onchange = e => {
@@ -4900,7 +5371,8 @@ function bookingBody(b, T){
   } else if(b.refund === 'paid'){
     flag = '<span class="bk-flag late">Non rimborsabile</span>';
   }
-  return '<div class="bk-when mono">'+
+  return (b.addr ? '<div class="bk-ref mono">Indirizzo: <b>'+esc(b.addr)+'</b></div>' : '')+
+    '<div class="bk-when mono">'+
       '<span>'+esc(T.aLab)+': <b>'+fmtWhen(b.aWhen)+'</b>'+(b.aPlace ? ' · '+esc(b.aPlace) : '')+'</span>'+
       (T.leg && (b.bWhen || b.bPlace)
         ? '<span>'+esc(T.bLab)+': <b>'+fmtWhen(b.bWhen)+'</b>'+(b.bPlace ? ' · '+esc(b.bPlace) : '')+'</span>'
@@ -5001,6 +5473,8 @@ function openBooking(id){
   });
 
   document.getElementById('bTitle').value = b.title || '';
+  document.getElementById('bAddr').value  = b.addr  || '';
+  document.getElementById('bAddrNote').hidden = true;
   document.getElementById('bWho').value   = b.who   || '';
   document.getElementById('bAWhen').value = b.aWhen || '';
   document.getElementById('bAPlace').value= b.aPlace|| '';
@@ -5031,12 +5505,57 @@ function bookLabels(type){
   document.getElementById('bRefLab').textContent = T.ref;
   document.getElementById('bLegB').hidden = !T.leg;
   if(T.leg) document.getElementById('bBLab').textContent = T.bLab;
-  const ap = document.getElementById('bAPlace');
-  ap.placeholder = type==='stay' ? 'Struttura e indirizzo'
-                 : type==='car'  ? 'Sede di ritiro'
+  /* Alloggio: check-in e check-out sono GIORNI, non orari, e il luogo non va
+     chiesto due volte — è l'indirizzo qui sopra. Gli altri tipi hanno bisogno
+     dell'ora (un volo alle 6:40) e di due luoghi diversi (Roma → Edimburgo). */
+  const stay = type === 'stay';
+  document.getElementById('bAddrRow').hidden = !stay;
+  const ap = document.getElementById('bAPlace'), bp = document.getElementById('bBPlace');
+  ap.hidden = stay; bp.hidden = stay;
+  const want = stay ? 'date' : 'datetime-local';
+  [document.getElementById('bAWhen'), document.getElementById('bBWhen')].forEach(el => {
+    if(el.type === want) return;
+    /* cambiare type azzera il campo: la parte data si può conservare */
+    const v = el.value;
+    el.type = want;
+    el.value = want === 'date' ? v.slice(0,10) : (v && v.length === 10 ? v + 'T09:00' : v);
+  });
+  if(stay) return;
+  ap.placeholder = type==='car'  ? 'Sede di ritiro'
                  : type==='flight'? 'Aeroporto di partenza'
                  : type==='train' ? 'Stazione di partenza' : 'Luogo di ritrovo';
 }
+
+/* Trova l'indirizzo scritto e ci sposta la base collegata. La base NON viene
+   rinominata: si continua a chiamare "Edimburgo", ma il puntino sulla mappa
+   — e quindi i chilometri di inizio e fine giornata — va sull'hotel vero. */
+async function resolveBookingAddress(booking, addr, loud){
+  addr = (addr || '').trim();
+  if(!addr) return null;
+  const note = document.getElementById('bAddrNote');
+  const say = m => { if(loud){ note.textContent = m; note.hidden = false; } };
+  say('Cerco l\u2019indirizzo…');
+  try{
+    const u = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=it&q=' + encodeURIComponent(addr);
+    const j = await (await fetch(u)).json();
+    if(!j.length){ say('Non trovo questo indirizzo. Prova ad aggiungere la città.'); return null; }
+    const hit = {lat:+j[0].lat, lng:+j[0].lon};
+    const base = booking ? (state.bases||[]).find(x => x.bookingId === booking.id) : null;
+    if(base){
+      base.lat = hit.lat; base.lng = hit.lng;
+      save(); render();
+      say('Trovato: la base «' + base.name + '» si è spostata qui, senza cambiare nome.');
+    } else {
+      say('Indirizzo trovato. (Nessuna base collegata a questa prenotazione, quindi resta solo scritto qui.)');
+    }
+    return hit;
+  }catch(e){
+    say('Ricerca non riuscita: serve la rete.');
+    return null;
+  }
+}
+document.getElementById('bAddrGeo').onclick = () =>
+  resolveBookingAddress(editingBook, document.getElementById('bAddr').value, true);
 function refundView(){
   const free = document.querySelector('#bRefund .who-pick.on')?.dataset.v === 'free';
   document.getElementById('bFreeRow').hidden = !free;
@@ -5070,15 +5589,16 @@ document.getElementById('bFileInput').onchange = e => {
   if(!f) return;
   const isImg = /^image\//.test(f.type);
 
-  /* Uno screenshot di conferma pesa spesso 2-4 MB ma non serve a piena
-     risoluzione: lo rimpicciolisco come le foto delle tappe. Un PDF invece
-     va conservato tale e quale, quindi resta il tetto di dimensione. */
+  /* Uno screenshot di conferma pesa spesso 2-4 MB, ma qui non si può stringere
+     come una foto: se dentro c'è un QR code deve restare leggibile da uno
+     scanner. Lato lungo generoso e qualità alta, con una discesa graduale solo
+     se il file resta troppo grosso. Un PDF invece va conservato tale e quale. */
   if(isImg){
     shrinkImage(f, data => {
       if(!data){ alert('Non sono riuscito a leggere questa immagine.'); return; }
       bookFile = data; bookFileName = f.name; bookFileType = f.type;
       bookFileView();
-    }, 1400);
+    }, 2000, {q:0.94, budget: 1900000});
     e.target.value = '';
     return;
   }
@@ -5099,17 +5619,21 @@ document.getElementById('bFileInput').onchange = e => {
 document.getElementById('bCancel').onclick = () => document.getElementById('bVeil').hidden = true;
 document.getElementById('bDel').onclick = () => {
   if(!editingBook || !confirm('Elimino "'+(editingBook.title||'questa prenotazione')+'"?')) return;
+  /* la spesa collegata resta nei conti: i soldi sono usciti comunque. Perde solo
+     il legame, così non prova a inseguire una prenotazione che non c'è più. */
+  state.expenses.forEach(e => { if(e.bookingId === editingBook.id) delete e.bookingId; });
   state.bookings = state.bookings.filter(b => b.id !== editingBook.id);
   document.getElementById('bVeil').hidden = true;
   save(); drawBooks();
 };
-document.getElementById('bSave').onclick = () => {
+document.getElementById('bSave').onclick = async () => {
   ensureBooks();
   const type = (document.querySelector('#bType .type-opt.on')||{dataset:{type:'ticket'}}).dataset.type;
   const rec = {
     id: editingBook ? editingBook.id : uid(),
     type,
     title:  document.getElementById('bTitle').value.trim(),
+    addr:   document.getElementById('bAddr').value.trim(),
     who:    document.getElementById('bWho').value.trim(),
     aWhen:  document.getElementById('bAWhen').value,
     aPlace: document.getElementById('bAPlace').value.trim(),
@@ -5125,11 +5649,92 @@ document.getElementById('bSave').onclick = () => {
     fileName: bookFileName,
     fileType: bookFileType
   };
-  if(!rec.title && !rec.ref && !rec.aWhen){ alert('Dai almeno un titolo o una data alla prenotazione.'); return; }
+  if(!rec.title){
+    alert('Dai un titolo alla prenotazione: è come la riconoscerai nell\'elenco.');
+    document.getElementById('bTitle').focus();
+    return;
+  }
+  const addrChanged = rec.addr && rec.addr !== (editingBook ? (editingBook.addr||'') : '');
+  const prevCost = editingBook ? (editingBook.cost || '') : '';
+  const wasBook = editingBook;
   if(editingBook) Object.assign(editingBook, rec);
   else state.bookings.push(rec);
+  const saved = wasBook || state.bookings[state.bookings.length - 1];
   document.getElementById('bVeil').hidden = true;
   save(); drawBooks();
+  /* l'indirizzo dell'alloggio sposta la base anche se non si è toccato 📍:
+     scriverlo È il gesto, il pulsante serve solo a vedere subito l'effetto */
+  if(type === 'stay' && addrChanged) await resolveBookingAddress(saved, rec.addr, false);
+  maybeTrackBookingExpense(saved, prevCost);
+};
+
+/* ============ dalla prenotazione alla spesa ============ */
+/* Un costo scritto in una prenotazione è una spesa vera: prima restava lì,
+   fuori dai conti, e la stessa cifra andava riscritta a mano in Spese. Ora
+   l'app la propone — chi ha pagato, per chi — e la lega alla prenotazione, così
+   correggere il prezzo aggiorna anche il conto. Chi non vuole tracciarla lo
+   dice una volta e non gli viene più chiesto. */
+let bxBooking = null;
+function maybeTrackBookingExpense(b, prevCost){
+  const amt = parseFloat(b.cost);
+  if(!(amt > 0)) return;
+  /* spesa già collegata: si aggiorna in silenzio, non si richiede niente */
+  const linked = state.expenses.find(e => e.bookingId === b.id);
+  if(linked){
+    if(String(b.cost) !== String(prevCost)){
+      linked.amount = amt;
+      linked.desc = b.title || linked.desc;
+      save(); drawCosts();
+      toast('Spesa aggiornata a ' + money(amt));
+    }
+    return;
+  }
+  if(b.noExpense) return;
+  normalize();
+  if(state.people.length < 2){
+    /* senza compagni di viaggio non c'è niente da dividere: la spesa non serve */
+    return;
+  }
+  bxBooking = b;
+  document.getElementById('bxWhat').textContent = b.title || 'Prenotazione';
+  document.getElementById('bxAmt').textContent = money(amt);
+  const picks = (box, ids) => {
+    box.innerHTML = state.people.map(p =>
+      '<button class="who-pick'+(ids.includes(p.id)?' on':'')+'" type="button" data-id="'+p.id+'">'+esc(p.name)+'</button>').join('');
+    box.querySelectorAll('.who-pick').forEach(x => x.onclick = () => x.classList.toggle('on'));
+  };
+  picks(document.getElementById('bxBy'), [state.people[0].id]);
+  picks(document.getElementById('bxFor'), state.people.map(p => p.id));
+  document.getElementById('bxVeil').hidden = false;
+}
+const bxAll = (sel, on) =>
+  document.querySelectorAll(sel + ' .who-pick').forEach(b => b.classList.toggle('on', on));
+document.getElementById('bxByAll').onclick = () => bxAll('#bxBy', true);
+document.getElementById('bxByNone').onclick = () => bxAll('#bxBy', false);
+document.getElementById('bxForAll').onclick = () => bxAll('#bxFor', true);
+document.getElementById('bxForNone').onclick = () => bxAll('#bxFor', false);
+document.getElementById('bxSkip').onclick = () => {
+  if(bxBooking){ bxBooking.noExpense = true; save(); }
+  document.getElementById('bxVeil').hidden = true;
+  bxBooking = null;
+};
+document.getElementById('bxSave').onclick = () => {
+  if(!bxBooking) return;
+  const byIds  = [...document.querySelectorAll('#bxBy .who-pick.on')].map(b => b.dataset.id);
+  const forIds = [...document.querySelectorAll('#bxFor .who-pick.on')].map(b => b.dataset.id);
+  if(!byIds.length){ alert('Indica chi ha pagato.'); return; }
+  if(!forIds.length){ alert('Indica per chi è la spesa.'); return; }
+  state.expenses.push({
+    id: uid(), ts: Date.now(),
+    desc: bxBooking.title || 'Prenotazione',
+    amount: parseFloat(bxBooking.cost),
+    byIds, forIds,
+    bookingId: bxBooking.id
+  });
+  document.getElementById('bxVeil').hidden = true;
+  bxBooking = null;
+  save(); drawCosts(); drawBooks();
+  toast('Spesa aggiunta in Spese');
 };
 document.getElementById('bVeil').onclick = e => {
   if(e.target === document.getElementById('bVeil')) document.getElementById('bVeil').hidden = true;
@@ -5209,22 +5814,20 @@ function edit(id){
   document.getElementById('fImg').value = editing.img || '';
   pendingImgCredit = editing.imgCredit || null;
   imgPreview(editing.img || '', pendingImgCredit);
-  if(!editing.img) autoImage(); // niente foto salvata: provo a trovarne una da sola
+  if(!editing.img) autoImage(true); // niente foto salvata: ne metto una da sola
   document.getElementById('fCoord').textContent = editing.lat.toFixed(5)+', '+editing.lng.toFixed(5);
   const sel = document.getElementById('fDay');
   sel.innerHTML = '<option value="">Brainstorming</option>' + state.days.map(d=>'<option value="'+d.id+'">'+esc(d.name)+'</option>').join('');
   sel.value = editing.dayId || '';
 
   const rainB = document.getElementById('fRain'), chainB = document.getElementById('fChain'),
-        kidB = document.getElementById('fKid'), visitedB = document.getElementById('fVisited');
+        kidB = document.getElementById('fKid');
   rainB.classList.toggle('on', !!editing.rain);
   chainB.classList.toggle('on', inChain(editing));
   kidB.classList.toggle('on', !!editing.kid);
-  visitedB.classList.toggle('on', !!editing.visited);
   rainB.onclick = () => rainB.classList.toggle('on');
   chainB.onclick = () => chainB.classList.toggle('on');
   kidB.onclick = () => kidB.classList.toggle('on');
-  visitedB.onclick = () => visitedB.classList.toggle('on');
 
   const tg = document.getElementById('fType');  tg.innerHTML = '';
   Object.entries(TYPES).forEach(([k,v]) => {
@@ -5267,10 +5870,6 @@ document.getElementById('save').onclick = () => {
   editing.type = (document.querySelector('#fType .type-opt.on') || {dataset:{type:'place'}}).dataset.type;
   editing.rain = document.getElementById('fRain').classList.contains('on');
   editing.kid  = document.getElementById('fKid').classList.contains('on');
-  const wasVisited = !!editing.visited;
-  editing.visited = document.getElementById('fVisited').classList.contains('on');
-  if(editing.visited && !wasVisited && !editing.visitedAt) editing.visitedAt = Date.now();
-  if(editing.visited && !wasVisited) coach('diary');
   editing.chain = document.getElementById('fChain').classList.contains('on');
   editing.links = [...document.querySelectorAll('#fLinks .link-row')].map(r => ({
     label: r.querySelector('.lab').value.trim(),
@@ -5448,20 +6047,145 @@ function setPick(v){
   document.getElementById('map').style.cursor = v ? 'crosshair' : '';
 }
 
+/* ============ riga di ricerca della mappa ============ */
+/* Naviga, non crea. Scrivi un posto, l'app ci vola sopra e ci mette un puntino
+   pulsante: nient'altro. Se poi quel posto ti serve davvero, la scheda sotto
+   offre l'unica cosa sensata da farne — diventare una tappa. Prima la lente
+   rossa faceva le due cose insieme, e non si poteva andare a vedere Tokyo
+   senza ritrovarsela nell'itinerario. */
+(function mapSearch(){
+  const q = document.getElementById('msQ'), res = document.getElementById('msRes'),
+        found = document.getElementById('msFound'), clr = document.getElementById('msClear');
+  let t = null, dot = null, last = null;
+
+  const dropDot = (lat, lng) => {
+    if(dot) map.removeLayer(dot);
+    dot = L.marker([lat, lng], {
+      icon: L.divIcon({className:'', iconSize:[0,0], html:'<span class="ms-dot"></span>'}),
+      zIndexOffset: 1200, interactive: false
+    }).addTo(map);
+  };
+  const clearAll = () => {
+    q.value = ''; clr.hidden = true;
+    res.hidden = true; res.innerHTML = '';
+    found.hidden = true; last = null;
+    if(dot){ map.removeLayer(dot); dot = null; }
+  };
+
+  /* un paese va inquadrato, un ristorante va avvicinato: il riquadro che
+     Nominatim restituisce dice da sé quanto è grande la cosa cercata. Ma i
+     confini amministrativi mentono: "Tokyo" comprende le isole Ogasawara a
+     mille chilometri, la Francia comprende la Guyana — inquadrare quel
+     riquadro finiva in mezzo all'oceano. Oltre una certa taglia si va sul
+     punto della città e si sceglie lo zoom dal tipo di cosa trovata. */
+  const zoomFor = h => {
+    const t = (h.type || '') + ' ' + (h.addresstype || '') + ' ' + (h.class || '');
+    if(/country/.test(t)) return 5;
+    if(/state|region|province|county|island/.test(t)) return 8;
+    if(/city|town|municipality|administrative/.test(t)) return 11;
+    if(/village|hamlet|suburb|neighbourhood|quarter/.test(t)) return 13;
+    return 15;
+  };
+  const frame = h => {
+    const bb = (h.boundingbox || []).map(Number);
+    if(bb.length === 4 && bb.every(n => !isNaN(n))){
+      const dLat = Math.abs(bb[1] - bb[0]), dLng = Math.abs(bb[3] - bb[2]);
+      const big = dLat > 0.02 || dLng > 0.02;
+      const absurdo = dLat > 3 || dLng > 3;
+      if(big && !absurdo){
+        map.flyToBounds([[bb[0], bb[2]], [bb[1], bb[3]]], {padding:[40,40], maxZoom:15, duration:.9});
+        return;
+      }
+    }
+    map.flyTo([+h.lat, +h.lon], zoomFor(h), {duration:.9});
+  };
+
+  const goTo = h => {
+    const name = h.display_name.split(',')[0];
+    const sub = h.display_name.split(',').slice(1, 4).join(',').trim();
+    last = {name, sub, lat:+h.lat, lng:+h.lon};
+    res.hidden = true;
+    q.value = name; clr.hidden = false;
+    q.blur();
+    document.getElementById('msFoundName').textContent = name;
+    document.getElementById('msFoundSub').textContent = sub || 'Posto trovato';
+    found.hidden = false;
+    dropDot(+h.lat, +h.lon);
+    frame(h);
+  };
+
+  const KIND_IC = '<span class="rk"><svg viewBox="0 0 24 24"><path d="M12 21s6.4-6.9 6.4-11A6.4 6.4 0 0 0 5.6 10c0 4.1 6.4 11 6.4 11z"/><circle cx="12" cy="9.8" r="2.2"/></svg></span>';
+
+  async function find(v){
+    res.hidden = false;
+    res.innerHTML = '<div class="msg">Cerco\u2026</div>';
+    try{
+      const b = map.getBounds();
+      const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=7&addressdetails=0&accept-language=it&q='
+        + encodeURIComponent(v) + '&viewbox=' + [b.getWest(),b.getNorth(),b.getEast(),b.getSouth()].join(',');
+      const j = await (await fetch(url)).json();
+      if(q.value.trim() !== v) return;   // l'utente ha continuato a scrivere
+      if(!j.length){
+        res.innerHTML = '<div class="msg">Non trovo niente con questo nome. Prova a scriverlo in un altro modo, o aggiungi la nazione.</div>';
+        return;
+      }
+      res.innerHTML = '';
+      j.forEach(h => {
+        const b2 = document.createElement('button');
+        b2.type = 'button';
+        b2.innerHTML = KIND_IC + '<span style="min-width:0"><b>' + esc(h.display_name.split(',')[0]) +
+          '</b><i>' + esc(h.display_name.split(',').slice(1, 4).join(',').trim()) + '</i></span>';
+        b2.onclick = () => goTo(h);
+        res.appendChild(b2);
+      });
+    }catch(e){
+      res.innerHTML = '<div class="msg">Ricerca non raggiungibile: serve la rete. Puoi comunque toccare la mappa dal pulsante \uff0b Tappa.</div>';
+    }
+  }
+
+  q.addEventListener('input', () => {
+    clearTimeout(t);
+    const v = q.value.trim();
+    clr.hidden = !v;
+    found.hidden = true;
+    if(v.length < 3){ res.hidden = true; return; }
+    t = setTimeout(() => find(v), 420);
+  });
+  q.addEventListener('focus', () => { if(res.innerHTML && q.value.trim().length > 2) res.hidden = false; });
+  q.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){ clearAll(); q.blur(); }
+    if(e.key === 'Enter'){
+      clearTimeout(t);
+      const v = q.value.trim();
+      if(v.length > 1) find(v);
+    }
+  });
+  clr.onclick = () => { clearAll(); q.focus(); };
+  document.getElementById('msFoundX').onclick = () => {
+    found.hidden = true;
+    if(dot){ map.removeLayer(dot); dot = null; }
+  };
+  document.getElementById('msAdd').onclick = () => {
+    if(!last) return;
+    const p = addPlace({name:last.name, lat:last.lat, lng:last.lng});
+    freshPlaceId = p.id;
+    clearAll();
+    setView('list');
+    openSheetMobile();
+    edit(p.id);
+  };
+  /* toccare la mappa chiude l'elenco: si stava guardando, non scegliendo */
+  map.on('click dragstart', () => { res.hidden = true; });
+})();
+
 /* ============ aggiungi un luogo (ricerca o tocco sulla mappa) ============ */
 const addVeil = document.getElementById('addVeil');
 document.getElementById('btnAddPlace').onclick = () => {
   addVeil.hidden = false;
   autoFocus(document.getElementById('q'));
 };
-/* la lente sulla mappa fa una cosa sola e la fa chiara: porta in Itinerario,
-   dove la tappa andrà a finire, e apre subito la ricerca */
-document.getElementById('mapAdd').onclick = () => {
-  setView('list');
-  openSheetMobile();
-  addVeil.hidden = false;
-  autoFocus(document.getElementById('q'));
-};
+/* la lente rossa che portava in Itinerario è stata sostituita dalla riga di
+   ricerca della mappa: vedi mapSearch, che naviga senza creare niente */
 document.getElementById('addVeilClose').onclick = () => { addVeil.hidden = true; cancelAddBase(); };
 addVeil.onclick = e => { if(e.target === addVeil){ addVeil.hidden = true; cancelAddBase(); } };
 
@@ -5485,12 +6209,31 @@ function anyOpen(){
 function updateFold(){
   const b = document.getElementById('btnFold');
   if(!b) return;
-  const open = anyOpen();
+  const open = foldOpen();
   b.querySelector('.ic-fold').hidden = !open;
   b.querySelector('.ic-unfold').hidden = open;
-  b.title = b.ariaLabel = open ? 'Comprimi tutti i giorni' : 'Espandi tutti i giorni';
+  const what = FOLD_LABEL[view] || 'tutto';
+  b.title = b.ariaLabel = (open ? 'Comprimi ' : 'Espandi ') + what;
+}
+/* Comprimi/espandi in tutte le sezioni, non solo nell'Itinerario. In Spese e
+   Prenotazioni non ci sono giorni da chiudere, quindi è il DETTAGLIO che si
+   ritira: resta una riga per voce — cosa e quanto, cosa e quando — che è come
+   si guarda un elenco quando serve il quadro d'insieme. Preferenza di sola
+   sessione, come collapsedDays: non viaggia nel file del viaggio. */
+const FOLD_LABEL = {list:'tutti i giorni', diary:'tutti i giorni',
+  cost:'i dettagli delle spese', book:'i dettagli delle prenotazioni'};
+const FOLD_CLASS = {cost:'fold-cost', book:'fold-book'};
+function foldOpen(){
+  const c = FOLD_CLASS[view];
+  return c ? !document.body.classList.contains(c) : anyOpen();
 }
 document.getElementById('btnFold').onclick = () => {
+  const c = FOLD_CLASS[view];
+  if(c){
+    document.body.classList.toggle(c);
+    updateFold();
+    return;
+  }
   if(anyOpen()){
     state.days.forEach(d => collapsedDays.add(d.id));
     collapsedDays.add(null); // "Brainstorming"
@@ -5611,10 +6354,14 @@ function setView(v){
   document.getElementById('books').hidden = !book;
   document.getElementById('diaryBox').hidden = !diary;
   /* un solo tondo per sezione in basso a destra; comprimi/espandi vive nella
-     testata e serve solo dove i giorni sono sezioni (Itinerario e Diario) */
+     testata e c'è in tutte le sezioni: nell'Itinerario e nel Diario chiude i
+     giorni, in Spese e Prenotazioni ritira il dettaglio delle righe. */
   document.getElementById('btnAddPlace').hidden = v !== 'list';
   document.getElementById('btnDay').hidden = v !== 'list';
-  document.getElementById('btnFold').hidden = !(v === 'list' || diary);
+  document.getElementById('btnFold').hidden = false;
+  /* l'icona del ⇅ dipende dalla sezione: senza questo restava quella di prima
+     e prometteva il contrario di quello che poi fa */
+  updateFold();
   document.getElementById('btnExpense').hidden = !cost;
   document.getElementById('btnBooking').hidden = !book;
   /* cambiare vista implica volerla vedere: se il pannello era stato chiuso
@@ -5867,6 +6614,9 @@ function flagAdd(key,v){
   const cur = lsGet(key);
   lsSet(key, cur ? cur + ',' + v : v);
 }
+function flagDel(key,v){
+  lsSet(key, (lsGet(key)||'').split(',').filter(x => x && x !== v).join(','));
+}
 function markSeen(v){ flagAdd(SEEN_KEY, v); }
 
 const TAB_OF = {list:'tabList', cost:'tabCost', book:'tabBook', diary:'tabDiary', map:'tabMap'};
@@ -5898,6 +6648,9 @@ const TIPS = {
 function renderSecTip(){
   const el = document.getElementById('secTip');
   const d = TIPS[view];
+  /* durante il tutorial il tip non compare da sé: ci arriva volando dal
+     riquadro, ed è tutto il senso di quel passaggio */
+  if(tourRunning && !tourReveal){ el.hidden = true; return; }
   if(!d || flagHas(TIPS_KEY, view)){ el.hidden = true; return; }
   el.innerHTML = cloneTabIcon(view, 'tip-ic') +
     '<div style="flex:1;min-width:0"><h3>' + d.t + '</h3>' +
@@ -5911,8 +6664,9 @@ let mapTipTimer = null;
 function maybeMapTip(){
   markSeen('map');
   const el = document.getElementById('mfTip');
-  /* col benvenuto aperto sopra sarebbero due spiegazioni insieme: il fumetto
+  /* col tutorial aperto sopra sarebbero due spiegazioni insieme: il fumetto
      aspetta il prossimo ingresso nella vista solo mappa */
+  if(tourRunning) return;
   if(!document.getElementById('wcVeil').hidden) return;
   if(flagHas(TIPS_KEY, 'map')) return;
   flagAdd(TIPS_KEY, 'map');
@@ -5954,6 +6708,150 @@ function openWelcome(){
   ).join('');
   document.getElementById('wcVeil').hidden = false;
 }
+/* ============ tutorial guidato ============ */
+/* Al primo avvio, appena finita la copertina. Prima la mappa (è quello che si
+   ha davanti), poi una sezione alla volta: il tutorial ci porta dentro da sé,
+   spiega, e alla fine il riquadro VOLA al suo posto — in cima al pannello,
+   esattamente dove quella spiegazione vive da quel momento in avanti, con la
+   ✕ per togliersela. Così il tutorial non è una schermata a parte da leggere e
+   dimenticare: mostra dove ritrovare le cose. */
+var tourRunning = false, tourReveal = false;
+const TOUR = [
+  {view:'map', ic:'map', t:'La mappa è il viaggio',
+   c:'linear-gradient(135deg,#3D5666,#22303A)', fg:'#fff', p:[
+    'Ogni tappa è un pin del colore del suo giorno, unito al successivo dalla linea del percorso: sopra ci leggi <b>tempo e chilometri</b>, in auto o a piedi.',
+    'Tocca un pin per aprirlo, <b>tienilo premuto e trascinalo</b> per correggere la posizione. I due bottoni tondi in alto filtrano cosa vedere: tutto, solo i giorni, solo le idee — o un giorno alla volta.',
+    'La riga di ricerca in alto <b>naviga</b>: scrivi Tokyo e ti porta sopra Tokyo, senza aggiungere niente. Se poi quel posto ti serve, lo trasformi in tappa con un tocco.',
+    'Le mappe che guardi restano salvate: in viaggio funzionano anche senza rete.']},
+  {view:'list', ic:'list', t:'Tappe: prima butta, poi ordina',
+   c:'linear-gradient(135deg,#E0454B,#D3323A)', fg:'#fff', p:[
+    'Qui costruisci l\'itinerario. Butta dentro tutte le idee in <b>Brainstorming</b>, in fondo, senza pensare alle date: le riconosci dalla livrea a più colori.',
+    'Quando il viaggio prende forma, tieni premuta un\'idea e <b>trascinala nel giorno</b> giusto. Per ogni giorno indichi dove dormi, e l\'app conta i tratti da e verso l\'alloggio.']},
+  {view:'cost', ic:'cost', t:'Spese: ogni spesa, una riga',
+   c:'linear-gradient(135deg,#F3C877,#E7A93C)', fg:'#3A2707', p:[
+    'Segna quanto hai speso, chi ha pagato e per chi: Waynder divide da sé e ti dice <b>chi deve quanto a chi</b>, senza fogli di calcolo la sera.',
+    'Funziona anche solo per tenere nota di una spesa già pagata da tutti.']},
+  {view:'book', ic:'book', t:'Prenotazioni: tutto pronto al gate',
+   c:'linear-gradient(135deg,#2A93BE,#1E7FA6)', fg:'#fff', p:[
+    'Voli, treni, hotel, biglietti: metti qui il codice e Waynder ne fa il <b>QR</b>, sempre disponibile anche senza rete. Puoi allegare la conferma o il PDF.',
+    'Le prenotazioni con una data compaiono nel giorno giusto dell\'itinerario.']},
+  {view:'diary', ic:'diary', t:'Diario: scrivilo mentre lo vivi',
+   c:'linear-gradient(135deg,#289073,#1B7A5E)', fg:'#fff', p:[
+    'Segna una tappa come <b>fatta</b> e qui si apre lo spazio per raccontare com\'è andata davvero, con le foto di quel momento.',
+    'L\'itinerario resta il programma, il Diario diventa il ricordo.']}
+];
+
+function startTour(){
+  if(tourRunning) return;
+  tourRunning = true;
+  document.getElementById('wcVeil').hidden = true;
+
+  const veil = document.createElement('div');
+  veil.className = 'tour-veil';
+  const card = document.createElement('div');
+  card.className = 'tour-card';
+  document.body.append(veil, card);
+  requestAnimationFrame(() => veil.classList.add('show'));
+
+  const secTip = document.getElementById('secTip');
+  /* un tip già a schermo dal prima si vedrebbe dietro al velo: il volo del
+     passo dopo lo riporterà al suo posto, ed è quello il momento da mostrare */
+  secTip.hidden = true;
+  let i = -1;
+
+  const place = () => {
+    /* centrato a mano (non con translate) perché il volo finale usa transform:
+       due transform sullo stesso elemento non convivono */
+    card.style.transition = 'none';
+    card.style.left = '0px'; card.style.top = '0px';
+    const w = card.offsetWidth, h = card.offsetHeight;
+    card.style.left = Math.round((window.innerWidth - w) / 2) + 'px';
+    card.style.top = Math.round(Math.max(16, (window.innerHeight - h) / 2 - 20)) + 'px';
+    void card.offsetWidth;
+    card.style.transition = '';
+  };
+
+  const finish = () => {
+    tourRunning = false;
+    tourReveal = false;
+    veil.classList.remove('show');
+    setTimeout(() => veil.remove(), 320);
+    card.remove();
+    secTip.classList.remove('tour-target');
+    lsSet(OB_KEY, '1');
+    maybeSuggestInspire();
+  };
+
+  /* il volo: dal centro dello schermo al posto esatto del tip di sezione */
+  const flyToTip = done => {
+    tourReveal = true;
+    /* se quel tip era già stato chiuso in passato non comparirebbe, e il volo
+       — il punto del passaggio — si perderebbe: il tutorial lo rimette in gioco */
+    flagDel(TIPS_KEY, view);
+    renderSecTip();
+    if(secTip.hidden){ tourReveal = false; done(); return; }
+    secTip.classList.add('tour-target');
+    const a = card.getBoundingClientRect(), b = secTip.getBoundingClientRect();
+    if(!b.width){ secTip.classList.remove('tour-target'); tourReveal = false; done(); return; }
+    card.style.transformOrigin = 'top left';
+    card.style.transition = 'transform .6s cubic-bezier(.36,.05,.2,1),opacity .42s ease .2s';
+    card.style.transform = 'translate(' + (b.left - a.left) + 'px,' + (b.top - a.top) + 'px) scale(' + (b.width / a.width) + ')';
+    card.style.opacity = '0';
+    setTimeout(() => {
+      secTip.classList.remove('tour-target');
+      card.style.transition = 'none';
+      card.style.transform = 'none';
+      card.style.opacity = '';
+      card.classList.remove('show');
+      /* un respiro con il tip fermo al suo posto: è il punto del passaggio
+         — "da adesso lo trovi qui" — e senza pausa non lo vedrebbe nessuno */
+      setTimeout(() => { tourReveal = false; done(); }, 850);
+    }, 640);
+  };
+
+  const step = () => {
+    i++;
+    if(i >= TOUR.length){ finish(); return; }
+    const s = TOUR[i];
+    markSeen(s.view);
+    if(s.view === 'map'){
+      if(window.matchMedia('(max-width:880px)').matches) closeSheetMobile();
+    } else {
+      setView(s.view);
+      openSheetMobile();
+    }
+    renderTabDots();
+    const last = i === TOUR.length - 1;
+    card.innerHTML =
+      '<div class="tour-top"><span class="tour-ic" style="--tc:' + s.c + ';--tfg:' + s.fg + '">' +
+        cloneTabIcon(s.view, '') + '</span><h3>' + s.t + '</h3></div>' +
+      s.p.map(x => '<p>' + x + '</p>').join('') +
+      '<div class="tour-foot">' +
+        '<span class="tour-dots">' + TOUR.map((_, k) => '<i class="' + (k === i ? 'on' : '') + '"></i>').join('') + '</span>' +
+        (last ? '' : '<button class="tour-skip" type="button">Salta</button>') +
+        '<button class="tour-next" type="button">' + (last ? 'Inizia a viaggiare' : 'Avanti') + '</button>' +
+      '</div>';
+    const skip = card.querySelector('.tour-skip');
+    if(skip) skip.onclick = finish;
+    card.querySelector('.tour-next').onclick = () => {
+      if(s.view === 'map'){
+        card.classList.remove('show');
+        setTimeout(step, 260);
+      } else {
+        flyToTip(step);
+      }
+    };
+    /* due fotogrammi: uno per misurare la card riempita, uno per l'entrata */
+    card.hidden = false;
+    requestAnimationFrame(() => {
+      place();
+      requestAnimationFrame(() => card.classList.add('show'));
+    });
+  };
+
+  setTimeout(step, 260);
+}
+
 document.getElementById('wcStart').onclick = () => {
   document.getElementById('wcVeil').hidden = true;
   lsSet(OB_KEY, '1');
@@ -5962,6 +6860,18 @@ document.getElementById('wcStart').onclick = () => {
 
 const moreVeil = document.getElementById('moreVeil');
 document.getElementById('btnMore').onclick = () => { moreVeil.hidden = false; };
+/* Le tre icone della testata sono scorciatoie a voci che restano anche nel ⚙
+   (lì è l'unico accesso quando si vede solo la mappa). */
+const shareHubVeil = document.getElementById('shareHubVeil');
+document.getElementById('btnShareHub').onclick = () => {
+  document.getElementById('hubTripName').textContent = (state.title || 'questo viaggio');
+  shareHubVeil.hidden = false;
+};
+document.getElementById('shareHubClose').onclick = () => { shareHubVeil.hidden = true; };
+document.getElementById('hubShare').onclick = () => { shareHubVeil.hidden = true; document.getElementById('btnShareTrip').click(); };
+document.getElementById('hubJoin').onclick = () => { shareHubVeil.hidden = true; document.getElementById('btnJoinTrip').click(); };
+document.getElementById('btnTripsHub').onclick = openTrips;
+document.getElementById('btnGuideHub').onclick = () => { document.getElementById('btnReplayGuide').click(); };
 /* qualunque voce del menù lo chiude: è un cassetto, non una schermata */
 document.querySelectorAll('#moreVeil .more-list .chip').forEach(b => {
   b.addEventListener('click', () => { moreVeil.hidden = true; });
@@ -5971,10 +6881,10 @@ document.getElementById('moreClose').onclick = () => { moreVeil.hidden = true; }
 document.getElementById('btnReplayGuide').onclick = () => {
   lsDel(OB_KEY); lsDel(TIPS_KEY); lsDel(SEEN_KEY);
   moreVeil.hidden = true;
-  markSeen(view);
+  shareHubVeil.hidden = true;
   renderTabDots();
   renderSecTip();
-  openWelcome();
+  startTour();
 };
 [moreVeil, document.getElementById('wcVeil')].forEach(v => {
   v.addEventListener('click', e => { if(e.target === v) v.hidden = true; });
@@ -5994,7 +6904,7 @@ function startupView(){
     map.invalidateSize();
   }
   renderTabDots();
-  if(first) openWelcome();
+  if(first) startTour();
 }
 
 /* Tutorial del primo utilizzo: ognuno compare una volta sola, subito dopo il
@@ -6039,6 +6949,20 @@ function coach(key){
 if(screen.orientation && screen.orientation.lock){
   screen.orientation.lock('portrait').catch(() => {});
 }
+/* Ogni scheda si riapre da capo. Le schede sono lunghe e scorrono: chiudendone
+   una dal fondo (è lì che stanno Salva e Annulla), la successiva ripartiva
+   esattamente da quel punto e sembrava mezza vuota. Un solo osservatore su
+   tutti i veli, invece di una riga in ognuna delle venti aperture. */
+(function sheetsAlwaysFromTop(){
+  const reset = v => {
+    v.scrollTop = 0;
+    v.querySelectorAll('.sheet, .viewer, .insp-list, .vw-body').forEach(el => { el.scrollTop = 0; });
+  };
+  const obs = new MutationObserver(ms => ms.forEach(m => {
+    if(!m.target.hidden) requestAnimationFrame(() => reset(m.target));
+  }));
+  document.querySelectorAll('.veil').forEach(v => obs.observe(v, {attributes:true, attributeFilter:['hidden']}));
+})();
 
 /* la copertina si apre al tocco: le cinque icone riavvolgono la spirale e si
    dispongono in fila in basso, dove stanno i tab. Se nessuno tocca, dopo nove

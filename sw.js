@@ -5,7 +5,7 @@
    I tile sono a numero chiuso: oltre il limite si buttano i più vecchi,
    altrimenti dopo qualche esplorazione l'app occuperebbe centinaia di MB. */
 
-const VERSION   = 'v50';
+const VERSION   = 'v51';
 const APP_CACHE = 'rotta-app-' + VERSION;
 /* La cache delle mappe NON porta la versione: le piastrelle scaricate prima di
    partire devono sopravvivere agli aggiornamenti dell'app, altrimenti un
