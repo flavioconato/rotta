@@ -313,6 +313,14 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 .head-ico:hover{border-color:var(--sage);transform:translateY(-1px)}
 .head-ico svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .head-ico[hidden]{display:none}
+/* in Spese non c'è nulla da comprimere: il posto resta occupato — la fila di
+   icone non deve ballare fra le sezioni — ma il tasto è spento */
+.head-ico:disabled{opacity:.38;cursor:default}
+.head-ico:disabled:hover{border-color:var(--ink-3);transform:none}
+/* il ? non è un comando del viaggio: spinto all'estremo destro e staccato dagli
+   altri, si nota solo quando lo si cerca */
+.head-ico.guide{margin-left:auto;color:var(--fog)}
+.head-ico.guide:hover{color:var(--ink)}
 .save-state{
   flex:none;font-size:10px;letter-spacing:.06em;color:var(--fog);
   display:inline-flex;align-items:center;gap:5px;white-space:nowrap
@@ -403,7 +411,12 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 /* ---------- days ---------- */
 .scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 0 90px;scrollbar-width:thin}
 .day{border-bottom:1px solid var(--ink-3);transition:background .3s;position:relative}
-.day-head{display:flex;flex-direction:column;gap:8px;padding:15px 19px 12px}
+.day-head{display:flex;flex-direction:column;gap:8px;padding:15px 19px 12px;cursor:pointer}
+/* la testata del giorno è tutta un interruttore: si apre e si chiude toccando
+   il nome o lo spazio attorno, non un triangolino da centrare col pollice */
+.day-edit{opacity:.55}
+.day-edit:hover{opacity:1}
+span.day-name{cursor:pointer}
 .day-head-top{display:flex;align-items:center;gap:9px}
 .day-head-meta{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding-left:20px}
 .swatch{width:11px;height:11px;border-radius:3px;flex:none;box-shadow:0 0 0 4px rgba(255,255,255,.05),0 0 12px var(--c,transparent)}
@@ -447,7 +460,8 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 /* Il velo blocca l'app mentre il tutorial parla: così nessuno tocca a metà
    spiegazione e finisce in una schermata che il passo dopo non si aspetta. */
 .tour-veil{position:fixed;inset:0;z-index:2500;background:rgba(15,28,34,.5);opacity:0;transition:opacity .3s}
-.tour-veil.show{opacity:1}
+.tour-veil.show{opacity:1;animation:veilIn .3s ease both}
+@keyframes veilIn{from{opacity:0}to{opacity:1}}
 .tour-veil[hidden]{display:none}
 .tour-card{
   position:fixed;z-index:2600;box-sizing:border-box;
@@ -475,6 +489,19 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 .tour-dots i{width:6px;height:6px;border-radius:50%;background:var(--ink-3);transition:.2s}
 .tour-dots i.on{background:var(--sage);width:18px;border-radius:3px}
 .tour-skip{font-size:12px;color:var(--fog);text-decoration:underline;text-underline-offset:3px}
+/* invito iniziale: stesso riquadro del tutorial, ma con due scelte pari
+   ordinate a destra e un'entrata che si nota (nessun passo, nessun pallino) */
+.tour-card.ask .tour-foot{justify-content:flex-end}
+.tour-card.ask .tour-no{
+  flex:none;padding:10px 15px;border-radius:999px;font-size:13px;font-weight:600;
+  background:var(--ink-2);color:var(--ink);border:1px solid var(--ink-3)
+}
+.tour-card.ask{animation:askIn .5s var(--ease) both}
+@keyframes askIn{
+  0%{opacity:0;transform:translateY(22px) scale(.94)}
+  60%{opacity:1;transform:translateY(-4px) scale(1.01)}
+  100%{opacity:1;transform:none}
+}
 .tour-next{
   flex:none;padding:10px 18px;border-radius:999px;font-weight:700;font-size:13px;
   background:linear-gradient(135deg,var(--sage),var(--sage-2));color:#0F2830
@@ -1130,12 +1157,12 @@ body.hide-legs .leg-lab{display:none}
 body.fold-cost #costs .exp-m,
 body.fold-cost #costs .add-row{display:none}
 body.fold-cost #costs .exp{padding-top:8px;padding-bottom:8px}
-body.fold-book #books .bk-when span + span,
-body.fold-book #books .bk-ref,
-body.fold-book #books .bk-flags,
-body.fold-book #books .bk-att,
-body.fold-book #books .bk-body .stop-note,
-body.fold-book #books .bk-body .links{display:none}
+/* compresso resta la sola identità della prenotazione: titolo e tipo
+   ("Andata Anna" · "Treno"). Tutto il resto — date, codice, importo, allegati
+   — è dettaglio e si rivede espandendo. */
+body.fold-book #books .bk > *:not(.bk-top){display:none}
+body.fold-book #books .bk-top .exp-a,
+body.fold-book #books .bk-who{display:none}
 body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
 .settle span{margin-left:auto;color:#9A6A14;font-weight:600}
 .who-picks{display:flex;flex-wrap:wrap;gap:5px}
@@ -1150,7 +1177,7 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
    come due domande distinte: chi ha tirato fuori i soldi, e per chi. */
 .who-picks.pay .who-pick.on{background:var(--route);border-color:var(--route);color:#fff;font-weight:600}
 .req{color:var(--route);font-weight:700;margin-left:2px}
-.req-note{color:var(--fog);font-size:11.5px;margin:-4px 0 0}
+.req-note{color:var(--fog);font-size:11.5px;line-height:1.45;margin:7px 0 0}
 .pick-row{display:flex;gap:6px;margin-top:9px}
 .link-row{display:flex;gap:6px;margin-bottom:6px}
 .link-row .field{font-size:13px}
@@ -1448,11 +1475,10 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
             <path d="M3 13.4h18"/>
           </svg>
         </button>
-        <button class="head-ico" id="btnGuideHub" type="button" title="Rivedi la guida" aria-label="Rivedi la guida">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="8.8"/>
-            <path d="M9.7 9.4a2.35 2.35 0 1 1 3.5 2.05c-.75.45-1.2.9-1.2 1.75v.5"/>
-            <circle cx="12" cy="16.9" r="1" style="fill:currentColor;stroke:none"/>
+        <button class="head-ico" id="btnInspHead" type="button" title="Ispirami: ti propongo tappe da mettere sulla mappa" aria-label="Ispirami">
+          <svg viewBox="0 0 24 24" aria-hidden="true" style="fill:currentColor;stroke:none">
+            <path d="M10.4 3.4l1.35 3.65 3.65 1.35-3.65 1.35L10.4 13.4 9.05 9.75 5.4 8.4l3.65-1.35z"/>
+            <path d="M17.4 13.6l.72 1.94 1.94.72-1.94.72-.72 1.94-.72-1.94-1.94-.72 1.94-.72z"/>
           </svg>
         </button>
         <button class="head-ico" id="btnFold" type="button" title="Comprimi tutti i giorni" aria-label="Comprimi tutti i giorni">
@@ -1463,10 +1489,11 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
             <path d="M4.5 12h15"/><path d="M8.4 6.6 12 3.1l3.6 3.5"/><path d="M8.4 17.4 12 20.9l3.6-3.5"/>
           </svg>
         </button>
-        <button class="head-ico" id="btnMore" type="button" title="Menù del viaggio" aria-label="Menù del viaggio">
+        <button class="head-ico guide" id="btnGuideHub" type="button" title="Rivedi la guida" aria-label="Rivedi la guida">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            <circle cx="12" cy="12" r="3"/>
+            <circle cx="12" cy="12" r="8.8"/>
+            <path d="M9.7 9.4a2.35 2.35 0 1 1 3.5 2.05c-.75.45-1.2.9-1.2 1.75v.5"/>
+            <circle cx="12" cy="16.9" r="1" style="fill:currentColor;stroke:none"/>
           </svg>
         </button>
       </div>
@@ -1547,7 +1574,7 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
       </div>
       <div class="mf-tip" id="mfTip" hidden>
         <b>Due filtri, niente menù</b>
-        <i>Il primo mostra tutto, solo le tappe dei giorni o solo il Brainstorming. Il secondo isola un giorno alla volta — tocco lungo per tornare a tutti.</i>
+        <i>Il primo mostra tutto, solo le tappe dei giorni o solo il Brainstorming. Il secondo isola un giorno alla volta: con un tocco lungo torni a vederli tutti.</i>
       </div>
       <!-- non è un filtro: staccato dai due sopra da uno spazio più ampio, così
            lo stack si legge come "due filtri, poi altro". Serve perché qui il ⋯
@@ -1562,6 +1589,15 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
             <path d="M3.6 15.4v3.8a1.2 1.2 0 0 0 1.2 1.2h3.8"/>
             <path d="M20.4 15.4v3.8a1.2 1.2 0 0 1-1.2 1.2h-3.8"/>
             <circle cx="12" cy="12" r="2.4"/>
+          </svg>
+        </button>
+      </div>
+      <div class="mf-wrap mf-sep" id="fltGuideWrap">
+        <button class="map-fbtn" id="fltGuide" type="button" title="Rivedi la guida" aria-label="Rivedi la guida">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.8"/>
+            <path d="M9.7 9.4a2.35 2.35 0 1 1 3.5 2.05c-.75.45-1.2.9-1.2 1.75v.5"/>
+            <circle cx="12" cy="16.9" r="1" style="fill:currentColor;stroke:none"/>
           </svg>
         </button>
       </div>
@@ -1649,8 +1685,8 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
       <button class="chip" id="btnShareTrip" title="Genera un codice per condividere questo viaggio con un altro dispositivo">🔗 Condividi questo viaggio</button>
       <button class="chip" id="btnJoinTrip" title="Scarica un viaggio condiviso incollando il suo codice">🔑 Unisciti a un viaggio</button>
       <button class="chip" id="btnInstall" hidden title="Installa Waynder sul dispositivo">⤓ Installa l'app</button>
-      <button class="chip" id="btnEmptyInspire" title="Cerca una nazione o una città e carica le sue idee migliori in Brainstorming">✨ Non sai ancora dove andare?</button>
-      <button class="chip" id="btnReplayGuide" title="Rivedi il benvenuto e i suggerimenti di ogni sezione">📘 Rivedi la guida</button>
+      <button class="chip" id="btnEmptyInspire" title="Cerca una nazione o una città: aggiungo le tappe migliori sulla mappa, in Brainstorming">✨ Non sai ancora dove andare?</button>
+      <button class="chip" id="btnReplayGuide" title="Rivedi il tutorial e i suggerimenti di ogni sezione">📘 Rivedi la guida</button>
     </div>
     <p class="more-ver mono">Waynder <span id="verTag"></span></p>
     <div class="sheet-actions">
@@ -1690,7 +1726,7 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
       <div class="results" id="results" hidden></div>
     </div>
     <button class="chip" id="btnPickInline" style="margin-top:10px;width:100%;justify-content:center" title="Tocca un punto sulla mappa">✛ Oppure tocca la mappa</button>
-    <button class="chip" id="btnInspire" style="margin-top:8px;width:100%;justify-content:center" title="Suggerimenti di luoghi per una zona o una città">✨ Ispirami: idee per una zona</button>
+    <button class="chip" id="btnInspire" style="margin-top:8px;width:100%;justify-content:center" title="Ti propongo luoghi da vedere e li aggiungo come tappe sulla mappa">✨ Ispirami: idee per una zona</button>
     <div class="sheet-actions">
       <button class="btn ghost" id="addVeilClose" style="flex:1">Chiudi</button>
     </div>
@@ -1700,7 +1736,7 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
 <div class="veil" id="inspVeil" hidden>
   <div class="sheet insp-sheet" role="dialog" aria-modal="true">
     <h2>✨ Ispirami</h2>
-    <p class="hint" style="padding:0 0 10px">Scrivi una regione o un paese e ti propongo le <b>città</b>; scrivi una città e ti propongo <b>cose da vedere</b> dentro. Spunta quelle che ti piacciono: finiscono in Brainstorming.</p>
+    <p class="hint" style="padding:0 0 10px">Scrivi una regione o un paese e ti propongo le <b>città</b>; scrivi una città e ti propongo <b>cose da vedere</b> dentro. Spunta quelle che ti piacciono: diventano tappe con il loro pin sulla mappa, in <b>Brainstorming</b>.</p>
     <div class="insp-bar">
       <input class="field" id="inspQ" placeholder="Scozia, Provenza, Edimburgo…" autocomplete="off">
       <button class="btn" id="inspGo" type="button" style="flex:0 0 auto;padding:12px 18px">Cerca</button>
@@ -1723,8 +1759,8 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
 
 <div class="veil" id="emptyInspVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="eiTitle">
-    <h2 id="eiTitle">✨ Non sai ancora dove andare?</h2>
-    <p class="hint" style="padding:0 0 10px">Lasciati ispirare: scrivi una nazione o una città e carico subito in Brainstorming le tappe più interessanti. Poi le sistemi come vuoi.</p>
+    <h2 id="eiTitle">✨ Per quale posto vuoi delle idee?</h2>
+    <p class="hint" style="padding:0 0 10px">Scrivi una nazione o una città e cerco per te i luoghi più interessanti: li aggiungo automaticamente come tappe, con il loro pin sulla mappa, dentro <b>Brainstorming</b>. Da lì li sposti nei giorni, o cancelli quelli che non ti convincono.</p>
     <div class="insp-bar">
       <input class="field" id="eiQ" placeholder="Italia, Roma, Giappone…" autocomplete="off">
       <button class="btn" id="eiGo" type="button" style="flex:0 0 auto;padding:12px 18px">Cerca</button>
@@ -2007,7 +2043,7 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v52';
+const APP_VERSION = 'v54';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -3646,6 +3682,7 @@ async function emptyInspireLoad(t){
   }
 }
 document.getElementById('btnEmptyInspire').onclick = openEmptyInspire;
+document.getElementById('btnInspHead').onclick = openEmptyInspire;
 document.getElementById('eiGo').onclick = emptyInspireSearch;
 document.getElementById('eiQ').addEventListener('keydown', e => { if(e.key === 'Enter') emptyInspireSearch(); });
 document.getElementById('eiClose').onclick = () => { document.getElementById('emptyInspVeil').hidden = true; };
@@ -4331,7 +4368,9 @@ function dayBlock(d, list){
       (d.id
         ? '<span class="day-date-wrap"><button type="button" class="swatch sw-btn" title="Cambia il colore del giorno" aria-label="Cambia il colore del giorno" style="background:'+d.color+'"></button><input type="date" class="day-date mono" value="'+(d.date||'')+'"></span>'
         : '<span class="swatch" style="background:'+(d.grad||d.color)+'"></span>') +
-      (d.id ? '<input class="day-name" value="'+esc(d.name)+'">' : '<span class="day-name">'+d.name+'</span>') +
+      (d.id
+        ? '<span class="day-name">'+esc(d.name)+'</span><button class="icon-btn day-edit" data-act="ren" title="Rinomina il giorno" aria-label="Rinomina il giorno">✎</button>'
+        : '<span class="day-name">'+d.name+'</span>') +
       (d.id ?
         '<div class="day-head-actions">' +
           wxIconBtnHTML(d) +
@@ -4346,7 +4385,32 @@ function dayBlock(d, list){
   if(d.id){
     const sw = head.querySelector('.sw-btn');
     if(sw) sw.onclick = e => { e.stopPropagation(); openColorPop(sw, d.color, c => { d.color = c; save(); render(); }); };
-    head.querySelector('.day-name').onchange = e => { d.name = e.target.value; save(); };
+    /* il nome si modifica solo dalla matita: così un tocco sulla testata
+       apre e chiude il giorno senza far comparire la tastiera per sbaglio */
+    const renB = head.querySelector('[data-act="ren"]');
+    renB.onclick = ev => {
+      ev.stopPropagation();
+      const span = head.querySelector('span.day-name');
+      if(!span) return;
+      const inp = document.createElement('input');
+      inp.className = 'day-name';
+      inp.value = d.name;
+      span.replaceWith(inp);
+      inp.focus(); inp.select();
+      inp.onclick = e2 => e2.stopPropagation();
+      let done = false;
+      const commit = () => {
+        if(done) return; done = true;
+        const v = inp.value.trim();
+        if(v && v !== d.name){ d.name = v; save(); }
+        render();
+      };
+      inp.onblur = commit;
+      inp.onkeydown = e2 => {
+        if(e2.key === 'Enter'){ e2.preventDefault(); commit(); }
+        if(e2.key === 'Escape'){ done = true; render(); }
+      };
+    };
     head.querySelector('.day-date').onchange = e => {
       const v = e.target.value || null;
       d.date = v;
@@ -4391,11 +4455,21 @@ function dayBlock(d, list){
   body.className = 'day-body';
   body.hidden = collapsed;
   sec.appendChild(body);
-  if(toggleB) toggleB.onclick = () => {
+  const flip = () => {
+    if(!hasContent) return;
     const nowCollapsed = body.hidden = !body.hidden;
     if(nowCollapsed) collapsedDays.add(d.id); else collapsedDays.delete(d.id);
-    toggleB.textContent = nowCollapsed ? '▸' : '▾';
-    toggleB.title = nowCollapsed ? 'Espandi' : 'Comprimi';
+    if(toggleB){
+      toggleB.textContent = nowCollapsed ? '▸' : '▾';
+      toggleB.title = nowCollapsed ? 'Espandi' : 'Comprimi';
+    }
+    updateFold();
+  };
+  if(toggleB) toggleB.onclick = e => { e.stopPropagation(); flip(); };
+  /* tutta la testata apre e chiude, tranne i comandi che vivono dentro */
+  head.onclick = e => {
+    if(e.target.closest('button,input,select,textarea,a,label')) return;
+    flip();
   };
 
   if(!hasContent){
@@ -4410,7 +4484,7 @@ function dayBlock(d, list){
       e.classList.add('empty-cta');
       e.setAttribute('role','button');
       e.tabIndex = 0;
-      e.innerHTML = '<span class="ei-spark">✨</span>Ancora nessuna tappa inserita.<br><b>Lasciati ispirare</b><br>Scrivi una nazione o una città e ti proponiamo subito le idee migliori.<br><span class="ei-go">✨ Proponimi delle idee</span>';
+      e.innerHTML = '<span class="ei-spark">✨</span>Ancora nessuna tappa inserita.<br><b>Lasciati ispirare</b><br>Dimmi una nazione o una città: cerco i luoghi migliori e li aggiungo qui come tappe, con il loro pin sulla mappa.<br><span class="ei-go">✨ Proponimi delle idee</span>';
       e.onclick = openEmptyInspire;
       e.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openEmptyInspire(); } };
     } else {
@@ -4758,11 +4832,20 @@ function diaryDayBlock(d, list){
   }
   sec.appendChild(body);
   const toggleB = head.querySelector('.day-toggle');
-  if(toggleB) toggleB.onclick = () => {
+  const flip = () => {
+    if(!list.length) return;
     const nowCollapsed = body.hidden = !body.hidden;
     if(nowCollapsed) collapsedDays.add(d.id); else collapsedDays.delete(d.id);
-    toggleB.textContent = nowCollapsed ? '▸' : '▾';
-    toggleB.title = nowCollapsed ? 'Espandi' : 'Comprimi';
+    if(toggleB){
+      toggleB.textContent = nowCollapsed ? '▸' : '▾';
+      toggleB.title = nowCollapsed ? 'Espandi' : 'Comprimi';
+    }
+    updateFold();
+  };
+  if(toggleB) toggleB.onclick = e => { e.stopPropagation(); flip(); };
+  head.onclick = e => {
+    if(e.target.closest('button,input,select,textarea,a,label')) return;
+    flip();
   };
   return sec;
 }
@@ -5057,6 +5140,7 @@ function openExpense(id){
   document.getElementById('xAmt').value = editingExpense ? String(editingExpense.amount).replace('.',',') : '';
   document.getElementById('xDel').hidden = !editingExpense;
   document.getElementById('xVeil').hidden = false;
+  expSigOpen = expSig();
   autoFocus(document.getElementById('xDesc'));
 }
 
@@ -5066,7 +5150,36 @@ document.getElementById('xAll').onclick = () => xPickAll('#xFor', true);
 document.getElementById('xNone').onclick = () => xPickAll('#xFor', false);
 document.getElementById('xByAll').onclick = () => xPickAll('#xBy', true);
 document.getElementById('xByNone').onclick = () => xPickAll('#xBy', false);
-document.getElementById('xCancel').onclick = () => { document.getElementById('xVeil').hidden = true; editingExpense = null; };
+/* Firma dei campi al momento dell'apertura: se alla chiusura è cambiata,
+   qualcosa si stava scrivendo e buttarlo via in silenzio è la cosa peggiore
+   che possa fare una scheda. */
+let expSigOpen = '';
+function expSig(){
+  return [document.getElementById('xDesc').value,
+    document.getElementById('xAmt').value,
+    [...document.querySelectorAll('#xBy .who-pick.on')].map(b=>b.dataset.id).join(','),
+    [...document.querySelectorAll('#xFor .who-pick.on')].map(b=>b.dataset.id).join(',')].join('|');
+}
+function closeExpense(force){
+  if(!force && expSig() !== expSigOpen){
+    askCard({
+      ic: 'cost',
+      t: 'Modifiche non salvate',
+      p: ['Hai cambiato qualcosa in questa spesa. Se chiudi ora, la modifica va persa.'],
+      no: 'Chiudi senza salvare',
+      yes: 'Salva',
+      onNo: () => closeExpense(true),
+      onYes: () => document.getElementById('xSave').click()
+    });
+    return;
+  }
+  document.getElementById('xVeil').hidden = true;
+  editingExpense = null;
+}
+document.getElementById('xCancel').onclick = () => closeExpense();
+document.getElementById('xVeil').onclick = e => {
+  if(e.target === document.getElementById('xVeil')) closeExpense();
+};
 document.getElementById('xSave').onclick = () => {
   const amt = parseFloat(document.getElementById('xAmt').value.replace(',','.'));
   const forIds = [...document.querySelectorAll('#xFor .who-pick.on')].map(b=>b.dataset.id);
@@ -5333,7 +5446,7 @@ function bookingHead(b, T){
   return '<span class="bk-ic">'+T.icon+'</span>'+
     '<div class="bk-h">'+
       '<span class="bk-t">'+esc(b.title || T.label)+'</span>'+
-      '<span class="bk-s mono">'+esc(T.label)+(b.who ? ' · '+esc(b.who) : '')+'</span>'+
+      '<span class="bk-s mono">'+esc(T.label)+(b.who ? '<span class="bk-who"> · '+esc(b.who)+'</span>' : '')+'</span>'+
     '</div>'+
     (b.cost ? '<span class="exp-a mono">'+money(parseFloat(b.cost)||0)+'</span>' : '');
 }
@@ -5475,6 +5588,7 @@ function openBooking(id){
   document.getElementById('bSheetT').textContent = editingBook ? 'Modifica prenotazione' : 'Nuova prenotazione';
   bookLabels(b.type || 'train');
   document.getElementById('bVeil').hidden = false;
+  bookSigOpen = bookSig();
 }
 
 /* le etichette dei campi cambiano col tipo: check-in per un albergo, partenza per un volo */
@@ -5595,7 +5709,30 @@ document.getElementById('bFileInput').onchange = e => {
   rd.readAsDataURL(f);
   e.target.value = '';
 };
-document.getElementById('bCancel').onclick = () => document.getElementById('bVeil').hidden = true;
+let bookSigOpen = '';
+function bookSig(){
+  const ids = ['bTitle','bAddr','bWho','bAWhen','bAPlace','bBWhen','bBPlace','bRef','bCost','bUrl','bNotes','bFreeUntil'];
+  const type = document.querySelector('#bType .type-opt.on');
+  const ref = document.querySelector('#bRefund .who-pick.on');
+  return ids.map(i => document.getElementById(i).value).join('|') +
+    '|' + (type ? type.dataset.type : '') + '|' + (ref ? ref.dataset.v : '') + '|' + (bookFile ? '1' : '');
+}
+function closeBooking(force){
+  if(!force && bookSig() !== bookSigOpen){
+    askCard({
+      ic: 'book',
+      t: 'Modifiche non salvate',
+      p: ['Hai cambiato qualcosa in questa prenotazione. Se chiudi ora, la modifica va persa.'],
+      no: 'Chiudi senza salvare',
+      yes: 'Salva',
+      onNo: () => closeBooking(true),
+      onYes: () => document.getElementById('bSave').click()
+    });
+    return;
+  }
+  document.getElementById('bVeil').hidden = true;
+}
+document.getElementById('bCancel').onclick = () => closeBooking();
 document.getElementById('bDel').onclick = () => {
   if(!editingBook || !confirm('Elimino "'+(editingBook.title||'questa prenotazione')+'"?')) return;
   /* la spesa collegata resta nei conti: i soldi sono usciti comunque. Perde solo
@@ -5716,7 +5853,7 @@ document.getElementById('bxSave').onclick = () => {
   toast('Spesa aggiunta in Spese');
 };
 document.getElementById('bVeil').onclick = e => {
-  if(e.target === document.getElementById('bVeil')) document.getElementById('bVeil').hidden = true;
+  if(e.target === document.getElementById('bVeil')) closeBooking();
 };
 
 /* ============ visualizzatore allegati ============ */
@@ -6188,6 +6325,14 @@ function anyOpen(){
 function updateFold(){
   const b = document.getElementById('btnFold');
   if(!b) return;
+  if(view === 'cost'){
+    b.disabled = true;
+    b.title = b.ariaLabel = 'In Spese non c\'è niente da comprimere';
+    b.querySelector('.ic-fold').hidden = false;
+    b.querySelector('.ic-unfold').hidden = true;
+    return;
+  }
+  b.disabled = false;
   const open = foldOpen();
   b.querySelector('.ic-fold').hidden = !open;
   b.querySelector('.ic-unfold').hidden = open;
@@ -6201,7 +6346,7 @@ function updateFold(){
    sessione, come collapsedDays: non viaggia nel file del viaggio. */
 const FOLD_LABEL = {list:'tutti i giorni', diary:'tutti i giorni',
   cost:'i dettagli delle spese', book:'i dettagli delle prenotazioni'};
-const FOLD_CLASS = {cost:'fold-cost', book:'fold-book'};
+const FOLD_CLASS = {book:'fold-book'};
 function foldOpen(){
   const c = FOLD_CLASS[view];
   return c ? !document.body.classList.contains(c) : anyOpen();
@@ -6310,7 +6455,7 @@ function updateTabsState(){
      sempre lì; su telefono compaiono solo quando la mappa è davvero visibile */
   const phone = window.matchMedia('(max-width:880px)').matches;
   const showMapCtl = mapOnly || !phone;
-  ['fltStopsWrap','fltDayWrap','fltMoreWrap'].forEach(id => { document.getElementById(id).hidden = !showMapCtl; });
+  ['fltStopsWrap','fltDayWrap','fltGuideWrap','fltMoreWrap'].forEach(id => { document.getElementById(id).hidden = !showMapCtl; });
   if(!showMapCtl) document.getElementById('mfTip').hidden = true;
   if(phone && !mapOnly && (stopFilter !== 'all' || dayFilter !== null)){
     stopFilter = 'all'; dayFilter = null;
@@ -6337,6 +6482,8 @@ function setView(v){
      giorni, in Spese e Prenotazioni ritira il dettaglio delle righe. */
   document.getElementById('btnAddPlace').hidden = v !== 'list';
   document.getElementById('btnDay').hidden = v !== 'list';
+  /* le stelline restano in chiaro in Tappe: è da lì che nasce un viaggio */
+  document.getElementById('btnInspHead').hidden = v !== 'list';
   document.getElementById('btnFold').hidden = false;
   /* l'icona del ⇅ dipende dalla sezione: senza questo restava quella di prima
      e prometteva il contrario di quello che poi fa */
@@ -6610,18 +6757,18 @@ function cloneTabIcon(v, cls){
 }
 
 const TIPS = {
-  list: {t:'Prima butta, poi ordina', p:[
-    'Aggiungi tutte le idee in <b>Brainstorming</b>, in fondo all\u2019itinerario, senza pensare alle date. Quando il viaggio prende forma, sposta ogni tappa nel suo giorno.',
-    'Tocca una tappa per aprirla; il menù di un giorno per rinominarlo, spostarlo o eliminarlo.']},
+  list: {t:'Prima crea, poi ordina', p:[
+    'Raccogli tutte le idee in <b>Brainstorming</b>, in fondo all\u2019itinerario, senza preoccuparti delle date. Quando il viaggio prende forma, sposta ogni tappa nel giorno a cui appartiene.',
+    'Tocca una tappa per aprirla; usa il menù del giorno per rinominarlo, spostarlo o eliminarlo.']},
   cost: {t:'Ogni spesa, una riga', p:[
-    'Segna quanto hai speso e chi ha pagato: Waynder divide l\u2019importo fra i compagni di viaggio e tiene il conto di chi deve quanto a chi.',
-    'Puoi legare una spesa a una tappa, per sapere quanto ti è costata davvero.']},
-  book: {t:'Tutto pronto al gate', p:[
-    'Riporta qui voli, treni, hotel e biglietti con il loro codice: Waynder ne genera il QR e lo tiene disponibile anche senza rete.',
-    'Le prenotazioni con una data compaiono nel giorno giusto dell\u2019itinerario.']},
-  diary: {t:'Scrivilo mentre lo vivi', p:[
-    'Segna una tappa come fatta nell\u2019Itinerario: qui compare lo spazio per raccontare com\u2019è andata, con le foto di quel momento.',
-    'Non serve scrivere bene — due righe alla sera bastano per ricordarsi tutto fra dieci anni.']}
+    'Registra l\u2019importo e chi ha pagato: Waynder divide la spesa fra i compagni di viaggio e calcola quanto ciascuno deve agli altri.',
+    'Puoi collegare una spesa a una tappa, per sapere quanto è costata davvero.']},
+  book: {t:'Tutto pronto alla partenza', p:[
+    'Inserisci voli, treni, hotel e biglietti con il relativo codice: Waynder genera il QR e lo mantiene disponibile anche senza connessione.',
+    'Le prenotazioni con una data compaiono nel giorno corrispondente dell\u2019itinerario.']},
+  diary: {t:'Tieni traccia del tuo viaggio', p:[
+    'Segna una tappa come fatta nell\u2019Itinerario: qui comparirà lo spazio per raccontare com\u2019è andata, con le foto di quel momento.',
+    'Bastano due righe la sera: sono quelle che ti faranno ricordare i dettagli anche fra dieci anni.']}
 };
 
 function renderSecTip(){
@@ -6698,27 +6845,93 @@ var tourRunning = false, tourReveal = false;
 const TOUR = [
   {view:'map', ic:'map', t:'La mappa è il viaggio',
    c:'linear-gradient(135deg,#3D5666,#22303A)', fg:'#fff', p:[
-    'Ogni tappa è un pin del colore del suo giorno, unito al successivo dalla linea del percorso: sopra ci leggi <b>tempo e chilometri</b>, in auto o a piedi.',
-    'Tocca un pin per aprirlo, <b>tienilo premuto e trascinalo</b> per correggere la posizione. I due bottoni tondi in alto filtrano cosa vedere: tutto, solo i giorni, solo le idee — o un giorno alla volta.',
-    'La riga di ricerca in alto <b>naviga</b>: scrivi Tokyo e ti porta sopra Tokyo, senza aggiungere niente. Se poi quel posto ti serve, lo trasformi in tappa con un tocco.',
-    'Le mappe che guardi restano salvate: in viaggio funzionano anche senza rete.']},
-  {view:'list', ic:'list', t:'Tappe: prima butta, poi ordina',
+    'Ogni tappa è rappresentata da un pin del colore del suo giorno. La linea che unisce i pin è il percorso: sopra trovi <b>durata e distanza</b> del tratto, in auto o a piedi.',
+    'Tocca un pin per aprire la tappa; tienilo premuto e trascinalo per correggerne la posizione. I due pulsanti tondi in alto scelgono cosa mostrare: tutto, solo i giorni, solo le idee, oppure un giorno alla volta.',
+    'Il campo di ricerca in alto <b>sposta la vista</b>: scrivi Tokyo e la mappa si porta su Tokyo, senza aggiungere nulla. Se il posto ti interessa, lo trasformi in tappa con un tocco.',
+    'Le mappe che visualizzi vengono salvate sul dispositivo: in viaggio restano disponibili anche senza connessione.']},
+  {view:'list', ic:'list', t:'Tappe: prima crea, poi ordina',
    c:'linear-gradient(135deg,#E0454B,#D3323A)', fg:'#fff', p:[
-    'Qui costruisci l\'itinerario. Butta dentro tutte le idee in <b>Brainstorming</b>, in fondo, senza pensare alle date: le riconosci dalla livrea a più colori.',
-    'Quando il viaggio prende forma, tieni premuta un\'idea e <b>trascinala nel giorno</b> giusto. Per ogni giorno indichi dove dormi, e l\'app conta i tratti da e verso l\'alloggio.']},
+    'Qui costruisci l\'itinerario. Raccogli tutte le idee in <b>Brainstorming</b> senza preoccuparti delle date: le troverai in fondo alla finestra. Sulla mappa le riconosci dall\'icona a più colori.',
+    'Quando il viaggio prende forma, tieni premuta un\'idea e <b>trascinala nel giorno</b> a cui appartiene. Per ogni giorno puoi indicare la base di partenza e quella di arrivo, che corrispondono ai tuoi alloggi.']},
   {view:'cost', ic:'cost', t:'Spese: ogni spesa, una riga',
    c:'linear-gradient(135deg,#F3C877,#E7A93C)', fg:'#3A2707', p:[
-    'Segna quanto hai speso, chi ha pagato e per chi: Waynder divide da sé e ti dice <b>chi deve quanto a chi</b>, senza fogli di calcolo la sera.',
-    'Funziona anche solo per tenere nota di una spesa già pagata da tutti.']},
-  {view:'book', ic:'book', t:'Prenotazioni: tutto pronto al gate',
+    'Registra l\'importo, chi ha pagato e per chi: Waynder divide la spesa e calcola <b>quanto ciascuno deve agli altri</b>, senza fogli di calcolo la sera.',
+    'Puoi usarla anche solo per annotare una spesa già saldata da tutti.']},
+  {view:'book', ic:'book', t:'Prenotazioni: tutto pronto alla partenza',
    c:'linear-gradient(135deg,#2A93BE,#1E7FA6)', fg:'#fff', p:[
-    'Voli, treni, hotel, biglietti: metti qui il codice e Waynder ne fa il <b>QR</b>, sempre disponibile anche senza rete. Puoi allegare la conferma o il PDF.',
-    'Le prenotazioni con una data compaiono nel giorno giusto dell\'itinerario.']},
-  {view:'diary', ic:'diary', t:'Diario: scrivilo mentre lo vivi',
+    'Voli, treni, hotel, biglietti: inserisci il codice e Waynder genera il <b>QR</b>, disponibile anche senza connessione. Puoi allegare la conferma o il PDF.',
+    'Le prenotazioni con una data compaiono nel giorno corrispondente dell\'itinerario.']},
+  {view:'diary', ic:'diary', t:'Diario: tieni traccia del tuo viaggio',
    c:'linear-gradient(135deg,#289073,#1B7A5E)', fg:'#fff', p:[
-    'Segna una tappa come <b>fatta</b> e qui si apre lo spazio per raccontare com\'è andata davvero, con le foto di quel momento.',
-    'L\'itinerario resta il programma, il Diario diventa il ricordo.']}
+    'Quando segni una tappa come <b>fatta</b>, qui si apre lo spazio per raccontare com\'è andata e aggiungere le foto di quel momento.',
+    'L\'itinerario resta il programma; il Diario raccoglie il ricordo.']}
 ];
+
+/* ============ invito al tutorial ============ */
+/* Al primo avvio il tutorial non parte da solo: prima un riquadro che chiede
+   se serve. Chi conosce già l'app lo chiude in un tocco, chi è nuovo entra
+   nella guida sapendo cosa sta per succedere. */
+/* Riquadro di domanda: stesso corpo del tutorial, due scelte pari in fondo.
+   Serve sia all'invito del primo avvio sia al ? della testata. */
+function askCard(o){
+  if(tourRunning) return;
+  const veil = document.createElement('div');
+  veil.className = 'tour-veil';
+  const card = document.createElement('div');
+  card.className = 'tour-card ask';
+  card.innerHTML =
+    '<div class="tour-top"><span class="tour-ic" style="--tc:linear-gradient(135deg,#3D5666,#22303A);--tfg:#fff">' +
+      cloneTabIcon(o.ic || 'map', '') + '</span><h3>' + o.t + '</h3></div>' +
+    o.p.map(x => '<p>' + x + '</p>').join('') +
+    '<div class="tour-foot">' +
+      '<button class="tour-no" type="button">' + o.no + '</button>' +
+      '<button class="tour-next" type="button">' + o.yes + '</button>' +
+    '</div>';
+  document.body.append(veil, card);
+  /* posizionato subito, senza attendere un fotogramma: l'entrata è
+     un'animazione CSS, quindi non serve un cambio di classe */
+  const w = card.offsetWidth, ch = card.offsetHeight;
+  card.style.left = Math.round((window.innerWidth - w) / 2) + 'px';
+  card.style.top = Math.round(Math.max(16, (window.innerHeight - ch) / 2 - 20)) + 'px';
+  veil.classList.add('show');
+
+  const close = () => {
+    veil.classList.remove('show');
+    card.style.animation = 'none';
+    card.style.transition = 'opacity .24s ease,transform .24s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(10px) scale(.97)';
+    setTimeout(() => { veil.remove(); card.remove(); }, 320);
+  };
+  const no = () => { close(); if(o.onNo) o.onNo(); };
+  card.querySelector('.tour-no').onclick = no;
+  card.querySelector('.tour-next').onclick = () => { close(); setTimeout(o.onYes, 240); };
+  veil.addEventListener('click', ev => { if(ev.target === veil) no(); });
+}
+
+/* Al primo avvio il tutorial non parte da solo: prima si chiede se serve. */
+function askTour(){
+  askCard({
+    t: '\u00c8 la tua prima volta su Waynder?',
+    p: ['In un minuto ti mostro come funziona: la mappa, l\u2019itinerario, le spese, le prenotazioni e il diario.',
+        'Puoi rivedere la guida quando vuoi dal <b>?</b> in alto a destra.'],
+    no: 'La conosco gi\u00e0',
+    yes: 'Mostrami il tutorial',
+    onNo: () => { lsSet(OB_KEY, '1'); maybeSuggestInspire(); },
+    onYes: startTour
+  });
+}
+
+function askReplay(){
+  document.getElementById('moreVeil').hidden = true;
+  askCard({
+    t: 'Vuoi ripercorrere il tutorial?',
+    p: ['Cinque passi, un minuto: la mappa, l\u2019itinerario, le spese, le prenotazioni e il diario.'],
+    no: 'Non adesso',
+    yes: 'S\u00ec, ripercorriamolo',
+    onYes: () => document.getElementById('btnReplayGuide').click()
+  });
+}
 
 function startTour(){
   if(tourRunning) return;
@@ -6838,9 +7051,9 @@ document.getElementById('wcStart').onclick = () => {
 };
 
 const moreVeil = document.getElementById('moreVeil');
-document.getElementById('btnMore').onclick = () => { moreVeil.hidden = false; };
-/* Le tre icone della testata sono scorciatoie a voci che restano anche nel ⚙
-   (lì è l'unico accesso quando si vede solo la mappa). */
+/* L'ingranaggio non c'è più: condividere, cambiare viaggio, ispirarsi e la
+   guida sono icone in chiaro nella testata. Il cassetto resta raggiungibile
+   dal ⋯ della mappa, dove vive anche "Installa l'app". */
 const shareHubVeil = document.getElementById('shareHubVeil');
 document.getElementById('btnShareHub').onclick = () => {
   document.getElementById('hubTripName').textContent = (state.title || 'questo viaggio');
@@ -6850,7 +7063,8 @@ document.getElementById('shareHubClose').onclick = () => { shareHubVeil.hidden =
 document.getElementById('hubShare').onclick = () => { shareHubVeil.hidden = true; document.getElementById('btnShareTrip').click(); };
 document.getElementById('hubJoin').onclick = () => { shareHubVeil.hidden = true; document.getElementById('btnJoinTrip').click(); };
 document.getElementById('btnTripsHub').onclick = openTrips;
-document.getElementById('btnGuideHub').onclick = () => { document.getElementById('btnReplayGuide').click(); };
+document.getElementById('btnGuideHub').onclick = askReplay;
+document.getElementById('fltGuide').onclick = askReplay;
 /* qualunque voce del menù lo chiude: è un cassetto, non una schermata */
 document.querySelectorAll('#moreVeil .more-list .chip').forEach(b => {
   b.addEventListener('click', () => { moreVeil.hidden = true; });
@@ -6883,7 +7097,7 @@ function startupView(){
     map.invalidateSize();
   }
   renderTabDots();
-  if(first) startTour();
+  if(first) askTour();
 }
 
 /* Tutorial del primo utilizzo: ognuno compare una volta sola, subito dopo il
@@ -6891,21 +7105,21 @@ function startupView(){
    nessuna delle parole avrebbe ancora un riferimento sullo schermo. */
 const COACH = {
   base: ["🏠", "La base è dove dormi", [
-    "Hai appena messo l'alloggio di quella giornata. La giornata parte da lì al mattino e torna lì la sera, così l'app può contare chilometri e tempo anche del primo e dell'ultimo tratto — quelli che nessuno calcola mai.",
-    "Se resti nello stesso posto più notti, non devi rifare niente: la base si ripresenta nei giorni dopo finché non la cambi. Se invece cambi alloggio, in quel giorno metti in <b>Parte da</b> quello di ieri e in <b>Arriva a</b> quello nuovo: il trasferimento entra nel conto.",
-    "Per ogni base l'app apre già una riga in <b>Prenotazioni</b>: ti resta da scrivere date, prezzo e codice quando prenoti."]],
+    "Hai indicato l'alloggio di quella giornata. La giornata parte da lì al mattino e vi torna la sera, così l'app calcola distanza e tempo anche del primo e dell'ultimo tratto — quelli che di solito sfuggono.",
+    "Se resti nello stesso posto per più notti non devi fare nulla: la base viene riproposta nei giorni successivi finché non la cambi. Se cambi alloggio, in quel giorno indica in <b>Parte da</b> quello precedente e in <b>Arriva a</b> quello nuovo: il trasferimento entra nel calcolo.",
+    "Per ogni base l'app crea già una riga in <b>Prenotazioni</b>: ti resta da inserire date, prezzo e codice quando prenoti."]],
   day: ["📅", "Ogni giorno ha il suo colore", [
-    "Il colore del giorno è la stessa cosa che vedi sui pin e sulla linea del percorso: guardando la mappa capisci subito cosa succede quando.",
-    "Metti la data a questo giorno e l'app ti propone di riempire da sola tutte le successive. Il <b>⋯</b> accanto al nome inquadra il giorno sulla mappa, lo apre in Google Maps o lo elimina."]],
-  stop: ["📍", "Le tappe fanno un percorso", [
-    "Le tappe di un giorno prendono un numero nell'ordine in cui le aggiungi, e fra una e l'altra compaiono tempo e distanza: in auto, o a piedi quando i due punti sono a pochi passi.",
-    "Per cambiare l'ordine tieni premuta la tappa e trascinala dove vuoi: anche dentro un altro giorno, o giù nel Brainstorming. Per correggere la posizione sulla mappa, tieni premuto il pin e trascinalo."]],
+    "Il colore del giorno è lo stesso che vedi sui pin e sulla linea del percorso: dalla mappa capisci subito cosa succede quando. Tocca il pallino per cambiarlo.",
+    "Se assegni una data a questo giorno, l'app propone di compilare da sé tutte le successive. Il <b>⋯</b> accanto al nome inquadra il giorno sulla mappa, lo apre in Google Maps o lo elimina."]],
+  stop: ["📍", "Le tappe formano un percorso", [
+    "Le tappe di un giorno vengono numerate nell'ordine in cui le aggiungi, e fra una e l'altra compaiono tempo e distanza: in auto, oppure a piedi quando i due punti sono vicini.",
+    "Per cambiare l'ordine tieni premuta la tappa e trascinala dove vuoi: anche in un altro giorno, o nel Brainstorming. Per correggerne la posizione sulla mappa, tieni premuto il pin e trascinalo."]],
   brainstorm: ["💡", "Le idee vanno nel Brainstorming", [
-    "Una tappa senza giorno finisce in <b>Brainstorming</b>, in fondo all'itinerario: è il posto dove buttare tutto quello che ti piacerebbe vedere, anche quello che poi salterai.",
-    "Quando il viaggio prende forma, <b>tieni premuta la tappa e trascinala</b> nel giorno giusto: entra nel percorso al suo posto, con numero e tempi. (Oppure aprila e scegli il giorno dalla scheda.)"]],
+    "Una tappa senza giorno finisce in <b>Brainstorming</b>, in fondo all'itinerario: è lo spazio in cui raccogliere tutto quello che ti interessa vedere, comprese le idee che poi scarterai.",
+    "Quando il viaggio prende forma, <b>tieni premuta la tappa e trascinala</b> nel giorno giusto: entra nel percorso al suo posto, con numero e tempi. Puoi anche aprirla e scegliere il giorno dalla scheda."]],
   diary: ["📖", "Il Diario si scrive da sé", [
-    "Hai segnato una tappa come <b>visitata</b>: da adesso la trovi anche nel Diario, dove puoi raccontare com'è andata davvero e attaccare le foto.",
-    "L'itinerario resta il programma, il Diario diventa il ricordo: le due cose non si pestano i piedi."]]
+    "Hai segnato una tappa come <b>visitata</b>: da adesso la trovi anche nel Diario, dove puoi raccontare com'è andata e aggiungere le foto.",
+    "L'itinerario resta il programma, il Diario raccoglie il ricordo: le due cose non si sovrappongono."]]
 };
 function coach(key){
   const c = COACH[key];

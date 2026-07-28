@@ -171,6 +171,33 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9quindecies. Novità di questa versione (v54)
+
+- Il tutorial non parte più da solo alla primissima apertura: prima chiede
+  **"È la tua prima volta su Waynder?"**, con la scelta fra "La conosco già"
+  e "Mostrami il tutorial". Anche **"Rivedi la guida"** ora chiede conferma
+  prima di ripartire, invece di riavviarla subito.
+- L'icona **?** per rivedere la guida è ora staccata a destra nell'
+  intestazione, sempre nello stesso posto in tutte le sezioni (anche nella
+  vista solo mappa, tra i controlli in alto). Al suo posto, in Tappe, è
+  comparsa l'icona ✨ **Ispirami**, scorciatoia diretta senza passare dal
+  menù.
+- Tolto l'ingranaggio "Menù del viaggio" dall'intestazione (restava solo
+  Condividi/Unisciti, I tuoi viaggi e Installa l'app: ora sono icone dirette
+  o raggiungibili dal ⋯ della vista mappa).
+- Il **nome del giorno** non si modifica più toccandolo direttamente: un
+  tocco sulla testata apre o chiude il giorno, la matita ✎ accanto al nome
+  apre la modifica. Stesso comportamento nel Diario.
+- **Spese** e **Prenotazioni**: chiudendo una scheda con modifiche non
+  salvate, l'app chiede conferma invece di buttarle via in silenzio.
+- Comprimere le righe non è più possibile in **Spese** (non c'era nulla da
+  nascondere): il pulsante resta al suo posto ma spento. In
+  **Prenotazioni** la vista compressa ora nasconde tutto tranne titolo e
+  tipo, importo compreso.
+- Vari testi rivisti per essere più chiari su cosa fanno davvero Ispirami e
+  "Non sai ancora dove andare?" (aggiungono le tappe con il pin sulla mappa,
+  non solo "propongono idee").
+
 ## 9quaterdecies. Novità di questa versione (v52)
 
 - Tolto l'avviso "usa il telefono in verticale" e il blocco automatico della
