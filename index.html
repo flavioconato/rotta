@@ -2043,7 +2043,7 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v54';
+const APP_VERSION = 'v55';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2280,7 +2280,9 @@ async function boot(){
   badge(storageOK ? 'saved' : 'unsaved');
   render();
   startupView();
-  maybeSuggestInspire();
+  /* al primo avvio non si chiama: ci pensa la fine del tutorial (o il rifiuto
+     dell'invito), altrimenti i due popup partono insieme */
+  if(lsGet(OB_KEY)) maybeSuggestInspire();
   subscribeShared(state.shareId);
 }
 
@@ -3629,21 +3631,29 @@ function openEmptyInspire(){
   document.getElementById('emptyInspVeil').hidden = false;
   autoFocus(document.getElementById('eiQ'));
 }
+/* Vero se c'è qualcosa in scena: la copertina, il tutorial, un riquadro di
+   domanda o una scheda aperta. Un solo cancello per tutti i popup, così non si
+   accavallano mai. */
+function somethingOnScreen(){
+  if(tourRunning) return true;
+  if(document.querySelector('.tour-card,.tour-veil')) return true;
+  const wc = document.getElementById('wcVeil');
+  if(wc && !wc.hidden) return true;
+  return ![...document.querySelectorAll('.veil')].every(v => v.hidden);
+}
 function maybeSuggestInspire(){
   if(state.places.length || state.inspireSuggested) return;
-  /* il tutorial ha la precedenza: due cose che parlano insieme sono troppe */
-  if(tourRunning) return;
-  if(!document.getElementById('wcVeil').hidden) return;
+  /* il tutorial ha la precedenza: due cose che parlano insieme sono troppe.
+     Se è in corso non si segna nulla — si riproverà alla sua fine. */
+  if(somethingOnScreen()) return;
   state.inspireSuggested = true;
   save();
-  /* non addosso all'avvio: prima si guarda la mappa e si capisce dove si è,
-     poi — se ancora non si è messo niente — arriva la proposta */
+  /* non addosso all'avvio né sull'ultimo passo del tutorial: prima si respira,
+     si guarda la mappa, poi — se ancora non c'è niente — arriva la proposta */
   setTimeout(() => {
-    if(state.places.length) return;
-    if(!document.getElementById('wcVeil').hidden) return;
-    if(![...document.querySelectorAll('.veil')].every(v => v.hidden)) return;
+    if(state.places.length || somethingOnScreen()) return;
     openEmptyInspire();
-  }, 5000);
+  }, 6000);
 }
 /* cerca il posto scritto e mostra fino a 5 corrispondenze da confermare:
    "Roma" esiste anche in Georgia (USA), meglio farsi dire quale delle due
@@ -6917,7 +6927,7 @@ function askTour(){
         'Puoi rivedere la guida quando vuoi dal <b>?</b> in alto a destra.'],
     no: 'La conosco gi\u00e0',
     yes: 'Mostrami il tutorial',
-    onNo: () => { lsSet(OB_KEY, '1'); maybeSuggestInspire(); },
+    onNo: () => { lsSet(OB_KEY, '1'); setTimeout(maybeSuggestInspire, 1200); },
     onYes: startTour
   });
 }
@@ -6971,7 +6981,8 @@ function startTour(){
     card.remove();
     secTip.classList.remove('tour-target');
     lsSet(OB_KEY, '1');
-    maybeSuggestInspire();
+    /* il tip di sezione arriva proprio adesso: gli si lascia il campo libero */
+    setTimeout(maybeSuggestInspire, 2200);
   };
 
   /* il volo: dal centro dello schermo al posto esatto del tip di sezione */
@@ -7047,7 +7058,7 @@ function startTour(){
 document.getElementById('wcStart').onclick = () => {
   document.getElementById('wcVeil').hidden = true;
   lsSet(OB_KEY, '1');
-  maybeSuggestInspire();
+  setTimeout(maybeSuggestInspire, 1200);
 };
 
 const moreVeil = document.getElementById('moreVeil');

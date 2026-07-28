@@ -171,6 +171,13 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9sedecies. Novità di questa versione (v55)
+
+- Corretto un difetto per cui il **benvenuto**, il **tutorial** e il
+  suggerimento **"Non sai ancora dove andare?"** potevano comparire uno
+  sopra l'altro alla primissima apertura: ora aspettano il proprio turno,
+  invece di accavallarsi sullo schermo.
+
 ## 9quindecies. Novità di questa versione (v54)
 
 - Il tutorial non parte più da solo alla primissima apertura: prima chiede
