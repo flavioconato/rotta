@@ -23,13 +23,13 @@
 <style>
 
 :root{
-  /* Livrea del Brainstorming: una sola texture per TUTTE le idee, non un colore
-     a testa. È la palette intera mescolata di sbieco — si legge subito "questo
-     non è un giorno" — ma con tinte slavate: quando i giorni si riempiono, le
-     idee rimaste devono farsi da parte, non gridare. */
-  --brain-tex:linear-gradient(122deg,#C0985C 0%,#B3767F 20%,#8E7CAE 40%,#5F8AAE 60%,#5D9E94 80%,#8FA36E 100%);
-  --brain-tex-v:linear-gradient(180deg,#C0985C 0%,#B3767F 20%,#8E7CAE 40%,#5F8AAE 60%,#5D9E94 80%,#8FA36E 100%);
-  --brain-flat:#8E8FA0;
+  /* Livrea del Brainstorming: le idee non smistate non sono un giorno, e non
+     devono competere con i giorni veri. Nessun colore: grigi slavati, contorni
+     tratteggiati e un velo di trasparenza — in elenco si leggono, sulla mappa
+     si notano appena. */
+  --brain-tex:linear-gradient(122deg,#BFC5C8 0%,#AAB2B6 55%,#B7BDC0 100%);
+  --brain-tex-v:linear-gradient(180deg,#BFC5C8 0%,#AAB2B6 55%,#B7BDC0 100%);
+  --brain-flat:#A2AAAE;
   --ink:#22303A;
   --ink-2:#EDEFEA;
   --ink-3:#DDE2DB;
@@ -502,6 +502,9 @@ span.day-name{cursor:pointer}
   60%{opacity:1;transform:translateY(-4px) scale(1.01)}
   100%{opacity:1;transform:none}
 }
+/* conferma di un'azione che cancella: il tasto si tinge di rosso, l'unico posto
+   dove il rosso non vuol dire "tragitto" */
+.tour-next.danger{background:linear-gradient(135deg,#E5484D,#C4272C);color:#fff}
 .tour-next{
   flex:none;padding:10px 18px;border-radius:999px;font-weight:700;font-size:13px;
   background:linear-gradient(135deg,var(--sage),var(--sage-2));color:#0F2830
@@ -578,12 +581,11 @@ span.day-name{cursor:pointer}
   border-radius:10px;padding:8px 2px;
 }
 .wx-hour span:nth-child(2){font-size:16px}
-.icon-btn, .day-toggle{color:var(--fog);padding:5px 6px;border-radius:8px;font-size:13px;line-height:1;transition:.15s}
-.icon-btn:hover, .day-toggle:hover{color:var(--ink);background:var(--ink-3)}
+.icon-btn{color:var(--fog);padding:5px 6px;border-radius:8px;font-size:13px;line-height:1;transition:.15s}
+.icon-btn:hover{color:var(--ink);background:var(--ink-3)}
 .icon-btn.danger{color:var(--fog);border:0;border-radius:8px;padding:5px 6px;font-size:13px;font-weight:400}
 .icon-btn.danger:hover{color:#C4272C;background:rgba(229,72,77,.1)}
-.day-toggle{flex:none;margin-left:auto;padding:6px 8px;font-size:13px;background:var(--ink-2);border:1px solid var(--ink-3)}
-/* i 4 comandi del giorno (meteo, info, altre azioni, comprimi): stessa
+/* i comandi del giorno (meteo, info, altre azioni): stessa
    forma e stessa distanza tra loro, qualunque sia il glifo che portano */
 .day-head-actions{flex:none;margin-left:auto;display:flex;align-items:center;gap:2px}
 .day-head-actions > *{
@@ -959,6 +961,11 @@ body[data-view="diary"] .sec-tip{--tip-ink:#14614A;--tip-line:#BFE0D3;--tip-bg:#
 
 /* ---------- editor ---------- */
 .veil{position:fixed;inset:0;background:rgba(20,26,24,.45);backdrop-filter:blur(6px);z-index:2000;display:grid;place-items:center;padding:16px}
+/* Il visualizzatore di allegati si apre SEMPRE sopra la scheda che l'ha chiamato.
+   Tutti i veli stanno sullo stesso piano, quindi vinceva l'ultimo nel documento:
+   la scheda della prenotazione, che nel file viene dopo. Da PC l'immagine finiva
+   così dietro la scheda. */
+#vwVeil{z-index:2200}
 .veil[hidden]{display:none}
 .sheet{
   position:relative;
@@ -1046,6 +1053,15 @@ body.hide-legs .leg-lab{display:none}
   content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
   border-radius:var(--r) 0 0 var(--r);background:var(--brain-tex-v)
 }
+/* le idee si fanno da parte: velate, contorno tratteggiato, tornano piene al tocco */
+.stop.brain{opacity:.62;transition:opacity .18s}
+.stop.brain:hover,.stop.brain:focus-within{opacity:1}
+.stop.brain .stop-card{border-style:dashed;background:rgba(255,255,255,.5)}
+.stop.brain .node{opacity:.85}
+.alt-item.brain{opacity:.68}
+.alt-item.brain:hover{opacity:1}
+.diary-stop.brain{opacity:.74;border-style:dashed}
+.diary-stop.brain:hover,.diary-stop.brain:focus-within{opacity:1}
 .diary-stop.pending{opacity:1;background:rgba(255,255,255,.62);border-style:dashed}
 .diary-stop.pending .diary-top{opacity:1}
 .diary-stop.pending .toggle-mini{opacity:.75}
@@ -1144,27 +1160,35 @@ body.hide-legs .leg-lab{display:none}
 .exp{padding:9px 0;border-bottom:1px solid var(--ink-3)}
 .exp:last-of-type{border-bottom:0}
 .exp-top{display:flex;align-items:baseline;gap:8px}
-.exp-d{flex:1;font-size:13.5px;font-weight:600;text-align:left;cursor:pointer}
-.exp-d:hover{color:var(--sage)}
+.exp-d{flex:1;min-width:0;font-size:13.5px;font-weight:600;text-align:left}
 .exp-a{font-size:12.5px;font-weight:600;color:#9A6A14}
 .exp-m{color:var(--fog);margin-top:2px;font-size:10px}
 .settle{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--ink-3);font-size:13px}
 .settle:last-child{border-bottom:0}
-/* --- vista compressa di Spese e Prenotazioni (pulsante ⇕ in testata) --- */
-/* Compresso non nasconde l'essenziale: toglie di mezzo quello che si legge una
-   volta e poi non serve più (chi ha pagato, codici, allegati, note), e lascia
-   una riga per voce. È la vista da "quanto ho speso in tutto", non da dettaglio. */
-body.fold-cost #costs .exp-m,
-body.fold-cost #costs .add-row{display:none}
-body.fold-cost #costs .exp{padding-top:8px;padding-bottom:8px}
-/* compresso resta la sola identità della prenotazione: titolo e tipo
-   ("Andata Anna" · "Treno"). Tutto il resto — date, codice, importo, allegati
-   — è dettaglio e si rivede espandendo. */
-body.fold-book #books .bk > *:not(.bk-top){display:none}
-body.fold-book #books .bk-top .exp-a,
-body.fold-book #books .bk-who{display:none}
-body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
+/* --- vista compressa di Spese e Prenotazioni --- */
+/* Una spesa o una prenotazione si apre e si chiude toccandola, ovunque: nessun
+   triangolino, come le testate dei giorni. Compressa resta la sola identità —
+   cosa e quanto, titolo e tipo — il resto è dettaglio e torna espandendo. */
+#costs .exp,#books .bk{cursor:pointer}
+#costs .exp.fold .exp-m{display:none}
+#costs .exp.fold{padding-top:8px;padding-bottom:8px}
+#books .bk.fold > *:not(.bk-top){display:none}
+#books .bk.fold .bk-top .exp-a,
+#books .bk.fold .bk-who{display:none}
+#books .bk.fold{padding-top:9px;padding-bottom:9px}
 .settle span{margin-left:auto;color:#9A6A14;font-weight:600}
+/* voci di scelta dentro un riquadro (es. "parti da quale prenotazione?") */
+.pick-list{display:flex;flex-direction:column;gap:7px;margin:2px 0 4px;max-height:46vh;overflow-y:auto}
+.pick-item{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r-sm);
+  padding:9px 11px;transition:.15s
+}
+.pick-item:hover{border-color:var(--sage-2);background:#fff}
+.pick-ic{flex:none;font-size:17px;line-height:1}
+.pick-tx{flex:1;min-width:0}
+.pick-tx b{display:block;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick-tx i{display:block;font-style:normal;font-size:11px;color:var(--fog);margin-top:1px}
 .who-picks{display:flex;flex-wrap:wrap;gap:5px}
 .who-pick{
   border:1px solid var(--ink-3);border-radius:999px;padding:6px 12px;font-size:12.5px;
@@ -1196,6 +1220,13 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
   transition:transform .18s var(--ease);
 }
 .pin svg{width:17px;height:17px;transform:rotate(45deg);fill:var(--ink)}
+/* un'idea non smistata sulla mappa deve vedersi appena: nessun colore, contorno
+   tratteggiato e molta trasparenza, così i giorni veri restano in primo piano */
+.pin.brain{
+  border-style:dashed;border-color:rgba(255,255,255,.75);
+  box-shadow:0 2px 5px rgba(34,48,58,.14)
+}
+.pin.brain svg{fill:#4E5A62;opacity:.8}
 .pin-n{
   position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 3px;
   border-radius:9px;background:var(--ink);color:#fff;border:1.5px solid #fff;
@@ -1462,6 +1493,12 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
              cercano davvero (condividere, cambiare viaggio, rileggere la guida)
              stanno qui fuori, in chiaro, in tutte le sezioni. Nel ⚙ resta il
              resto. -->
+        <button class="head-ico" id="btnInstallHead" type="button" hidden title="Installa Waynder sul dispositivo" aria-label="Installa l'app">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3.6v10.2M8.2 10.4 12 14.2l3.8-3.8"/>
+            <path d="M4.6 17.2v1.6a1.8 1.8 0 0 0 1.8 1.8h11.2a1.8 1.8 0 0 0 1.8-1.8v-1.6"/>
+          </svg>
+        </button>
         <button class="head-ico" id="btnShareHub" type="button" title="Condividi questo viaggio o unisciti a un altro" aria-label="Condividi o unisciti">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="18" cy="5.4" r="2.6"/><circle cx="18" cy="18.6" r="2.6"/><circle cx="6" cy="12" r="2.6"/>
@@ -1883,6 +1920,11 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
     <h2 id="bSheetT">Nuova prenotazione</h2>
     <label>Tipo</label>
     <div class="type-grid" id="bType"></div>
+    <!-- Più biglietti per lo stesso mezzo (uno per persona) hanno data, orario,
+         luoghi e compagnia identici: si parte da quello già inserito e si cambia
+         solo titolo e codice. Compare solo se c'è già una prenotazione di questo
+         tipo, e solo mentre se ne crea una nuova. -->
+    <button class="chip" id="bClone" type="button" hidden></button>
     <label for="bTitle">Titolo <span class="req" title="Campo obbligatorio">*</span></label>
     <input class="field" id="bTitle" placeholder="Es. Volo Roma–Edimburgo, B&amp;B Fort William…" autocomplete="off">
     <p class="req-note">È il nome con cui la riconoscerai nell'elenco. I campi con <span class="req">*</span> sono obbligatori, il resto lo aggiungi quando lo sai.</p>
@@ -2002,6 +2044,11 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
     <h2 id="xTitle">Nuova spesa</h2>
     <label for="xDesc">Descrizione</label>
     <input class="field" id="xDesc" placeholder="Cena, benzina, biglietti…" autocomplete="off">
+    <!-- Senza data le spese restano un mucchio nell'ordine in cui le hai scritte:
+         con la data si leggono giorno per giorno, come il viaggio. Preimpostata a
+         oggi, che è il caso normale (si registra quando si spende). -->
+    <label for="xDate">Giorno</label>
+    <input class="field" id="xDate" type="date">
     <label for="xAmt">Importo</label>
     <input class="field" id="xAmt" type="text" inputmode="decimal" placeholder="0,00">
     <label>Pagata da <span class="info-btn" tabindex="0" data-info="Chi ha tirato fuori i soldi. Puoi indicare più persone: l'importo si divide in parti uguali fra loro. Se hanno pagato tutti per tutti — un hotel già saldato, per esempio — accendi tutti sopra e tutti sotto: la spesa resta a bilancio zero e serve solo a tenerne nota.">i</span></label>
@@ -2043,7 +2090,7 @@ body.fold-book #books .bk{padding-top:9px;padding-bottom:9px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v55';
+const APP_VERSION = 'v61';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2076,8 +2123,8 @@ function migrateDayColors(){
 /* Brainstorming non ha un colore suo: ha TUTTI quelli della palette mescolati
    in un'unica livrea, uguale per ogni idea (vedi --brain-tex nel foglio di
    stile). BRAIN_SOLID è il ripiego dove serve un colore piatto. */
-const BRAIN_GRAD = 'linear-gradient(122deg,#C0985C 0%,#B3767F 20%,#8E7CAE 40%,#5F8AAE 60%,#5D9E94 80%,#8FA36E 100%)';
-const BRAIN_SOLID = '#8E8FA0';
+const BRAIN_GRAD = 'linear-gradient(122deg,#BFC5C8 0%,#AAB2B6 55%,#B7BDC0 100%)';
+const BRAIN_SOLID = '#A2AAAE';
 /* Da v7 l'app tiene più viaggi: ognuno vive sotto la propria chiave 'rotta:trip:<id>'
    nello stesso object store 'kv' di sempre (nessun bump di versione IndexedDB).
    'rotta:v1' è la vecchia chiave a viaggio singolo: resta lì solo per la migrazione
@@ -2113,6 +2160,10 @@ const routeCache = new Map();
 /* giorni (per id, o null per "Brainstorming") ripiegati nell'Itinerario:
    preferenza di sola sessione, non salvata nel viaggio */
 const collapsedDays = new Set();
+/* stesso meccanismo per le singole voci di Spese e Prenotazioni: lì non ci sono
+   giorni da chiudere, si ritira il dettaglio di una voce alla volta */
+const collapsedExp = new Set();
+const collapsedBook = new Set();
 
 const uid = () => Math.random().toString(36).slice(2,9);
 const fresh = () => ({
@@ -2337,7 +2388,14 @@ async function newTrip(opts){
 async function deleteTrip(id){
   const row = tripIndex.find(t => t.id === id);
   if(!row) return;
-  if(!confirm('Eliminare "'+(row.title||'questo viaggio')+'"? Non si può annullare.')) return;
+  confirmCard({
+    t: 'Eliminare questo viaggio?',
+    p: ['<b>' + esc(row.title || 'Questo viaggio') + '</b> viene cancellato da questo dispositivo, con tappe, spese, prenotazioni e diario. Non si può annullare.'],
+    no: 'No, lo tengo', yes: 'Elimina il viaggio',
+    onYes: () => removeTrip(id)
+  });
+}
+async function removeTrip(id){
   await dbDel(tripKey(id));
   tripIndex = tripIndex.filter(t => t.id !== id);
   await dbSet(INDEX_KEY, tripIndex);
@@ -2566,7 +2624,7 @@ document.getElementById('syncReload').onclick = async () => {
 document.getElementById('syncDismiss').onclick = hideSyncBar;
 
 async function shareTrip(){
-  if(!fbReady){ alert('La condivisione non è ancora configurata su questa app.'); return; }
+  if(!fbReady){ noteCard('Condivisione non disponibile', 'Su questa copia dell\'app la condivisione tra dispositivi non è configurata.'); return; }
   if(!state.shareId){
     state.shareId = fbDb.collection('trips').doc().id;
     await write();
@@ -2576,11 +2634,11 @@ async function shareTrip(){
 }
 
 async function joinTrip(code){
-  if(!fbReady){ alert('La condivisione non è ancora configurata su questa app.'); return; }
+  if(!fbReady){ noteCard('Condivisione non disponibile', 'Su questa copia dell\'app la condivisione tra dispositivi non è configurata.'); return; }
   code = (code||'').trim();
   if(!code) return;
   const snap = await fbDb.collection('trips').doc(code).get();
-  if(!snap.exists){ alert('Nessun viaggio condiviso trovato con questo codice.'); return; }
+  if(!snap.exists){ noteCard('Codice non trovato', 'Nessun viaggio condiviso risponde a questo codice. Controlla di averlo copiato per intero.'); return; }
   const data = snap.data();
   delete data.updatedAt; delete data.deviceId;
   data.id = uid();
@@ -4096,6 +4154,9 @@ function visibleOrphans(){
 }
 
 function drawMap(){
+  /* ridisegnare la mappa distrugge i marcatori: se uno era armato, il nastro
+     resterebbe senza padrone */
+  sweepDragMark();
   layer.clearLayers();
   const showDays = stopFilter !== 'brainstorm';
   const showOrphans = stopFilter !== 'days';
@@ -4151,7 +4212,7 @@ function drawMap(){
     usedBaseIds.forEach(id => { const b = baseOf(id); if(b) layer.addLayer(baseMarker(b)); });
   }
 
-  if(showOrphans) visibleOrphans().forEach(p => layer.addLayer(marker(p,'?', BRAIN_GRAD)));
+  if(showOrphans) visibleOrphans().forEach(p => layer.addLayer(marker(p,'', BRAIN_GRAD, true)));
   scaleLabels();
 }
 
@@ -4173,7 +4234,7 @@ map.on('zoomend', scaleLabels);
 /* glifo nuvola+spunta, usato sia come badge sia come icona principale delle alternative */
 const CLOUD_D = 'M6.5 18a4.5 4.5 0 0 1-.5-8.97A6 6 0 0 1 17.7 8.2 4.4 4.4 0 0 1 17.5 18h-11z';
 
-function marker(p, n, color){
+function marker(p, n, color, brain){
   const t = typeOf(p);
   const off = offRoute(p), poi = isPoi(p);
   /* contrassegni cumulabili: meteo a sinistra, bimbo a destra */
@@ -4188,11 +4249,13 @@ function marker(p, n, color){
   const badge = bRain + bKid;
   const tag = poi ? '' : (n === '' ? '' : '<span class="pin-n">'+n+'</span>');
   const icon = L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-32],
-    html:'<div class="pin'+(off?' alt':'')+(poi?' poi':'')+'" style="background:'+color+'">' +
+    html:'<div class="pin'+(off?' alt':'')+(poi?' poi':'')+(brain?' brain':'')+'" style="background:'+color+'">' +
            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+t.d+'"/></svg>' +
          '</div>' + tag + badge +
-         '<span class="pin-lab'+(off?' dim':'')+'">'+esc(p.name)+'</span>'});
-  const m = L.marker([p.lat,p.lng],{icon, draggable:true, zIndexOffset: off ? -400 : 0, opacity: off ? .9 : 1});
+         '<span class="pin-lab'+(off||brain?' dim':'')+'">'+esc(p.name)+'</span>'});
+  const m = L.marker([p.lat,p.lng],{icon, draggable:true,
+    zIndexOffset: brain ? -600 : (off ? -400 : 0),
+    opacity: brain ? .5 : (off ? .9 : 1)});
   m.on('add', () => armLongPress(m, p));
   let h = (p.img ? '<img class="pop-img"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '')
         + '<span class="pop-k">'+(poi?'Segnaposto · ':'')+esc(t.label)
@@ -4220,27 +4283,57 @@ function armLongPress(m, p){
     .forEach(ev => el.addEventListener(ev, stop, {passive:true}));
 }
 function unlockPin(m, p){
+  sweepDragMark();
   if(navigator.vibrate) navigator.vibrate(20);
   m.closePopup();
   m.dragging.enable();
   const el = m.getElement();
   if(el) el.classList.add('pin-armed');
   document.body.classList.add('dragmark');
+  /* Il nastro deve sparire in ogni caso. Se il marcatore viene ricreato da un
+     render a metà gesto il suo 'dragend' non arriva mai, quindi non si aspetta
+     quell'evento per chiudere: si chiude al rilascio del dito, sempre. Il
+     'dragend' vero — quando arriva — è già passato prima, perché Leaflet lo
+     emette dentro lo stesso evento di rilascio. */
+  let closed = false, dragStarted = false, saved = false;
   const done = () => {
+    if(closed) return;
+    closed = true;
+    /* se il dito ha trascinato ma il 'dragend' non è arrivato, la posizione si
+       legge qui: il gesto non va perso in silenzio */
+    if(dragStarted && !saved) commit();
     document.body.classList.remove('dragmark');
     if(el) el.classList.remove('pin-armed');
+    if(m.dragging) m.dragging.disable();
+    ['pointerup','touchend','touchcancel','mouseup'].forEach(ev =>
+      document.removeEventListener(ev, onRelease, true));
+    clearTimeout(guard);
   };
-  let moved = false;
-  m.once('dragstart', () => { moved = true; });
-  m.once('dragend', () => {
+  const onRelease = () => setTimeout(done, 120);
+  /* appena il trascinamento parte il guard non serve più: il gesto può durare
+     quanto vuole (si sposta piano, si aspetta l'auto-pan al bordo) e a chiudere
+     bastano il rilascio del dito e sweepDragMark() */
+  m.once('dragstart', () => { dragStarted = true; clearTimeout(guard); });
+  const commit = () => {
+    if(saved) return;
+    saved = true;
     const ll = m.getLatLng();
     p.lat = +ll.lat.toFixed(6);
     p.lng = +ll.lng.toFixed(6);
-    done(); save(); render();
+    save(); render();
     toast('“' + p.name + '” spostata qui');
-  });
+  };
+  m.once('dragend', () => { commit(); done(); });
+  ['pointerup','touchend','touchcancel','mouseup'].forEach(ev =>
+    document.addEventListener(ev, onRelease, true));
   /* se ci ha ripensato e non trascina, il pin si riblocca da solo */
-  setTimeout(() => { if(!moved && m.dragging){ m.dragging.disable(); done(); } }, 6000);
+  const guard = setTimeout(done, 4000);
+}
+/* Rete di sicurezza: nessun pin armato in pagina significa che il nastro non ha
+   più motivo di esserci, qualunque evento si sia perso per strada. */
+function sweepDragMark(){
+  if(document.body.classList.contains('dragmark') && !document.querySelector('.pin-armed'))
+    document.body.classList.remove('dragmark');
 }
 
 /* icone "casetta con freccia": stessa sagoma di casa, freccia che esce (si
@@ -4385,9 +4478,8 @@ function dayBlock(d, list){
         '<div class="day-head-actions">' +
           wxIconBtnHTML(d) +
           '<button class="icon-btn" data-act="menu" title="Altre azioni" aria-label="Altre azioni">⋯</button>' +
-          (hasContent ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '') +
         '</div>'
-        : (hasContent ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '')) +
+        : '') +
     '</div>' +
     '<div class="day-head-meta"><span class="day-stat mono">'+metaLine+'</span></div>';
   sec.appendChild(head);
@@ -4424,12 +4516,19 @@ function dayBlock(d, list){
     head.querySelector('.day-date').onchange = e => {
       const v = e.target.value || null;
       d.date = v;
-      if(state.days[0] && state.days[0].id === d.id && v &&
-         confirm('Calcolare automaticamente le date dei giorni successivi (+1 al giorno)?')){
-        const idx = state.days.indexOf(d);
-        for(let i=idx+1;i<state.days.length;i++) state.days[i].date = addDaysISO(v, i-idx);
-      }
+      const primo = state.days[0] && state.days[0].id === d.id && v && state.days.length > 1;
       save(); render();
+      if(primo) confirmCard({
+        ic: 'list',
+        t: 'Riempio anche gli altri giorni?',
+        p: ['Posso datare i giorni successivi uno dopo l\'altro a partire da qui, un giorno ciascuno. Se il viaggio ha delle pause, conviene metterle a mano.'],
+        no: 'Li metto io', yes: 'Sì, riempili', danger: false,
+        onYes: () => {
+          const idx = state.days.findIndex(x => x.id === d.id);
+          for(let i=idx+1;i<state.days.length;i++) state.days[i].date = addDaysISO(v, i-idx);
+          save(); render();
+        }
+      });
     };
     const menuB = head.querySelector('[data-act="menu"]');
     menuB.onclick = e => {
@@ -4440,12 +4539,17 @@ function dayBlock(d, list){
           closeSheetMobile();
         }},
         {label:'Apri in Google Maps', onClick: () => openInGmaps(d, routeList(d))},
-        {label:'Elimina il giorno', danger:true, onClick: () => {
-          if(!confirm('Elimino "'+d.name+'"? Le sue tappe tornano in “Brainstorming”.')) return;
-          state.places.forEach(p => { if(p.dayId===d.id) p.dayId = null; });
-          state.days = state.days.filter(x=>x.id!==d.id);
-          save(); render();
-        }}
+        {label:'Elimina il giorno', danger:true, onClick: () => confirmCard({
+          ic: 'list',
+          t: 'Elimino ' + esc(d.name) + '?',
+          p: ['Il giorno sparisce, ma le sue tappe non si perdono: tornano in <b>Brainstorming</b>, pronte da smistare in un altro giorno.'],
+          no: 'Lascia stare', yes: 'Elimina il giorno',
+          onYes: () => {
+            state.places.forEach(p => { if(p.dayId===d.id) p.dayId = null; });
+            state.days = state.days.filter(x=>x.id!==d.id);
+            save(); render();
+          }
+        })}
       ]);
     };
     const wxB = head.querySelector('.wx-icon-btn');
@@ -4460,22 +4564,18 @@ function dayBlock(d, list){
     };
   }
 
-  const toggleB = head.querySelector('.day-toggle');
   const body = document.createElement('div');
   body.className = 'day-body';
   body.hidden = collapsed;
   sec.appendChild(body);
+  head.setAttribute('aria-expanded', String(!collapsed));
   const flip = () => {
     if(!hasContent) return;
     const nowCollapsed = body.hidden = !body.hidden;
     if(nowCollapsed) collapsedDays.add(d.id); else collapsedDays.delete(d.id);
-    if(toggleB){
-      toggleB.textContent = nowCollapsed ? '▸' : '▾';
-      toggleB.title = nowCollapsed ? 'Espandi' : 'Comprimi';
-    }
+    head.setAttribute('aria-expanded', String(!nowCollapsed));
     updateFold();
   };
-  if(toggleB) toggleB.onclick = e => { e.stopPropagation(); flip(); };
   /* tutta la testata apre e chiude, tranne i comandi che vivono dentro */
   head.onclick = e => {
     if(e.target.closest('button,input,select,textarea,a,label')) return;
@@ -4826,7 +4926,6 @@ function diaryDayBlock(d, list){
       '<span class="swatch" style="background:'+(d.grad||d.color)+'"></span>' +
       '<span class="day-name">'+esc(d.name)+'</span>' +
       '<span class="day-stat mono">'+(list.length ? done+' / '+list.length+' fatte' : '—')+'</span>' +
-      (list.length ? '<button class="day-toggle" title="'+(collapsed?'Espandi':'Comprimi')+'">'+(collapsed?'▸':'▾')+'</button>' : '') +
     '</div>';
   sec.appendChild(head);
   const body = document.createElement('div');
@@ -4841,18 +4940,14 @@ function diaryDayBlock(d, list){
     list.forEach(p => body.appendChild(diaryStopCard(p, d.id ? d.color : BRAIN_SOLID, !d.id)));
   }
   sec.appendChild(body);
-  const toggleB = head.querySelector('.day-toggle');
+  head.setAttribute('aria-expanded', String(!collapsed));
   const flip = () => {
     if(!list.length) return;
     const nowCollapsed = body.hidden = !body.hidden;
     if(nowCollapsed) collapsedDays.add(d.id); else collapsedDays.delete(d.id);
-    if(toggleB){
-      toggleB.textContent = nowCollapsed ? '▸' : '▾';
-      toggleB.title = nowCollapsed ? 'Espandi' : 'Comprimi';
-    }
+    head.setAttribute('aria-expanded', String(!nowCollapsed));
     updateFold();
   };
-  if(toggleB) toggleB.onclick = e => { e.stopPropagation(); flip(); };
   head.onclick = e => {
     if(e.target.closest('button,input,select,textarea,a,label')) return;
     flip();
@@ -5071,18 +5166,20 @@ function drawCosts(){
   if(!state.expenses.length){
     h += '<p class="empty tight">Nessuna spesa registrata.</p>';
   } else {
-    h += state.expenses.slice().reverse().map(e => {
+    h += sortedExpenses().map(e => {
       const tutti = n => n === state.people.length && state.people.length;
       const who = tutti(e.forIds.length) ? 'tutti' : e.forIds.map(personName).join(', ');
       const pay = e.byIds || [];
       const payLab = !pay.length ? 'Nessuno segnato'
         : tutti(pay.length) ? 'Tutti' : pay.map(personName).join(', ');
       const verb = pay.length > 1 ? ' hanno pagato' : ' ha pagato';
-      return '<div class="exp"><div class="exp-top">'+
-        '<button class="exp-d" data-edx="'+e.id+'">'+esc(e.desc||'Spesa')+'</button>'+
+      return '<div class="exp'+(collapsedExp.has(e.id)?' fold':'')+'" data-xid="'+e.id+'">'+
+        '<div class="exp-top">'+
+        '<span class="exp-d">'+esc(e.desc||'Spesa')+'</span>'+
         '<span class="exp-a mono">'+money(e.amount)+'</span>'+
+        '<button class="icon-btn" data-edx="'+e.id+'" title="Modifica">✎</button>'+
         '<button class="icon-btn" data-delx="'+e.id+'" title="Elimina">✕</button></div>'+
-        '<div class="exp-m mono">'+esc(payLab)+(pay.length?verb:'')+' · per '+esc(who)+'</div></div>';
+        '<div class="exp-m mono">'+(e.date ? fmtDay(e.date)+' · ' : '')+esc(payLab)+(pay.length?verb:'')+' · per '+esc(who)+'</div></div>';
     }).join('');
   }
   h += '</div>';
@@ -5109,8 +5206,19 @@ function drawCosts(){
   np.onkeydown = e => { if(e.key === 'Enter') addP(); };
   box.querySelectorAll('[data-del]').forEach(b2 => b2.onclick = () => {
     const id = b2.dataset.del;
-    if(state.expenses.some(e => (e.byIds||[]).includes(id) || e.forIds.includes(id))
-       && !confirm(personName(id)+' compare in alcune spese. Rimuovere comunque?')) return;
+    if(state.expenses.some(e => (e.byIds||[]).includes(id) || e.forIds.includes(id))){
+      confirmCard({
+        ic: 'cost',
+        t: 'Rimuovo ' + esc(personName(id)) + '?',
+        p: ['Compare in alcune spese: togliendola i conti si rifanno senza di lei, e le spese rimaste senza nessuno da una parte o dall\'altra vengono eliminate.'],
+        no: 'Lascia stare', yes: 'Rimuovi',
+        onYes: () => dropPerson(id)
+      });
+      return;
+    }
+    dropPerson(id);
+  });
+  function dropPerson(id){
     state.people = state.people.filter(p => p.id !== id);
     state.expenses.forEach(e => {
       e.byIds = (e.byIds||[]).filter(x => x !== id);
@@ -5119,20 +5227,52 @@ function drawCosts(){
     /* una spesa senza nessuno da una parte o dall'altra non vuol dire più niente */
     state.expenses = state.expenses.filter(e => e.forIds.length && e.byIds.length);
     save(); drawCosts();
-  });
-  box.querySelectorAll('[data-delx]').forEach(b2 => b2.onclick = () => {
+  }
+  box.querySelectorAll('[data-delx]').forEach(b2 => b2.onclick = e2 => {
+    e2.stopPropagation();
     state.expenses = state.expenses.filter(e => e.id !== b2.dataset.delx);
-    save(); drawCosts();
+    save(); drawCosts(); updateFold();
   });
-  box.querySelectorAll('[data-edx]').forEach(b2 => b2.onclick = () => openExpense(b2.dataset.edx));
+  box.querySelectorAll('[data-edx]').forEach(b2 => b2.onclick = e2 => {
+    e2.stopPropagation(); openExpense(b2.dataset.edx);
+  });
+  /* la voce intera è l'interruttore: si tocca dove capita, non un triangolino */
+  box.querySelectorAll('.exp').forEach(el => el.onclick = e2 => {
+    if(e2.target.closest('button,input,select,textarea,a,label')) return;
+    toggleFolded(el, collapsedExp, el.dataset.xid);
+  });
+  updateFold();
 }
+/* comprimi/espandi di una singola voce (spesa o prenotazione): la preferenza
+   vive nella sessione, come collapsedDays, e non entra nel file del viaggio */
+function toggleFolded(el, set, id){
+  if(set.has(id)) set.delete(id); else set.add(id);
+  el.classList.toggle('fold', set.has(id));
+  updateFold();
+}
+
+/* Le spese si leggono nell'ordine in cui sono state fatte, non in quello in cui
+   sono state scritte. Quelle senza giorno restano in coda, dalla più recente. */
+function sortedExpenses(){
+  return state.expenses.slice().sort((x,y) => {
+    if(x.date && y.date) return x.date.localeCompare(y.date) || (x.ts||0) - (y.ts||0);
+    if(x.date) return -1;
+    if(y.date) return 1;
+    return (y.ts||0) - (x.ts||0);
+  });
+}
+const fmtDay = iso => {
+  if(!iso) return '';
+  const [Y,M,D] = iso.split('-');
+  return D+'/'+M;
+};
 
 /* --- form nuova spesa / modifica --- */
 let editingExpense = null;
 
 function openExpense(id){
   normalize();
-  if(state.people.length < 2){ alert('Aggiungi almeno due partecipanti prima di registrare una spesa.'); return; }
+  if(state.people.length < 2){ noteCard('Prima i partecipanti', 'Una spesa si divide tra almeno due persone: aggiungile qui sopra, poi torna a registrarla.', 'cost'); return; }
   editingExpense = id ? state.expenses.find(e => e.id === id) : null;
   const picks = (box, ids) => {
     box.innerHTML = state.people.map(p =>
@@ -5147,6 +5287,8 @@ function openExpense(id){
     editingExpense ? editingExpense.forIds : state.people.map(p => p.id));
   document.getElementById('xTitle').textContent = editingExpense ? 'Modifica spesa' : 'Nuova spesa';
   document.getElementById('xDesc').value = editingExpense ? editingExpense.desc || '' : '';
+  document.getElementById('xDate').value = editingExpense ? (editingExpense.date || '')
+    : new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   document.getElementById('xAmt').value = editingExpense ? String(editingExpense.amount).replace('.',',') : '';
   document.getElementById('xDel').hidden = !editingExpense;
   document.getElementById('xVeil').hidden = false;
@@ -5166,6 +5308,7 @@ document.getElementById('xByNone').onclick = () => xPickAll('#xBy', false);
 let expSigOpen = '';
 function expSig(){
   return [document.getElementById('xDesc').value,
+    document.getElementById('xDate').value,
     document.getElementById('xAmt').value,
     [...document.querySelectorAll('#xBy .who-pick.on')].map(b=>b.dataset.id).join(','),
     [...document.querySelectorAll('#xFor .who-pick.on')].map(b=>b.dataset.id).join(',')].join('|');
@@ -5194,11 +5337,12 @@ document.getElementById('xSave').onclick = () => {
   const amt = parseFloat(document.getElementById('xAmt').value.replace(',','.'));
   const forIds = [...document.querySelectorAll('#xFor .who-pick.on')].map(b=>b.dataset.id);
   const byIds  = [...document.querySelectorAll('#xBy .who-pick.on')].map(b=>b.dataset.id);
-  if(!(amt > 0)){ alert('Inserisci un importo maggiore di zero.'); return; }
-  if(!byIds.length){ alert('Indica chi ha pagato.'); return; }
-  if(!forIds.length){ alert('Indica per chi è la spesa.'); return; }
+  if(!(amt > 0)){ noteCard('Manca l\'importo', 'Scrivi quanto è stata la spesa: un numero maggiore di zero.', 'cost'); return; }
+  if(!byIds.length){ noteCard('Manca chi ha pagato', 'Accendi almeno una persona sotto «Pagata da».', 'cost'); return; }
+  if(!forIds.length){ noteCard('Manca per chi è', 'Accendi almeno una persona sotto «Per chi»: sono quelle tra cui si divide.', 'cost'); return; }
   const rec = {
     desc: document.getElementById('xDesc').value.trim(),
+    date: document.getElementById('xDate').value || '',
     amount: amt,
     byIds,
     forIds
@@ -5210,11 +5354,20 @@ document.getElementById('xSave').onclick = () => {
   save(); drawCosts();
 };
 document.getElementById('xDel').onclick = () => {
-  if(!editingExpense || !confirm('Elimino la spesa "'+(editingExpense.desc||'Spesa')+'"?')) return;
-  state.expenses = state.expenses.filter(e => e.id !== editingExpense.id);
-  document.getElementById('xVeil').hidden = true;
-  editingExpense = null;
-  save(); drawCosts();
+  if(!editingExpense) return;
+  const vittima = editingExpense;
+  confirmCard({
+    ic: 'cost',
+    t: 'Elimino questa spesa?',
+    p: ['<b>' + esc(vittima.desc || 'Spesa') + '</b> — ' + money(vittima.amount) + ' — esce dai conti e il pareggio si rifà senza di lei.'],
+    no: 'Lascia stare', yes: 'Elimina la spesa',
+    onYes: () => {
+      state.expenses = state.expenses.filter(e => e.id !== vittima.id);
+      document.getElementById('xVeil').hidden = true;
+      editingExpense = null;
+      save(); drawCosts(); updateFold();
+    }
+  });
 };
 
 /* ============ immagine della tappa ============ */
@@ -5392,7 +5545,7 @@ document.getElementById('fImgFile').onchange = e => {
   const f = e.target.files[0];
   if(!f) return;
   shrinkImage(f, data => {
-    if(!data){ alert('Non sono riuscito a leggere questa immagine.'); return; }
+    if(!data){ noteCard('Immagine non leggibile', 'Questo file non si apre come immagine: prova con un JPG o un PNG.'); return; }
     document.getElementById('fImg').value = data;
     pendingImgCredit = null;
     imgPreview(data);
@@ -5421,10 +5574,20 @@ const BOOK_TYPES = {
 
 function ensureBooks(){ if(!state.bookings) state.bookings = []; }
 
-/* ordinamento cronologico: le prenotazioni senza data finiscono in coda */
+/* Prima il tipo, poi la data: si cercano "i voli", non "le cose di martedì" —
+   e i biglietti dello stesso mezzo stanno vicini. L'ordine dei tipi è quello in
+   cui sono dichiarati in BOOK_TYPES (aereo, treno, noleggio, alloggio…), lo
+   stesso della griglia di scelta. Senza data si finisce in coda al proprio tipo. */
+const BOOK_ORDER = Object.keys(BOOK_TYPES);
 function sortedBookings(){
   ensureBooks();
+  const rank = b => {
+    const i = BOOK_ORDER.indexOf(b.type);
+    return i < 0 ? BOOK_ORDER.length : i;
+  };
   return state.bookings.slice().sort((x,y) => {
+    const d = rank(x) - rank(y);
+    if(d) return d;
     if(!x.aWhen && !y.aWhen) return 0;
     if(!x.aWhen) return 1;
     if(!y.aWhen) return -1;
@@ -5512,10 +5675,9 @@ function drawBooks(){
 
   list.forEach(b => {
     const T = BOOK_TYPES[b.type] || BOOK_TYPES.ticket;
-    h += '<div class="bk">'+
+    h += '<div class="bk'+(collapsedBook.has(b.id)?' fold':'')+'" data-bkid="'+b.id+'">'+
       '<div class="bk-top">'+
         bookingHead(b, T)+
-        '<button class="icon-btn" data-bkv="'+b.id+'" title="Visualizza">👁</button>'+
         '<button class="icon-btn" data-bke="'+b.id+'" title="Modifica">✎</button>'+
       '</div>'+
       bookingBody(b, T)+
@@ -5524,15 +5686,19 @@ function drawBooks(){
   h += '</div>';
   box.innerHTML = h;
 
-  box.querySelectorAll('[data-bkv]').forEach(bt =>
-    bt.onclick = () => viewBooking(bt.dataset.bkv));
   box.querySelectorAll('[data-bke]').forEach(bt =>
-    bt.onclick = () => openBooking(bt.dataset.bke));
+    bt.onclick = e => { e.stopPropagation(); openBooking(bt.dataset.bke); });
   box.querySelectorAll('[data-bkf]').forEach(bt =>
-    bt.onclick = () => {
+    bt.onclick = e => {
+      e.stopPropagation();
       const b = state.bookings.find(x => x.id === bt.dataset.bkf);
       if(b) openViewer(b.file, b.fileName, b.fileType);
     });
+  box.querySelectorAll('.bk').forEach(el => el.onclick = e => {
+    if(e.target.closest('button,input,select,textarea,a,label')) return;
+    toggleFolded(el, collapsedBook, el.dataset.bkid);
+  });
+  updateFold();
 }
 
 /* scheda di sola visualizzazione: stessi dati della card compatta, ma su una
@@ -5572,7 +5738,11 @@ function openBooking(id){
     tg.querySelectorAll('.type-opt').forEach(y => y.classList.remove('on'));
     x.classList.add('on');
     bookLabels(x.dataset.type);
+    /* seconda prenotazione dello stesso tipo: chiedo se si parte da quella
+       già inserita, che è il caso dei biglietti di più persone sullo stesso mezzo */
+    if(!editingBook) askCloneFrom(x.dataset.type);
   });
+  document.getElementById('bClone').onclick = () => askCloneFrom(bookTypeNow(), true);
 
   document.getElementById('bTitle').value = b.title || '';
   document.getElementById('bAddr').value  = b.addr  || '';
@@ -5601,9 +5771,77 @@ function openBooking(id){
   bookSigOpen = bookSig();
 }
 
+/* tipo attualmente scelto nella scheda */
+function bookTypeNow(){
+  const on = document.querySelector('#bType .type-opt.on');
+  return on ? on.dataset.type : 'train';
+}
+/* prenotazioni già inserite dello stesso tipo, esclusa quella in modifica */
+function sameTypeBookings(type){
+  ensureBooks();
+  return sortedBookings().filter(b => b.type === type && (!editingBook || b.id !== editingBook.id));
+}
+/* il chip "parti da una simile" c'è solo creando una nuova prenotazione di un
+   tipo che esiste già; in modifica non ha senso */
+function updateCloneChip(type){
+  const c = document.getElementById('bClone');
+  if(!c) return;
+  const n = editingBook ? 0 : sameTypeBookings(type).length;
+  c.hidden = !n;
+  const T = BOOK_TYPES[type] || BOOK_TYPES.ticket;
+  c.textContent = '⧉ Parti da ' + (n === 1 ? 'quello già inserito' : 'uno dei ' + n + ' già inseriti')
+                + ' (' + T.label.toLowerCase() + ')';
+}
+/* Chiede da quale prenotazione dello stesso tipo copiare i dati comuni.
+   Con "forza" (chip toccato a mano) si apre anche se c'è una sola voce. */
+function askCloneFrom(type, forza){
+  const same = sameTypeBookings(type);
+  if(!same.length) return;
+  const T = BOOK_TYPES[type] || BOOK_TYPES.ticket;
+  pickCard({
+    ic: 'book',
+    t: 'Parti da una già inserita?',
+    p: [same.length === 1
+        ? 'C\'è già un\'altra prenotazione di tipo <b>' + T.label.toLowerCase() + '</b>. Se stai caricando il biglietto di un\'altra persona sullo stesso mezzo, copio data, orario, luoghi, compagnia e importo: a te restano titolo e codice.'
+        : 'Ci sono già ' + same.length + ' prenotazioni di tipo <b>' + T.label.toLowerCase() + '</b>. Ne scelgo una e copio data, orario, luoghi, compagnia e importo: a te restano titolo e codice.'],
+    items: same.map(b => ({
+      ic: T.icon,
+      label: b.title || T.label,
+      sub: [fmtWhen(b.aWhen), b.who, b.aPlace].filter(Boolean).join(' · ') || 'senza data',
+      value: b.id
+    })),
+    no: forza ? 'Lascia stare' : 'No, la compilo da zero',
+    onPick: id => cloneBookingInto(id)
+  });
+}
+/* copia i campi che i biglietti di uno stesso mezzo hanno in comune. Restano
+   fuori titolo, codice e allegato: sono l'unica cosa che cambia per persona. */
+function cloneBookingInto(id){
+  const src = state.bookings.find(b => b.id === id);
+  if(!src) return;
+  document.getElementById('bAddr').value  = src.addr  || '';
+  document.getElementById('bWho').value   = src.who   || '';
+  document.getElementById('bAWhen').value = src.aWhen || '';
+  document.getElementById('bAPlace').value= src.aPlace|| '';
+  document.getElementById('bBWhen').value = src.bWhen || '';
+  document.getElementById('bBPlace').value= src.bPlace|| '';
+  document.getElementById('bCost').value  = src.cost  || '';
+  document.getElementById('bUrl').value   = src.url   || '';
+  document.getElementById('bNotes').value = src.notes || '';
+  document.getElementById('bFreeUntil').value = src.freeUntil || '';
+  document.querySelectorAll('#bRefund .who-pick').forEach(x =>
+    x.classList.toggle('on', x.dataset.v === (src.refund || 'free')));
+  refundView();
+  const t = document.getElementById('bTitle');
+  t.value = src.title ? src.title + ' (2)' : '';
+  toast('Dati copiati: correggi il titolo e metti il codice del biglietto');
+  autoFocus(t);
+}
+
 /* le etichette dei campi cambiano col tipo: check-in per un albergo, partenza per un volo */
 function bookLabels(type){
   const T = BOOK_TYPES[type] || BOOK_TYPES.ticket;
+  updateCloneChip(type);
   document.getElementById('bALab').textContent = T.aLab;
   document.getElementById('bRefLab').textContent = T.ref;
   document.getElementById('bLegB').hidden = !T.leg;
@@ -5698,7 +5936,7 @@ document.getElementById('bFileInput').onchange = e => {
      se il file resta troppo grosso. Un PDF invece va conservato tale e quale. */
   if(isImg){
     shrinkImage(f, data => {
-      if(!data){ alert('Non sono riuscito a leggere questa immagine.'); return; }
+      if(!data){ noteCard('Immagine non leggibile', 'Questo file non si apre come immagine: prova con un JPG o un PNG.', 'book'); return; }
       bookFile = data; bookFileName = f.name; bookFileType = f.type;
       bookFileView();
     }, 2000, {q:0.94, budget: 1900000});
@@ -5707,8 +5945,9 @@ document.getElementById('bFileInput').onchange = e => {
   }
 
   if(f.size > 1.5*1024*1024){
-    alert('Il file pesa '+(f.size/1048576).toFixed(1)+' MB: troppo per il salvataggio.\n\n'+
-          'Caricalo su Drive e incolla il link nel campo "Link di gestione".');
+    noteCard('Allegato troppo pesante',
+      ['Questo file pesa ' + (f.size/1048576).toFixed(1) + ' MB: oltre il limite di quello che l\'app può conservare.',
+       'Caricalo su Drive o Dropbox e incolla il link nel campo <b>Link di gestione</b>.'], 'book');
     e.target.value = ''; return;
   }
   const rd = new FileReader();
@@ -5744,13 +5983,21 @@ function closeBooking(force){
 }
 document.getElementById('bCancel').onclick = () => closeBooking();
 document.getElementById('bDel').onclick = () => {
-  if(!editingBook || !confirm('Elimino "'+(editingBook.title||'questa prenotazione')+'"?')) return;
-  /* la spesa collegata resta nei conti: i soldi sono usciti comunque. Perde solo
-     il legame, così non prova a inseguire una prenotazione che non c'è più. */
-  state.expenses.forEach(e => { if(e.bookingId === editingBook.id) delete e.bookingId; });
-  state.bookings = state.bookings.filter(b => b.id !== editingBook.id);
-  document.getElementById('bVeil').hidden = true;
-  save(); drawBooks();
+  if(!editingBook) return;
+  const vittima = editingBook;
+  confirmCard({
+    ic: 'book',
+    t: 'Elimino questa prenotazione?',
+    p: ['<b>' + esc(vittima.title || 'Questa prenotazione') + '</b> sparisce dall\'elenco, con codice e allegato. Se le avevi legato una spesa, quella resta nei conti: i soldi sono usciti comunque.'],
+    no: 'Lascia stare', yes: 'Elimina',
+    onYes: () => {
+      state.expenses.forEach(e => { if(e.bookingId === vittima.id) delete e.bookingId; });
+      state.bookings = state.bookings.filter(b => b.id !== vittima.id);
+      document.getElementById('bVeil').hidden = true;
+      editingBook = null;
+      save(); drawBooks(); updateFold();
+    }
+  });
 };
 document.getElementById('bSave').onclick = async () => {
   ensureBooks();
@@ -5776,7 +6023,7 @@ document.getElementById('bSave').onclick = async () => {
     fileType: bookFileType
   };
   if(!rec.title){
-    alert('Dai un titolo alla prenotazione: è come la riconoscerai nell\'elenco.');
+    noteCard('Manca il titolo', 'Dai un nome a questa prenotazione: è come la riconoscerai nell\'elenco («Volo Roma–Edimburgo», «B&amp;B Fort William»).', 'book');
     document.getElementById('bTitle').focus();
     return;
   }
@@ -5848,11 +6095,12 @@ document.getElementById('bxSave').onclick = () => {
   if(!bxBooking) return;
   const byIds  = [...document.querySelectorAll('#bxBy .who-pick.on')].map(b => b.dataset.id);
   const forIds = [...document.querySelectorAll('#bxFor .who-pick.on')].map(b => b.dataset.id);
-  if(!byIds.length){ alert('Indica chi ha pagato.'); return; }
-  if(!forIds.length){ alert('Indica per chi è la spesa.'); return; }
+  if(!byIds.length){ noteCard('Manca chi ha pagato', 'Accendi almeno una persona sotto «Pagata da».', 'cost'); return; }
+  if(!forIds.length){ noteCard('Manca per chi è', 'Accendi almeno una persona sotto «Per chi».', 'cost'); return; }
   state.expenses.push({
     id: uid(), ts: Date.now(),
     desc: bxBooking.title || 'Prenotazione',
+    date: (bxBooking.aWhen || '').slice(0,10),
     amount: parseFloat(bxBooking.cost),
     byIds, forIds,
     bookingId: bxBooking.id
@@ -6023,11 +6271,19 @@ document.getElementById('cancel').onclick = closeEditor;
    la stessa logica in due posti */
 function deletePlace(id){
   const p = state.places.find(x => x.id === id);
-  if(!p || !confirm('Elimino "'+p.name+'"?')) return;
-  if(id === freshPlaceId) freshPlaceId = null;
-  state.places = state.places.filter(x => x.id !== id);
-  if(editing && editing.id === id) veil.hidden = true;
-  save(); render();
+  if(!p) return;
+  confirmCard({
+    ic: 'list',
+    t: 'Elimino questa tappa?',
+    p: ['<b>' + esc(p.name) + '</b> esce dall\'itinerario e il suo pin sparisce dalla mappa, con note, link e foto.'],
+    no: 'Lascia stare', yes: 'Elimina la tappa',
+    onYes: () => {
+      if(id === freshPlaceId) freshPlaceId = null;
+      state.places = state.places.filter(x => x.id !== id);
+      if(editing && editing.id === id) veil.hidden = true;
+      save(); render();
+    }
+  });
 }
 document.getElementById('del').onclick = () => deletePlace(editing.id);
 veil.onclick = e => { if(e.target === veil) closeEditor(); };
@@ -6335,9 +6591,11 @@ function anyOpen(){
 function updateFold(){
   const b = document.getElementById('btnFold');
   if(!b) return;
-  if(view === 'cost'){
+  const vuoto = (view === 'cost' && !state.expenses.length)
+             || (view === 'book' && !(state.bookings || []).length);
+  if(vuoto){
     b.disabled = true;
-    b.title = b.ariaLabel = 'In Spese non c\'è niente da comprimere';
+    b.title = b.ariaLabel = 'Non c\'è ancora niente da comprimere';
     b.querySelector('.ic-fold').hidden = false;
     b.querySelector('.ic-unfold').hidden = true;
     return;
@@ -6355,17 +6613,23 @@ function updateFold(){
    si guarda un elenco quando serve il quadro d'insieme. Preferenza di sola
    sessione, come collapsedDays: non viaggia nel file del viaggio. */
 const FOLD_LABEL = {list:'tutti i giorni', diary:'tutti i giorni',
-  cost:'i dettagli delle spese', book:'i dettagli delle prenotazioni'};
-const FOLD_CLASS = {book:'fold-book'};
+  cost:'tutte le spese', book:'tutte le prenotazioni'};
 function foldOpen(){
-  const c = FOLD_CLASS[view];
-  return c ? !document.body.classList.contains(c) : anyOpen();
+  if(view === 'cost') return state.expenses.some(e => !collapsedExp.has(e.id));
+  if(view === 'book') return (state.bookings || []).some(b => !collapsedBook.has(b.id));
+  return anyOpen();
 }
 document.getElementById('btnFold').onclick = () => {
-  const c = FOLD_CLASS[view];
-  if(c){
-    document.body.classList.toggle(c);
-    updateFold();
+  if(view === 'cost'){
+    const open = foldOpen();
+    if(open) state.expenses.forEach(e => collapsedExp.add(e.id)); else collapsedExp.clear();
+    drawCosts();
+    return;
+  }
+  if(view === 'book'){
+    const open = foldOpen();
+    if(open) (state.bookings || []).forEach(b => collapsedBook.add(b.id)); else collapsedBook.clear();
+    drawBooks(); updateFold();
     return;
   }
   if(anyOpen()){
@@ -6415,8 +6679,22 @@ document.getElementById('file').onchange = e => {
       const known = j.id && tripIndex.some(t => t.id === j.id);
       if(known){
         const title = (tripIndex.find(t=>t.id===j.id)||{}).title || 'un viaggio';
-        if(!confirm('Questo file è un salvataggio di "'+title+'", già presente. Sovrascrivere quel viaggio con il contenuto del file?')) return;
+        confirmCard({
+          t: 'Sovrascrivo il viaggio?',
+          p: ['Questo file è un salvataggio di <b>' + esc(title) + '</b>, che è già nell\'elenco. Aprendolo, il contenuto del file prende il posto di quello che hai adesso.'],
+          no: 'Annulla', yes: 'Sovrascrivi',
+          onYes: () => applyImport(j)
+        });
+        return;
       }
+      applyImport(j);
+    }catch(err){ noteCard('Questo file non va bene', 'Non è un salvataggio di Waynder: mi aspetto il file .json che esce da «Salva su file».'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+
+  async function applyImport(j){
+    try{
       if(!j.id) j.id = uid();
       state = j;
       normalize();
@@ -6431,10 +6709,8 @@ document.getElementById('file').onchange = e => {
       badge(storageOK ? 'saved' : 'unsaved');
       if(state.places.length) map.fitBounds(L.latLngBounds(state.places.map(p=>[p.lat,p.lng])).pad(.2));
       subscribeShared(state.shareId);
-    }catch(err){ alert('Il file non è un itinerario di Waynder.'); }
-  };
-  r.readAsText(f);
-  e.target.value = '';
+    }catch(err){ noteCard('Non sono riuscito ad aprirlo', 'Il file sembra un salvataggio di Waynder ma qualcosa dentro non torna.'); }
+  }
 };
 
 /* ============ navigazione ============ */
@@ -6894,8 +7170,8 @@ function askCard(o){
       cloneTabIcon(o.ic || 'map', '') + '</span><h3>' + o.t + '</h3></div>' +
     o.p.map(x => '<p>' + x + '</p>').join('') +
     '<div class="tour-foot">' +
-      '<button class="tour-no" type="button">' + o.no + '</button>' +
-      '<button class="tour-next" type="button">' + o.yes + '</button>' +
+      (o.solo ? '' : '<button class="tour-no" type="button">' + o.no + '</button>') +
+      '<button class="tour-next' + (o.danger ? ' danger' : '') + '" type="button">' + o.yes + '</button>' +
     '</div>';
   document.body.append(veil, card);
   /* posizionato subito, senza attendere un fotogramma: l'entrata è
@@ -6914,8 +7190,60 @@ function askCard(o){
     setTimeout(() => { veil.remove(); card.remove(); }, 320);
   };
   const no = () => { close(); if(o.onNo) o.onNo(); };
+  const noB = card.querySelector('.tour-no');
+  if(noB) noB.onclick = no;
+  card.querySelector('.tour-next').onclick = () => { close(); if(o.onYes) setTimeout(o.onYes, 240); };
+  veil.addEventListener('click', ev => { if(ev.target === veil) no(); });
+}
+/* Avviso a un tasto solo: prende il posto di alert(), che arriva col nome del
+   sito in testa e fuori dal tono dell'app. */
+function noteCard(t, p, ic){
+  askCard({ic: ic || 'map', t, p: Array.isArray(p) ? p : [p], solo: true, yes: 'Ho capito'});
+}
+/* Conferma con due scelte: prende il posto di confirm(). Il tasto che conferma è
+   rosso quando l'azione cancella qualcosa. */
+function confirmCard(o){
+  askCard({ic: o.ic, t: o.t, p: Array.isArray(o.p) ? o.p : [o.p],
+    no: o.no || 'Annulla', yes: o.yes, danger: o.danger !== false,
+    onYes: o.onYes, onNo: o.onNo});
+}
+
+/* Riquadro con un elenco di voci da scegliere: stesso corpo di askCard, ma al
+   posto delle due risposte c'è una riga per voce e un solo "no" in fondo. */
+function pickCard(o){
+  if(tourRunning) return;
+  const veil = document.createElement('div');
+  veil.className = 'tour-veil';
+  const card = document.createElement('div');
+  card.className = 'tour-card ask';
+  card.innerHTML =
+    '<div class="tour-top"><span class="tour-ic" style="--tc:linear-gradient(135deg,#3D5666,#22303A);--tfg:#fff">' +
+      cloneTabIcon(o.ic || 'book', '') + '</span><h3>' + o.t + '</h3></div>' +
+    (o.p || []).map(x => '<p>' + x + '</p>').join('') +
+    '<div class="pick-list">' + o.items.map((it,i) =>
+      '<button class="pick-item" type="button" data-i="' + i + '">' +
+        '<span class="pick-ic">' + (it.ic || '') + '</span>' +
+        '<span class="pick-tx"><b>' + esc(it.label) + '</b>' +
+          (it.sub ? '<i>' + esc(it.sub) + '</i>' : '') + '</span>' +
+      '</button>').join('') + '</div>' +
+    '<div class="tour-foot"><button class="tour-no" type="button">' + (o.no || 'No, la compilo da zero') + '</button></div>';
+  document.body.append(veil, card);
+  const w = card.offsetWidth, ch = card.offsetHeight;
+  card.style.left = Math.round((window.innerWidth - w) / 2) + 'px';
+  card.style.top = Math.round(Math.max(16, (window.innerHeight - ch) / 2 - 20)) + 'px';
+  veil.classList.add('show');
+  const close = () => {
+    veil.classList.remove('show');
+    card.style.animation = 'none';
+    card.style.transition = 'opacity .24s ease,transform .24s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(10px) scale(.97)';
+    setTimeout(() => { veil.remove(); card.remove(); }, 320);
+  };
+  const no = () => { close(); if(o.onNo) o.onNo(); };
   card.querySelector('.tour-no').onclick = no;
-  card.querySelector('.tour-next').onclick = () => { close(); setTimeout(o.onYes, 240); };
+  card.querySelectorAll('.pick-item').forEach(b =>
+    b.onclick = () => { close(); const i = +b.dataset.i; setTimeout(() => o.onPick(o.items[i].value), 240); });
   veil.addEventListener('click', ev => { if(ev.target === veil) no(); });
 }
 
@@ -7225,20 +7553,30 @@ let installEvt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   installEvt = e;
-  const b = document.getElementById('btnInstall');
-  if(b) b.hidden = false;
+  ['btnInstall','btnInstallHead'].forEach(id => {
+    const b = document.getElementById(id);
+    if(b) b.hidden = false;
+  });
 });
-document.getElementById('btnInstall').onclick = async () => {
+/* Il ⋯ della mappa spariva sul telefono fuori dalla Mappa: l'unico accesso
+   all'installazione restava irraggiungibile. Ora l'icona sta in testata e
+   compare solo quando il browser dichiara che si può installare. */
+async function doInstall(){
   if(!installEvt) return;
   installEvt.prompt();
   await installEvt.userChoice;
   installEvt = null;
-  document.getElementById('btnInstall').hidden = true;
-};
-window.addEventListener('appinstalled', () => {
-  const b = document.getElementById('btnInstall');
-  if(b) b.hidden = true;
-});
+  hideInstall();
+}
+function hideInstall(){
+  ['btnInstall','btnInstallHead'].forEach(id => {
+    const b = document.getElementById(id);
+    if(b) b.hidden = true;
+  });
+}
+document.getElementById('btnInstall').onclick = () => { moreVeil.hidden = true; doInstall(); };
+document.getElementById('btnInstallHead').onclick = doInstall;
+window.addEventListener('appinstalled', hideInstall);
 
 boot();
 </script>

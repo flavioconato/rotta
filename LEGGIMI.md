@@ -171,6 +171,36 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9septendecies. Novità di questa versione (v61)
+
+- Tutti gli avvisi e le conferme del browser (i riquadri grigi di sistema,
+  "elimino?", "importo mancante"...) sono diventati riquadri in stile
+  Waynder, coerenti col resto dell'app: quelli che cancellano qualcosa hanno
+  il pulsante rosso e spiegano cosa succede prima di farlo (eliminare un
+  viaggio, un giorno, una tappa, una spesa, una prenotazione, un
+  partecipante, sovrascrivere un viaggio importando un file).
+- Le idee in **Brainstorming** non hanno più la livrea colorata: ora sono
+  grigie, tratteggiate e semitrasparenti (tornano piene al tocco), così
+  restano visivamente in secondo piano rispetto ai giorni veri sia
+  nell'elenco sia sulla mappa.
+- **Spese**: ogni voce ha ora una data (preimpostata a oggi) e l'elenco si
+  legge in ordine cronologico invece che nell'ordine in cui sono state
+  scritte. Ogni riga si comprime/espande toccandola, non solo tutte insieme
+  col pulsante in testata.
+- **Prenotazioni**: l'elenco è ordinato prima per tipo (voli con voli, treni
+  con treni...) e poi per data. Creando una seconda prenotazione dello
+  stesso tipo, l'app propone di **copiare i dati in comune** (date, orari,
+  luoghi, compagnia, importo) da quella già inserita — utile per i
+  biglietti di più persone sullo stesso volo o treno — lasciando solo
+  titolo e codice da cambiare. Anche qui ogni riga si comprime a sé.
+- Nuova icona **⤓ Installa l'app** anche in testata (oltre che nel menù):
+  prima, su telefono, restava raggiungibile solo dalla vista Mappa.
+- Corretto un difetto per cui il nastro di trascinamento di un pin poteva
+  restare acceso sullo schermo anche dopo aver rilasciato il dito, se nel
+  frattempo la mappa si era ridisegnata.
+- Corretto un difetto per cui il visualizzatore di un allegato aperto da
+  una prenotazione poteva finire nascosto dietro la scheda stessa su PC.
+
 ## 9sedecies. Novità di questa versione (v55)
 
 - Corretto un difetto per cui il **benvenuto**, il **tutorial** e il
