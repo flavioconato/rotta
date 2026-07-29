@@ -10,6 +10,7 @@
        color:#F4EEE0;font-family:"Public Sans",system-ui,-apple-system,sans-serif}
   .box{max-width:460px;width:100%}
   h1{font-size:22px;margin:0 0 7px;font-weight:800;letter-spacing:-.02em}
+  h2{font-size:16px;margin:34px 0 7px;font-weight:800;letter-spacing:-.01em}
   p{color:#8CA0AE;line-height:1.55;font-size:14.5px;margin:0 0 20px}
   button{background:linear-gradient(135deg,#F7C873,#F0AC3E);color:#20170A;border:0;border-radius:12px;
          padding:14px 20px;font-size:15px;font-weight:700;cursor:pointer;width:100%;transition:.15s}
@@ -18,6 +19,17 @@
   a:hover{text-decoration:underline}
   pre{background:#141F29;border:1px solid #233240;border-radius:12px;padding:13px;font-size:12px;
       white-space:pre-wrap;color:#8CA0AE;max-height:230px;overflow:auto;margin-top:17px}
+  .bk-empty{color:#8CA0AE;font-size:14px}
+  .bk-row{background:#141F29;border:1px solid #233240;border-radius:12px;padding:13px 14px;margin-bottom:10px}
+  .bk-title{font-weight:800;font-size:14.5px;color:#F4EEE0;margin-bottom:2px}
+  .bk-meta{font-size:12.5px;color:#8CA0AE;margin-bottom:2px}
+  .bk-reason{font-size:12px;color:#5F7480;font-style:italic;margin-bottom:10px}
+  .bk-actions{display:flex;gap:8px}
+  .bk-btn{width:auto;flex:1;padding:9px 10px;font-size:13px;border-radius:9px}
+  .bk-btn.dl{background:#233240;color:#F4EEE0;box-shadow:none}
+  .bk-btn.dl:hover{background:#2B3D4D;transform:none;box-shadow:none}
+  .bk-btn.rs{background:linear-gradient(135deg,#E2685C,#C64335)}
+  .bk-btn.rs.armed{background:linear-gradient(135deg,#C64335,#9A2E23)}
 </style>
 </head>
 <body>
@@ -29,6 +41,12 @@
   <button id="go">Pulisci tutto</button>
   <a href="./index.html">← Torna all'app</a>
   <pre id="log">Pronto.</pre>
+
+  <h2>Backup automatici</h2>
+  <p>Prima di ricaricare un viaggio dal cloud o sovrascriverlo importando un
+     file, Waynder ne tiene da parte le ultime 5 copie. Da qui puoi scaricarle
+     o rimettere in gioco quella giusta se qualcosa è andato perso.</p>
+  <div id="backupList" class="bk-empty">Carico i backup…</div>
 </div>
 <script>
 const log = m => { document.getElementById('log').textContent += '\n' + m; };
@@ -51,6 +69,133 @@ document.getElementById('go').onclick = async () => {
     log('Errore: ' + (e && e.message));
   }
 };
+
+/* ============ backup automatici ============ */
+/* Stessa IndexedDB 'rotta' / store 'kv' di index.html, letta qui in sola
+   lettura (più la scrittura mirata di un ripristino). Nessun onupgradeneeded:
+   se il database o lo store non esistono ancora, semplicemente non c'è
+   nulla da mostrare. */
+function openTripDB(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('rotta');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function kvGet(db, k){
+  return new Promise((res, rej) => {
+    try{
+      const q = db.transaction('kv','readonly').objectStore('kv').get(k);
+      q.onsuccess = () => res(q.result);
+      q.onerror = () => rej(q.error);
+    }catch(e){ rej(e); }
+  });
+}
+function kvSet(db, k, v){
+  return new Promise((res, rej) => {
+    const q = db.transaction('kv','readwrite').objectStore('kv').put(v, k);
+    q.onsuccess = () => res(true);
+    q.onerror = () => rej(q.error);
+  });
+}
+function kvAll(db){
+  return new Promise((res, rej) => {
+    try{
+      const store = db.transaction('kv','readonly').objectStore('kv');
+      const keysReq = store.getAllKeys(), valsReq = store.getAll();
+      let keys, vals;
+      keysReq.onsuccess = () => { keys = keysReq.result; if(vals !== undefined) res({keys, vals}); };
+      valsReq.onsuccess = () => { vals = valsReq.result; if(keys !== undefined) res({keys, vals}); };
+      keysReq.onerror = valsReq.onerror = () => rej(keysReq.error || valsReq.error);
+    }catch(e){ rej(e); }
+  });
+}
+async function touchIndexEntry(db, tripId, title){
+  const idx = (await kvGet(db, 'rotta:index')) || [];
+  const row = idx.find(t => t.id === tripId);
+  if(row){ row.title = title || row.title; row.updatedAt = Date.now(); }
+  else idx.unshift({id: tripId, title: title || 'Il mio viaggio', updatedAt: Date.now()});
+  await kvSet(db, 'rotta:index', idx);
+}
+function counts(s){
+  const places = (s.places||[]).length, exp = (s.expenses||[]).length, book = (s.bookings||[]).length;
+  return places + ' tappe · ' + exp + ' spese · ' + book + ' prenotazioni';
+}
+function fmtWhen(ms){
+  return new Date(ms).toLocaleString('it-IT', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+function slug(s){ return (s||'viaggio').replace(/\W+/g,'-').toLowerCase(); }
+
+async function loadBackups(){
+  const box = document.getElementById('backupList');
+  let db;
+  try{ db = await openTripDB(); }
+  catch(e){ box.textContent = 'Non riesco ad aprire l\'archivio locale.'; return; }
+  let all;
+  try{ all = await kvAll(db); }
+  catch(e){ box.textContent = 'Nessun backup trovato.'; return; }
+  const rows = [];
+  (all.keys||[]).forEach((k, i) => {
+    if(typeof k === 'string' && k.indexOf('rotta:backup:') === 0){
+      const tripId = k.slice('rotta:backup:'.length);
+      (all.vals[i] || []).forEach(entry => rows.push({tripId, ...entry}));
+    }
+  });
+  rows.sort((a, b) => b.at - a.at);
+  if(!rows.length){ box.textContent = 'Nessun backup trovato: non è ancora successo nulla che richiedesse una copia di sicurezza.'; return; }
+  box.className = '';
+  box.innerHTML = rows.map((r, i) => {
+    const title = r.snapshot && r.snapshot.title || 'Il mio viaggio';
+    return '<div class="bk-row">' +
+      '<div class="bk-title">' + title.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])) + '</div>' +
+      '<div class="bk-meta">' + fmtWhen(r.at) + ' · ' + counts(r.snapshot||{}) + '</div>' +
+      '<div class="bk-reason">' + (r.reason||'') + '</div>' +
+      '<div class="bk-actions">' +
+        '<button class="bk-btn dl" data-dl="' + i + '">Scarica .json</button>' +
+        '<button class="bk-btn rs" data-rs="' + i + '">Ripristina</button>' +
+      '</div></div>';
+  }).join('');
+
+  box.querySelectorAll('[data-dl]').forEach(btn => btn.onclick = () => {
+    const r = rows[+btn.dataset.dl];
+    const blob = new Blob([JSON.stringify(r.snapshot, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = slug(r.snapshot && r.snapshot.title) + '-backup-' + r.at + '.json';
+    a.click();
+  });
+  /* niente confirm() nativo: il tasto stesso si arma, un secondo tocco entro
+     pochi secondi conferma davvero la sovrascrittura */
+  box.querySelectorAll('[data-rs]').forEach(btn => {
+    let armed = false, timer = null;
+    btn.onclick = async () => {
+      const r = rows[+btn.dataset.rs];
+      if(!armed){
+        armed = true;
+        btn.textContent = 'Sei sicuro? Tocca di nuovo';
+        btn.classList.add('armed');
+        timer = setTimeout(() => { armed = false; btn.textContent = 'Ripristina'; btn.classList.remove('armed'); }, 4000);
+        return;
+      }
+      clearTimeout(timer);
+      btn.disabled = true;
+      btn.textContent = 'Ripristino…';
+      try{
+        await kvSet(db, 'rotta:trip:' + r.tripId, r.snapshot);
+        await touchIndexEntry(db, r.tripId, r.snapshot && r.snapshot.title);
+        await kvSet(db, 'rotta:active', r.tripId);
+        log('\nRipristinato «' + (r.snapshot && r.snapshot.title || 'viaggio') + '» alla versione del ' + fmtWhen(r.at) + '.');
+        log('Torna all\'app: si aprirà questa versione.');
+        btn.textContent = 'Ripristinato ✓';
+      }catch(e){
+        btn.disabled = false;
+        btn.textContent = 'Ripristina';
+        log('\nErrore nel ripristino: ' + (e && e.message));
+      }
+    };
+  });
+}
+loadBackups();
 </script>
 </body>
 </html>

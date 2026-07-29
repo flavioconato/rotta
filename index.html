@@ -762,22 +762,21 @@ body.picking::after{
   pointer-events:none;white-space:nowrap
 }
 .act.ghost.install{background:linear-gradient(135deg,#289073,#1B7A5E);border-color:#1B7A5E;color:#fff;font-weight:800;box-shadow:0 6px 16px rgba(27,122,94,.26)}
-#updateBar, #syncBar{
+#updateBar{
   position:fixed;z-index:1800;left:50%;transform:translateX(-50%);
   display:flex;align-items:center;gap:10px;white-space:nowrap;
   background:var(--paper);color:var(--ink);border-radius:999px;
   padding:10px 11px 10px 18px;font-size:12.5px;font-weight:600;
-  box-shadow:0 14px 36px rgba(0,0,0,.55)
+  box-shadow:0 14px 36px rgba(0,0,0,.55);
+  bottom:96px
 }
-#updateBar{bottom:96px}
-#syncBar{bottom:150px}
-#updateBar[hidden], #syncBar[hidden]{display:none}
-#updateBar button, #syncBar button{
+#updateBar[hidden]{display:none}
+#updateBar button{
   background:var(--ink);color:#fff;border-radius:999px;
   padding:7px 14px;font-size:12px;font-weight:700
 }
-#updateDismiss, #syncDismiss{padding:6px 10px!important;background:none!important;color:var(--fog)!important}
-#updateDismiss:hover, #syncDismiss:hover{color:var(--ink)!important}
+#updateDismiss{padding:6px 10px!important;background:none!important;color:var(--fog)!important}
+#updateDismiss:hover{color:var(--ink)!important}
 .viewer{
   width:min(1000px,100%);height:min(88dvh,100%);display:flex;flex-direction:column;
   background:var(--paper);border:1px solid var(--ink-3);border-radius:var(--r-lg);overflow:hidden;
@@ -1189,6 +1188,26 @@ body.hide-legs .leg-lab{display:none}
 .pick-tx{flex:1;min-width:0}
 .pick-tx b{display:block;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pick-tx i{display:block;font-style:normal;font-size:11px;color:var(--fog);margin-top:1px}
+/* riquadro dei conflitti veri (mergeTrips): una voce toccata da entrambi i
+   dispositivi, o cancellata da uno e modificata dall'altro. Una riga per
+   conflitto, le due versioni a confronto come due tasti; scelta la propria
+   la riga si spegne. Il rosso resta riservato a "elimina comunque". */
+.conflict-list{display:flex;flex-direction:column;gap:9px;margin:2px 0 4px;max-height:48vh;overflow-y:auto}
+.conflict-row{border:1px solid var(--ink-3);border-radius:14px;padding:10px 11px;background:var(--ink-2);transition:opacity .2s}
+.conflict-row.done{opacity:.5;pointer-events:none}
+.conflict-head{font-size:11px;color:var(--fog);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.conflict-versions{display:flex;flex-direction:column;gap:6px}
+.conflict-ver{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 11px;border-radius:10px;border:1px solid var(--ink-3);background:var(--paper);
+  font-size:13px;text-align:left;width:100%;transition:.15s
+}
+.conflict-ver:hover{border-color:var(--sage-2)}
+.conflict-ver b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.conflict-ver span{flex:none;font-size:11.5px;font-weight:700;color:var(--sage-2)}
+.conflict-ver.danger span{color:#C4272C}
+.conflict-ver.chosen{border-color:var(--sage-2);border-width:2px}
+.conflict-foot{display:flex;justify-content:flex-end;margin-top:14px}
 .who-picks{display:flex;flex-wrap:wrap;gap:5px}
 .who-pick{
   border:1px solid var(--ink-3);border-radius:999px;padding:6px 12px;font-size:12.5px;
@@ -1882,12 +1901,6 @@ body.hide-legs .leg-lab{display:none}
 <div id="infoPop" class="info-pop" hidden></div>
 <div id="actPop" class="act-pop" hidden></div>
 
-<div id="syncBar" hidden>
-  Il viaggio è stato aggiornato dall'altro dispositivo
-  <button id="syncReload">Ricarica</button>
-  <button id="syncDismiss" title="Ignora">✕</button>
-</div>
-
 <div class="veil" id="wxVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true">
     <h2 id="wxTitle">Meteo</h2>
@@ -2090,7 +2103,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v61';
+const APP_VERSION = 'v66';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2133,6 +2146,7 @@ const LEGACY_KEY = 'rotta:v1';
 const INDEX_KEY = 'rotta:index';
 const ACTIVE_KEY = 'rotta:active';
 const tripKey = id => 'rotta:trip:' + id;
+const backupKey = id => 'rotta:backup:' + id;
 let state = null, pickMode = false, editing = null, moving = null, freshPlaceId = null;
 
 /* Sul telefono la tastiera che si apre da sola copre metà della scheda appena
@@ -2166,6 +2180,10 @@ const collapsedExp = new Set();
 const collapsedBook = new Set();
 
 const uid = () => Math.random().toString(36).slice(2,9);
+/* le collezioni "a voce" del viaggio: quelle su cui la fusione tra dispositivi
+   ragiona id per id, con marca temporale (mAt/mBy) e lapide (tombs) quando una
+   voce sparisce. 'bases' resta fuori: non ha ancora un ruolo nella condivisione. */
+const ENTITY_KEYS = ['days','places','expenses','bookings','people'];
 const fresh = () => ({
   id: uid(),
   title:'Il mio viaggio',
@@ -2210,6 +2228,13 @@ map.on('moveend', () => { state.view = {lat:map.getCenter().lat, lng:map.getCent
    dipendono da servizi esterni. Regge decine di MB, quindi foto e PDF delle
    prenotazioni non sono un problema. */
 let t = null, dirty = false, storageOK = null, db = null;
+/* ultimo istantanea (per id, contenuto senza mAt/mBy) delle collezioni a voce,
+   usata da stampChanges() per capire cos'è cambiato dall'ultimo salvataggio.
+   Va riseminata con seedStampBaseline() ogni volta che `state` viene
+   RIMPIAZZATO (apertura di un altro viaggio, ricarica dal cloud, unione con
+   codice, import di file): altrimenti il primo salvataggio dopo il cambio
+   confronterebbe il viaggio nuovo con le voci di quello vecchio. */
+let lastWritten = null;
 
 function openDB(){
   return new Promise((res, rej) => {
@@ -2241,6 +2266,22 @@ function dbDel(k){
   });
 }
 
+/* Rete di sicurezza prima di qualunque operazione che sostituisce lo stato
+   intero di un viaggio (ricarica dal cloud, fusione, import di file su un
+   viaggio già presente): tiene le ultime 5 versioni sotto rotta:backup:<id>.
+   Prende id e snapshot espliciti (non il solito `state` globale) perché il
+   viaggio sovrascritto non è sempre quello aperto in questo momento — un
+   import può sovrascriverne uno diverso, presente solo in IndexedDB. */
+async function backupSnapshot(tripId, snapshot, reason){
+  if(!db || !tripId || !snapshot) return;
+  try{
+    const key = backupKey(tripId);
+    const list = (await dbGet(key)) || [];
+    list.unshift({at: Date.now(), reason, snapshot: JSON.parse(JSON.stringify(snapshot))});
+    await dbSet(key, list.slice(0, 5));
+  }catch(e){ console.warn('backup non riuscito:', e && e.message); }
+}
+
 /* aggiorna (o crea) la voce di un viaggio nell'elenco leggero rotta:index,
    usato dalla sheet "I tuoi viaggi" senza dover caricare ogni viaggio intero */
 async function touchIndex(id, title, updatedAt){
@@ -2266,6 +2307,65 @@ function badge(mode){
   el.className = 'save-state mono ' + cls;
 }
 
+/* voce senza mAt/mBy: serve per confrontare solo il contenuto vero, non le
+   marche temporali (che cambiano appunto perché il contenuto è cambiato). */
+function stripStamp(e){
+  const {mAt, mBy, ...rest} = e;
+  return rest;
+}
+/* istantanea leggera delle collezioni a voce: {entità: {id: JSON-contenuto}}.
+   Usata come "com'era l'ultima volta che ho salvato" per stampChanges(). */
+function snapshotEntities(s){
+  const out = {};
+  ENTITY_KEYS.forEach(key => {
+    const m = {};
+    (s[key] || []).forEach(e => { m[e.id] = JSON.stringify(stripStamp(e)); });
+    out[key] = m;
+  });
+  return out;
+}
+/* Da chiamare subito dopo ogni RIMPIAZZO intero di `state` (non dopo una
+   modifica normale): allinea il punto di partenza del diff al viaggio appena
+   caricato, così il salvataggio successivo marca solo ciò che l'utente
+   modifica davvero da qui in avanti, non l'intero viaggio appena aperto. */
+function seedStampBaseline(){
+  lastWritten = snapshotEntities(state);
+}
+/* Marca ogni voce cambiata dall'ultimo salvataggio con mAt/mBy, e registra in
+   state.tombs le voci sparite. Un solo punto d'intercettazione (qui, dentro
+   write()) invece di instrumentare a mano ogni singolo posto del file che
+   crea/modifica/elimina una tappa, una spesa, una prenotazione... che sono
+   decine e sparsi ovunque: qui basta confrontare con l'ultima istantanea nota. */
+function stampChanges(){
+  if(!state.tombs) state.tombs = [];
+  const now = Date.now();
+  ENTITY_KEYS.forEach(key => {
+    const prev = (lastWritten && lastWritten[key]) || {};
+    const arr = state[key] || [];
+    const seen = new Set();
+    arr.forEach(e => {
+      seen.add(e.id);
+      const cur = JSON.stringify(stripStamp(e));
+      const prevCur = prev[e.id];
+      if(prevCur === undefined){
+        /* non c'era nell'ultima istantanea: o è nuova adesso, o è una voce
+           legacy che normalize() ha già marcato con mAt:0 al primo avvio con
+           questa versione — in tal caso non è "appena modificata" */
+        if(e.mAt === undefined){ e.mAt = now; e.mBy = DEVICE_ID; }
+      } else if(prevCur !== cur){
+        e.mAt = now; e.mBy = DEVICE_ID;
+      }
+    });
+    Object.keys(prev).forEach(id => {
+      if(seen.has(id)) return;
+      const tomb = state.tombs.find(x => x.id === id);
+      if(tomb) tomb.at = now;
+      else state.tombs.push({id, at: now});
+    });
+  });
+  lastWritten = snapshotEntities(state);
+}
+
 function save(){
   dirty = true;
   badge(storageOK === false ? 'off' : 'saving');
@@ -2275,6 +2375,7 @@ function save(){
 
 async function write(){
   if(!db){ storageOK = false; badge('off'); return; }
+  stampChanges();
   try{
     /* structuredClone implicito: salvo l'oggetto, non una stringa */
     await dbSet(tripKey(state.id), JSON.parse(JSON.stringify(state)));
@@ -2326,6 +2427,7 @@ async function boot(){
     }
   }
   normalize();
+  seedStampBaseline();
   document.getElementById('tripTitle').value = state.title || '';
   if(state.view) map.setView([state.view.lat, state.view.lng], state.view.z);
   badge(storageOK ? 'saved' : 'unsaved');
@@ -2347,6 +2449,7 @@ async function switchTrip(id, opts){
   if(!loaded || !loaded.days) return;
   state = loaded;
   normalize();
+  seedStampBaseline();
   await dbSet(ACTIVE_KEY, id);
   document.getElementById('tripTitle').value = state.title || '';
   if(state.view) map.setView([state.view.lat, state.view.lng], state.view.z);
@@ -2363,6 +2466,7 @@ async function newTrip(opts){
   opts = opts || {};
   const t = fresh();
   state = t;
+  seedStampBaseline();
   tripIndex.unshift({id:t.id, title:t.title, updatedAt:Date.now()});
   if(db){
     await dbSet(tripKey(t.id), t);
@@ -2434,8 +2538,13 @@ document.getElementById('btnNewTrip').onclick = () => newTrip();
 document.getElementById('tripsVeil').onclick = e => { if(e.target === document.getElementById('tripsVeil')) closeTripsSheet(); };
 document.getElementById('btnShareTrip').onclick = shareTrip;
 document.getElementById('btnJoinTrip').onclick = () => {
-  const code = prompt('Incolla qui il codice di condivisione ricevuto:');
-  if(code) joinTrip(code);
+  promptCard({
+    t: 'Unisciti con un codice',
+    p: ['Incolla qui il codice di condivisione che ti ha comunicato il tuo compagno di viaggio.'],
+    placeholder: 'Codice di condivisione',
+    yes: 'Unisciti',
+    onYes: code => joinTrip(code)
+  });
 };
 
 /* ============ sincronizzazione condivisa (Firebase) ============ */
@@ -2460,7 +2569,7 @@ const DEVICE_ID = (() => {
   return d;
 })();
 
-let fbDb = null, fbStorage = null, fbReady = false, unsubShare = null, pendingRemote = null;
+let fbDb = null, fbStorage = null, fbReady = false, unsubShare = null;
 
 async function initSync(){
   if(!FIREBASE_CONFIG || typeof firebase === 'undefined') return;
@@ -2553,16 +2662,43 @@ function cloudPayload(tripState){
   return {...tripState, places, bookings};
 }
 
+/* Una transazione, non un .set() cieco: se nel frattempo l'altro dispositivo
+   ha già scritto la sua versione, la fondo con la mia (mergeTrips, sulla
+   forma cloud: funziona identica a quella locale, vedi il commento su
+   mergeTrips) invece di farla sparire sotto la mia. Il salvataggio locale
+   (write() su IndexedDB) resta comunque la fonte di verità e non aspetta
+   mai questa funzione: questa gira in background, può fallire, e se fallisce
+   il viaggio in locale non ne risente. */
 async function pushToCloud(tripState){
   if(!fbReady || !tripState.shareId || !navigator.onLine) return;
   try{
     await cloudizeAttachments(tripState);
     await dbSet(tripKey(tripState.id), JSON.parse(JSON.stringify(tripState))); // gli URL calcolati restano anche in locale
-    await fbDb.collection('trips').doc(tripState.shareId).set({
-      ...cloudPayload(tripState),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      deviceId: DEVICE_ID
+    const ref = fbDb.collection('trips').doc(tripState.shareId);
+    const mine = cloudPayload(tripState);
+    let foreignMerge = null;
+    await fbDb.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(snap.exists && snap.data().deviceId && snap.data().deviceId !== DEVICE_ID){
+        const {merged} = mergeTrips(mine, snap.data());
+        foreignMerge = merged;
+        tx.set(ref, {...merged, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), deviceId: DEVICE_ID});
+        return;
+      }
+      tx.set(ref, {...mine, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), deviceId: DEVICE_ID});
     });
+    /* l'altro dispositivo aveva scritto nel frattempo: quello che ho appena
+       spedito al cloud è già fuso con le sue voci. Lo adotto anche in locale
+       con lo stesso percorso (silenzioso, o conflictCard se serve davvero)
+       di un aggiornamento arrivato dal vivo — altrimenti resterei indietro
+       finché lui non salva di nuovo qualcos'altro. */
+    if(foreignMerge && state.id === tripState.id && state.shareId === tripState.shareId){
+      const incoming = {...foreignMerge};
+      delete incoming.updatedAt; delete incoming.deviceId;
+      incoming.id = state.id;
+      await localizeAttachments(incoming);
+      await handleIncomingShared(incoming);
+    }
   }catch(e){ console.warn('sincronizzazione non riuscita:', e && e.message); }
 }
 
@@ -2586,42 +2722,329 @@ async function localizeAttachments(tripState){
   await Promise.all(jobs);
 }
 
-function showSyncBar(){ const b = document.getElementById('syncBar'); if(b) b.hidden = false; }
-function hideSyncBar(){ const b = document.getElementById('syncBar'); if(b) b.hidden = true; }
+/* ============ fusione tra dispositivi ============ */
+/* mergeTrips(mine, theirs) -> {merged, conflicts[]}
+   Pura: non legge né scrive `state`, IndexedDB o Firestore — si può provare
+   da sola. mine/theirs sono due trip completi (stessa forma di `state`), o
+   entrambi in forma locale (allegati base64) o entrambi in forma cloud (URL):
+   mergeTrips non guarda dentro i campi allegato, tratta ogni voce come un
+   blocco opaco identificato dal suo id, quindi funziona identica nei due casi.
+   Chi chiama con dati dal cloud deve però prima passarli da
+   localizeAttachments se il risultato finisce visualizzato in `state`.
 
-function subscribeShared(shareId){
-  if(unsubShare){ unsubShare(); unsubShare = null; }
-  hideSyncBar(); pendingRemote = null;
-  if(!fbReady || !shareId) return;
-  unsubShare = fbDb.collection('trips').doc(shareId).onSnapshot(snap => {
-    if(!snap.exists || snap.metadata.hasPendingWrites) return;
-    const data = snap.data();
-    if(data.deviceId === DEVICE_ID) return; // è il proprio salvataggio che torna indietro
-    if(!data.updatedAt || data.updatedAt.toMillis() <= (state.cloudAt || 0)) return;
-    pendingRemote = data;
-    showSyncBar();
+   Baseline: mine.cloudAt è l'ultimo istante in cui QUESTO dispositivo ha
+   visto uno stato coerente col cloud. Una voce si considera "modificata da
+   me" se il suo mAt supera quella soglia, "modificata da loro" con lo stesso
+   confronto sull'mAt della voce corrispondente in theirs. Se nessuna delle
+   due la supera ma il contenuto differisce comunque (es. dopo una
+   normalizzazione), è rumore: si tiene la mia, senza conflitto.
+
+   Regole per voce, per ogni entità di ENTITY_KEYS, per id — vedi
+   mergeEntity() più sotto per il dettaglio. In breve:
+   - solo da una parte, mai toccata dall'altra -> tenuta
+   - solo da una parte, l'altra l'ha cancellata DOPO l'ultima modifica qui
+     -> scartata (rispetta la cancellazione)
+   - solo da una parte, ma modificata QUI dopo la cancellazione registrata
+     là -> conflitto 'delete-vs-modify', tenuta di default (una voce di
+     troppo è meglio di un pezzo di viaggio perso)
+   - in entrambe, identiche -> tenuta, nessun conflitto
+   - in entrambe, modificata da una sola parte -> vince chi ha modificato
+   - in entrambe, modificata da tutte e due -> conflitto 'both-modified',
+     placeholder = la mia (l'utente sceglie dopo dall'interfaccia)
+
+   Ordine: la spina dorsale è l'array di mine (mantiene l'ordine e le voci
+   esclusive di mine dove già stanno). Le voci nuove-solo-di-theirs si
+   inseriscono subito dopo l'ultima ancora comune incontrata scorrendo
+   theirs nello stesso ordine, o in testa se non ce n'è ancora una: così
+   "lei ha aggiunto 3 tappe dopo Edimburgo" restano dopo Edimburgo.
+
+   Dopo la risoluzione: puliti i riferimenti incrociati (expenses.byIds/
+   forIds sulle people superstiti, expenses.bookingId sulle bookings
+   superstiti, places.dayId a null — Brainstorming — se il giorno non c'è
+   più), e tolte le spese rimaste senza nessuno da una parte o dall'altra
+   (stessa regola già in vigore in dropPerson). */
+function mergeTrips(mine, theirs){
+  const baseline = mine.cloudAt || 0;
+  const conflicts = [];
+  const merged = {...mine};
+
+  ENTITY_KEYS.forEach(key => {
+    merged[key] = mergeEntity(
+      key, mine[key] || [], theirs[key] || [],
+      mine.tombs || [], theirs.tombs || [], baseline, conflicts
+    );
   });
+  merged.tombs = mergeTombs(mine.tombs || [], theirs.tombs || []);
+  cleanupCrossRefs(merged);
+
+  return {merged, conflicts};
 }
 
-document.getElementById('syncReload').onclick = async () => {
-  if(!pendingRemote){ hideSyncBar(); return; }
-  hideSyncBar();
-  const incoming = {...pendingRemote};
-  delete incoming.updatedAt; delete incoming.deviceId;
-  incoming.id = state.id;
-  incoming.cloudAt = Date.now();
-  await localizeAttachments(incoming);
-  state = incoming;
+function mergeEntity(entity, mineArr, theirsArr, mineTombs, theirsTombs, baseline, conflicts){
+  const mineById = new Map(mineArr.map(e => [e.id, e]));
+  const theirsById = new Map(theirsArr.map(e => [e.id, e]));
+  const mineTombById = new Map(mineTombs.map(t => [t.id, t]));
+  const theirsTombById = new Map(theirsTombs.map(t => [t.id, t]));
+  const resolved = new Map(); // id -> voce finale, o undefined se scartata
+  const allIds = new Set([...mineById.keys(), ...theirsById.keys()]);
+
+  /* resolved tiene sempre una COPIA (shallow clone), mai il riferimento
+     originale di mine/theirs: mergeTrips deve restare pura, e più avanti
+     cleanupCrossRefs() e la risoluzione manuale dei conflitti scrivono nelle
+     voci del risultato (p.dayId, e.byIds...) senza per questo toccare lo
+     stato di chi ha chiamato la funzione. */
+  allIds.forEach(id => {
+    const m = mineById.get(id), th = theirsById.get(id);
+    if(m && th){
+      if(JSON.stringify(stripStamp(m)) === JSON.stringify(stripStamp(th))){
+        resolved.set(id, {...m});
+        return;
+      }
+      const mineChanged = (m.mAt || 0) > baseline;
+      const theirsChanged = (th.mAt || 0) > baseline;
+      if(mineChanged && !theirsChanged){ resolved.set(id, {...m}); return; }
+      if(theirsChanged && !mineChanged){ resolved.set(id, {...th}); return; }
+      conflicts.push({entity, id, kind:'both-modified', mine:m, theirs:th});
+      resolved.set(id, {...m}); // placeholder finché l'utente non sceglie
+      return;
+    }
+    if(m && !th){
+      const tomb = theirsTombById.get(id);
+      if(!tomb){ resolved.set(id, {...m}); return; }
+      if(tomb.at >= (m.mAt || 0)){ resolved.set(id, undefined); return; }
+      conflicts.push({entity, id, kind:'delete-vs-modify', mine:m, theirs:null});
+      resolved.set(id, {...m});
+      return;
+    }
+    // !m && th
+    const tomb = mineTombById.get(id);
+    if(!tomb){ resolved.set(id, {...th}); return; }
+    if(tomb.at >= (th.mAt || 0)){ resolved.set(id, undefined); return; }
+    conflicts.push({entity, id, kind:'delete-vs-modify', mine:null, theirs:th});
+    resolved.set(id, {...th});
+  });
+
+  return orderMerged(mineArr, theirsArr, resolved);
+}
+
+function orderMerged(mineArr, theirsArr, resolved){
+  const out = [];
+  const placed = new Set();
+  mineArr.forEach(e => {
+    if(!resolved.has(e.id)) return;
+    const v = resolved.get(e.id);
+    if(v === undefined) return;
+    out.push(v);
+    placed.add(e.id);
+  });
+  let anchorPos = -1;
+  theirsArr.forEach(e => {
+    if(placed.has(e.id)){
+      anchorPos = out.indexOf(resolved.get(e.id));
+      return;
+    }
+    if(!resolved.has(e.id)) return;
+    const v = resolved.get(e.id);
+    if(v === undefined) return;
+    out.splice(anchorPos + 1, 0, v);
+    anchorPos++;
+    placed.add(e.id);
+  });
+  return out;
+}
+
+function mergeTombs(mineTombs, theirsTombs){
+  const byId = new Map();
+  [...mineTombs, ...theirsTombs].forEach(t => {
+    const cur = byId.get(t.id);
+    if(!cur || t.at > cur.at) byId.set(t.id, t);
+  });
+  return [...byId.values()];
+}
+
+function cleanupCrossRefs(merged){
+  const dayIds = new Set((merged.days||[]).map(d => d.id));
+  const peopleIds = new Set((merged.people||[]).map(p => p.id));
+  const bookingIds = new Set((merged.bookings||[]).map(b => b.id));
+  (merged.places||[]).forEach(p => { if(p.dayId && !dayIds.has(p.dayId)) p.dayId = null; });
+  (merged.expenses||[]).forEach(e => {
+    e.byIds = (e.byIds||[]).filter(id => peopleIds.has(id));
+    e.forIds = (e.forIds||[]).filter(id => peopleIds.has(id));
+    if(e.bookingId && !bookingIds.has(e.bookingId)) e.bookingId = null;
+  });
+  /* una spesa senza nessuno da una parte o dall'altra non vuol dire più
+     niente: stessa regola già in vigore in dropPerson() */
+  merged.expenses = (merged.expenses||[]).filter(e => (e.forIds||[]).length && (e.byIds||[]).length);
+}
+
+/* ============ applicazione delle fusioni in arrivo ============ */
+const ENTITY_LABEL = {days:'Giorno', places:'Tappa', expenses:'Spesa', bookings:'Prenotazione', people:'Persona'};
+const ENTITY_PLURAL = {
+  days:['giorno','giorni'], places:['tappa','tappe'], expenses:['spesa','spese'],
+  bookings:['prenotazione','prenotazioni'], people:['persona','persone']
+};
+function conflictEntryLabel(entity, entry){
+  if(!entry) return null;
+  return entry.name || entry.title || entry.desc || ENTITY_LABEL[entity] || '—';
+}
+function conflictChoiceLabel(val, isMine, kind){
+  if(val === null) return 'Elimina comunque';
+  return kind === 'both-modified' ? (isMine ? 'Tengo la mia' : 'Tengo la sua')
+                                   : (isMine ? 'Tieni la mia modifica' : 'Tieni la sua modifica');
+}
+function conflictKey(c){ return c.entity + '|' + c.id; }
+
+/* Confronta il viaggio com'era prima della fusione con quello dopo, per un
+   avviso tipo "3 tappe, 1 spesa" invece di un generico "aggiornato". */
+function summarizeMerge(before, merged){
+  const parts = [];
+  ENTITY_KEYS.forEach(key => {
+    const beforeById = new Map((before[key]||[]).map(e => [e.id, JSON.stringify(stripStamp(e))]));
+    let changed = 0;
+    (merged[key]||[]).forEach(e => {
+      const prevCur = beforeById.get(e.id);
+      if(prevCur === undefined || prevCur !== JSON.stringify(stripStamp(e))) changed++;
+    });
+    if(changed){
+      const [sing, plur] = ENTITY_PLURAL[key];
+      parts.push(changed + ' ' + (changed === 1 ? sing : plur));
+    }
+  });
+  return parts.join(', ');
+}
+
+/* Applica un risultato di mergeTrips già senza conflitti (o coi conflitti già
+   risolti): salva, ridisegna, avvisa con un toast se c'è qualcosa da dire. */
+async function applyMerged(merged, summary){
+  state = merged;
   normalize();
+  seedStampBaseline();
   await dbSet(tripKey(state.id), state);
   await touchIndex(state.id, state.title, Date.now());
   document.getElementById('tripTitle').value = state.title || '';
   render();
   if(view === 'cost') drawCosts();
   if(view === 'book') drawBooks();
-  pendingRemote = null;
-};
-document.getElementById('syncDismiss').onclick = hideSyncBar;
+  if(summary) toast('Uniti gli aggiornamenti dall\'altro dispositivo: ' + summary);
+}
+
+function applyConflictResolutions(merged, conflicts, resolutions){
+  conflicts.forEach(c => {
+    const choice = resolutions.get(conflictKey(c));
+    const chosen = choice === 'theirs' ? c.theirs : c.mine;
+    const arr = merged[c.entity];
+    const idx = arr.findIndex(e => e.id === c.id);
+    if(chosen === null){
+      if(idx !== -1) arr.splice(idx, 1);
+    } else if(idx !== -1){
+      arr[idx] = {...chosen};
+    } else {
+      arr.push({...chosen});
+    }
+  });
+  cleanupCrossRefs(merged);
+  return merged;
+}
+
+/* Riquadro dei conflitti veri: una riga per conflitto, le due versioni a
+   confronto come due tasti. Scelta la propria, la riga si spegne; "decidi tu
+   per tutte" chiude quelle rimaste aperte scegliendo la più recente — per una
+   voce cancellata-vs-modificata la modifica è sempre più recente della
+   lapide (altrimenti non sarebbe un conflitto: vedi mergeEntity). */
+function conflictCard(conflicts, onResolved){
+  if(tourRunning) return;
+  const resolutions = new Map();
+  const veil = document.createElement('div');
+  veil.className = 'tour-veil';
+  const card = document.createElement('div');
+  card.className = 'tour-card ask';
+  const rowHtml = c => {
+    const mineLabel = c.mine === null ? '(eliminata da te)' : esc(conflictEntryLabel(c.entity, c.mine));
+    const theirsLabel = c.theirs === null ? '(eliminata dall\'altro dispositivo)' : esc(conflictEntryLabel(c.entity, c.theirs));
+    return '<div class="conflict-row" data-k="' + esc(conflictKey(c)) + '">' +
+      '<div class="conflict-head">' + (ENTITY_LABEL[c.entity] || c.entity) + '</div>' +
+      '<div class="conflict-versions">' +
+        '<button class="conflict-ver' + (c.mine === null ? ' danger' : '') + '" type="button" data-side="mine"><b>' + mineLabel + '</b><span>' + esc(conflictChoiceLabel(c.mine, true, c.kind)) + '</span></button>' +
+        '<button class="conflict-ver' + (c.theirs === null ? ' danger' : '') + '" type="button" data-side="theirs"><b>' + theirsLabel + '</b><span>' + esc(conflictChoiceLabel(c.theirs, false, c.kind)) + '</span></button>' +
+      '</div></div>';
+  };
+  card.innerHTML =
+    '<div class="tour-top"><span class="tour-ic" style="--tc:linear-gradient(135deg,#3D5666,#22303A);--tfg:#fff">' +
+      cloneTabIcon('book', '') + '</span><h3>Qualcosa è cambiato da entrambe le parti</h3></div>' +
+    '<p>' + conflicts.length + (conflicts.length === 1 ? ' voce è stata toccata' : ' voci sono state toccate') +
+      ' sia qui sia sull\'altro dispositivo. Le tue non si perdono: scegli quale versione tenere per ciascuna, oppure lascia decidere la più recente.</p>' +
+    '<div class="conflict-list">' + conflicts.map(rowHtml).join('') + '</div>' +
+    '<div class="conflict-foot"><button class="tour-no" type="button" id="conflictAll">Decidi tu per tutte</button></div>';
+  document.body.append(veil, card);
+  const w = card.offsetWidth, ch = card.offsetHeight;
+  card.style.left = Math.round((window.innerWidth - w) / 2) + 'px';
+  card.style.top = Math.round(Math.max(16, (window.innerHeight - ch) / 2 - 20)) + 'px';
+  veil.classList.add('show');
+
+  const finish = () => {
+    veil.classList.remove('show');
+    card.style.animation = 'none';
+    card.style.transition = 'opacity .24s ease,transform .24s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(10px) scale(.97)';
+    setTimeout(() => { veil.remove(); card.remove(); }, 320);
+    setTimeout(() => onResolved(resolutions), 240);
+  };
+  conflicts.forEach(c => {
+    const row = card.querySelector('[data-k="' + conflictKey(c) + '"]');
+    row.querySelectorAll('.conflict-ver').forEach(btn => btn.onclick = () => {
+      resolutions.set(conflictKey(c), btn.dataset.side);
+      row.classList.add('done');
+      row.querySelectorAll('.conflict-ver').forEach(b => b.classList.toggle('chosen', b === btn));
+      if(resolutions.size >= conflicts.length) finish();
+    });
+  });
+  card.querySelector('#conflictAll').onclick = () => {
+    conflicts.forEach(c => {
+      if(resolutions.has(conflictKey(c))) return;
+      const side = c.kind === 'delete-vs-modify'
+        ? (c.mine === null ? 'theirs' : 'mine')
+        : ((c.mine.mAt||0) >= (c.theirs.mAt||0) ? 'mine' : 'theirs');
+      resolutions.set(conflictKey(c), side);
+    });
+    finish();
+  };
+}
+
+/* Un aggiornamento condiviso è arrivato dal cloud: si fonde sempre, non si
+   sovrascrive mai in silenzio. Senza conflitti veri va da sé con un toast;
+   con conflitti veri (la stessa voce toccata da entrambi, o cancellata da
+   uno e modificata dall'altro) si chiede con conflictCard. */
+async function handleIncomingShared(incoming){
+  await backupSnapshot(state.id, state, 'Fusione con l\'altro dispositivo');
+  const before = state;
+  const {merged, conflicts} = mergeTrips(state, incoming);
+  merged.cloudAt = Date.now();
+  if(!conflicts.length){
+    await applyMerged(merged, summarizeMerge(before, merged));
+    return;
+  }
+  conflictCard(conflicts, async resolutions => {
+    applyConflictResolutions(merged, conflicts, resolutions);
+    await applyMerged(merged, summarizeMerge(before, merged));
+  });
+}
+
+function subscribeShared(shareId){
+  if(unsubShare){ unsubShare(); unsubShare = null; }
+  if(!fbReady || !shareId) return;
+  unsubShare = fbDb.collection('trips').doc(shareId).onSnapshot(async snap => {
+    if(!snap.exists || snap.metadata.hasPendingWrites) return;
+    const data = snap.data();
+    if(data.deviceId === DEVICE_ID) return; // è il proprio salvataggio che torna indietro
+    if(!data.updatedAt || data.updatedAt.toMillis() <= (state.cloudAt || 0)) return;
+    const incoming = {...data};
+    delete incoming.updatedAt; delete incoming.deviceId;
+    incoming.id = state.id;
+    await localizeAttachments(incoming);
+    await handleIncomingShared(incoming);
+  });
+}
 
 async function shareTrip(){
   if(!fbReady){ noteCard('Condivisione non disponibile', 'Su questa copia dell\'app la condivisione tra dispositivi non è configurata.'); return; }
@@ -2630,7 +3053,10 @@ async function shareTrip(){
     await write();
   }
   subscribeShared(state.shareId);
-  prompt('Comunica questo codice alla tua compagna (lo inserirà con "Unisciti con un codice"):', state.shareId);
+  noteCard('Condividi questo viaggio', [
+    'Comunica questo codice alla tua compagna di viaggio (a voce, in chat…): lo inserirà con "Unisciti con un codice".',
+    '<b>' + esc(state.shareId) + '</b>'
+  ]);
 }
 
 async function joinTrip(code){
@@ -2647,6 +3073,7 @@ async function joinTrip(code){
   await localizeAttachments(data);
   state = data;
   normalize();
+  seedStampBaseline();
   tripIndex.unshift({id:state.id, title:state.title, updatedAt:Date.now()});
   await dbSet(tripKey(state.id), state);
   await dbSet(INDEX_KEY, tripIndex);
@@ -5085,6 +5512,11 @@ function normalize(){
   if(!state.bookings) state.bookings = [];
   if(!state.bases) state.bases = [];
   if(!state.currency) state.currency = '€';
+  if(!state.tombs) state.tombs = [];
+  /* le voci che esistevano già prima di questa versione non hanno mAt: vanno
+     trattate come "da sempre", non come "appena modificate", altrimenti al
+     primo avvio con la fusione tutto il viaggio sembrerebbe un conflitto */
+  ENTITY_KEYS.forEach(key => (state[key] || []).forEach(e => { if(e.mAt === undefined) e.mAt = 0; }));
   /* "pagata da" era una persona sola: ora è un elenco (un conto può essere
      stato diviso alla cassa). Le spese vecchie diventano un elenco di uno. */
   state.expenses.forEach(e => {
@@ -6683,7 +7115,13 @@ document.getElementById('file').onchange = e => {
           t: 'Sovrascrivo il viaggio?',
           p: ['Questo file è un salvataggio di <b>' + esc(title) + '</b>, che è già nell\'elenco. Aprendolo, il contenuto del file prende il posto di quello che hai adesso.'],
           no: 'Annulla', yes: 'Sovrascrivi',
-          onYes: () => applyImport(j)
+          onYes: async () => {
+            /* il viaggio sovrascritto (j.id) non è detto sia quello aperto ora:
+               la vecchia copia va letta da IndexedDB, non da `state` */
+            const old = await dbGet(tripKey(j.id));
+            await backupSnapshot(j.id, old, 'Import da file (sovrascrittura)');
+            applyImport(j);
+          }
         });
         return;
       }
@@ -6698,6 +7136,7 @@ document.getElementById('file').onchange = e => {
       if(!j.id) j.id = uid();
       state = j;
       normalize();
+      seedStampBaseline();
       if(db){
         await dbSet(tripKey(state.id), state);
         await touchIndex(state.id, state.title, Date.now());
@@ -7244,6 +7683,50 @@ function pickCard(o){
   card.querySelector('.tour-no').onclick = no;
   card.querySelectorAll('.pick-item').forEach(b =>
     b.onclick = () => { close(); const i = +b.dataset.i; setTimeout(() => o.onPick(o.items[i].value), 240); });
+  veil.addEventListener('click', ev => { if(ev.target === veil) no(); });
+}
+
+/* Riquadro con un campo di testo: prende il posto di prompt(). */
+function promptCard(o){
+  if(tourRunning) return;
+  const veil = document.createElement('div');
+  veil.className = 'tour-veil';
+  const card = document.createElement('div');
+  card.className = 'tour-card ask';
+  card.innerHTML =
+    '<div class="tour-top"><span class="tour-ic" style="--tc:linear-gradient(135deg,#3D5666,#22303A);--tfg:#fff">' +
+      cloneTabIcon(o.ic || 'map', '') + '</span><h3>' + o.t + '</h3></div>' +
+    (o.p || []).map(x => '<p>' + x + '</p>').join('') +
+    '<input class="field" id="promptCardInput" placeholder="' + esc(o.placeholder || '') + '" autocomplete="off" style="width:100%;box-sizing:border-box;margin:4px 0 2px">' +
+    '<div class="tour-foot">' +
+      '<button class="tour-no" type="button">' + (o.no || 'Annulla') + '</button>' +
+      '<button class="tour-next" type="button">' + (o.yes || 'Conferma') + '</button>' +
+    '</div>';
+  document.body.append(veil, card);
+  const w = card.offsetWidth, ch = card.offsetHeight;
+  card.style.left = Math.round((window.innerWidth - w) / 2) + 'px';
+  card.style.top = Math.round(Math.max(16, (window.innerHeight - ch) / 2 - 20)) + 'px';
+  veil.classList.add('show');
+  const input = card.querySelector('#promptCardInput');
+  autoFocus(input);
+  const close = () => {
+    veil.classList.remove('show');
+    card.style.animation = 'none';
+    card.style.transition = 'opacity .24s ease,transform .24s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(10px) scale(.97)';
+    setTimeout(() => { veil.remove(); card.remove(); }, 320);
+  };
+  const no = () => { close(); if(o.onNo) o.onNo(); };
+  const yes = () => {
+    const v = input.value.trim();
+    if(!v) return;
+    close();
+    setTimeout(() => o.onYes(v), 240);
+  };
+  card.querySelector('.tour-no').onclick = no;
+  card.querySelector('.tour-next').onclick = yes;
+  input.onkeydown = e => { if(e.key === 'Enter') yes(); };
   veil.addEventListener('click', ev => { if(ev.target === veil) no(); });
 }
 

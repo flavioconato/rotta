@@ -171,6 +171,71 @@ Così le tappe di un giorno restano solo quelle effettive — bar, musei,
 sentieri — senza dover ripetere "Edimburgo" come partenza e arrivo di
 ogni singola giornata.
 
+## 9duoetvicies. Novità di questa versione (v66)
+
+- Ultimo tassello, tutto sotto il cofano: se due dispositivi salvano sul
+  cloud quasi nello stesso istante, prima uno dei due poteva sparire sotto
+  l'altro. Ora il salvataggio condiviso passa da una transazione che, se
+  trova che l'altro ha scritto nel frattempo, fonde le due versioni invece
+  di sovrascrivere — e se qualcosa di suo finisce dentro alla fusione, torna
+  anche sul tuo schermo (silenziosamente, o con un conflitto vero se
+  serve). Il salvataggio in locale resta com'era: immediato, non aspetta
+  mai la rete.
+
+## 9semeletvicies. Novità di questa versione (v65)
+
+- **La condivisione tra due dispositivi ora fonde davvero, non sovrascrive
+  più.** Quando arriva un aggiornamento dall'altro dispositivo: se non ci
+  sono voci toccate da entrambe le parti, si unisce da solo — compare solo
+  un avviso in basso tipo "Uniti gli aggiornamenti dall'altro dispositivo: 3
+  tappe, 1 spesa", senza bisogno di premere nulla. Le tue tappe non si
+  perdono più cancellando quelle di lei, e viceversa.
+- Solo se la **stessa** tappa, giorno, spesa, prenotazione o partecipante è
+  stato toccato da entrambi i dispositivi (o cancellato da uno e modificato
+  dall'altro) compare un riquadro coi conflitti veri, uno per uno, con le
+  due versioni a confronto: scegli quale tenere per ciascuno, oppure
+  "decidi tu per tutte" (tiene la versione più recente). Non si perde mai
+  nulla in automatico: una cancellazione contesa resta di default,
+  eliminarla per sempre è sempre una scelta esplicita col tasto rosso.
+  Prima di ogni fusione arrivata dal cloud, come già per "Ricarica" e
+  l'import, viene tenuto un backup automatico (vedi `ripristino.html`).
+  Il vecchio pulsante "Ricarica" è sparito: non serve più.
+- **Unisciti con un codice** ora apre un riquadro con un campo di testo,
+  invece del popup grigio del browser.
+
+## 9vicies. Novità di questa versione (v64)
+
+- Ancora lavoro sotto il cofano: il motore che fonde due copie dello stesso
+  viaggio voce per voce (invece di far vincere sempre l'ultimo che salva)
+  è pronto e testato — sette casi automatici che coprono aggiunte
+  incrociate, la stessa tappa modificata da entrambi, una cancellata da un
+  lato e toccata dall'altro, un giorno eliminato con tappe dentro, un
+  partecipante rimosso con spese che lo citavano. Non è ancora collegato al
+  pulsante "Ricarica": per ora vive solo internamente, la prossima versione
+  lo mette davvero al lavoro con un'interfaccia per i conflitti veri.
+  (`test-merge.js` nella cartella del progetto, si lancia con `node
+  test-merge.js`, nessuna installazione richiesta.)
+
+## 9undevicies. Novità di questa versione (v63)
+
+- Sotto il cofano, ogni tappa/giorno/spesa/prenotazione/partecipante porta ora
+  una marca temporale di quando è stata toccata l'ultima volta e da quale
+  dispositivo, più un registro di chi è stato cancellato. Non cambia nulla
+  che si vede: è la base su cui poggia la prossima novità, la fusione vera
+  tra due dispositivi che lavorano insieme senza che nessuno perda niente.
+
+## 9duodevicies. Novità di questa versione (v62)
+
+- Prima passo verso la condivisione senza rischi tra due dispositivi: **rete di
+  sicurezza**. D'ora in poi, prima di ricaricare un viaggio dal cloud o di
+  sovrascriverlo importando un file, Waynder ne mette da parte le ultime 5
+  versioni. Se qualcuno preme il tasto sbagliato al momento sbagliato, nulla
+  va perso per sempre.
+- `ripristino.html` (raggiungibile anche solo incollando l'indirizzo con
+  `/ripristino.html` in fondo) ha ora, sotto la pulizia della cache, l'elenco
+  di questi backup: data, titolo e «12 tappe · 8 spese · 3 prenotazioni» per
+  ciascuno, con **Scarica .json** e **Ripristina** su ogni riga.
+
 ## 9septendecies. Novità di questa versione (v61)
 
 - Tutti gli avvisi e le conferme del browser (i riquadri grigi di sistema,
