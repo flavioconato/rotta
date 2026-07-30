@@ -2116,7 +2116,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v71';
+const APP_VERSION = 'v72';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -4284,6 +4284,44 @@ document.getElementById('emptyInspVeil').addEventListener('click', e => {
 });
 
 /* ============ percorsi su strada ============ */
+/* Il server demo OSRM ha solo il profilo auto. Per i tratti a piedi uso Valhalla
+   (istanza pubblica di OpenStreetMap, senza chiave): conosce sentieri, scalinate e
+   vialetti dei parchi — su Arthur's Seat o Calton Hill il tracciato cambia del tutto.
+   walkway_factor sotto 1 rende i percorsi pedonali più appetibili dei marciapiedi
+   lungo le strade grandi: non è un "percorso turistico", ma ci somiglia. */
+const footCache = new Map();
+function decodePoly6(s){
+  let i=0, lat=0, lng=0; const out=[];
+  while(i < s.length){
+    let b, sh=0, res=0;
+    do{ b = s.charCodeAt(i++)-63; res |= (b&0x1f)<<sh; sh+=5; }while(b >= 0x20);
+    lat += (res&1) ? ~(res>>1) : (res>>1);
+    sh=0; res=0;
+    do{ b = s.charCodeAt(i++)-63; res |= (b&0x1f)<<sh; sh+=5; }while(b >= 0x20);
+    lng += (res&1) ? ~(res>>1) : (res>>1);
+    out.push([lat/1e6, lng/1e6]);
+  }
+  return out;
+}
+async function footRoute(a,b){
+  const k = a.lat.toFixed(4)+','+a.lng.toFixed(4)+'>'+b.lat.toFixed(4)+','+b.lng.toFixed(4);
+  if(footCache.has(k)) return footCache.get(k);
+  try{
+    const q = {
+      locations:[{lat:a.lat,lon:a.lng},{lat:b.lat,lon:b.lng}],
+      costing:'pedestrian',
+      costing_options:{pedestrian:{walkway_factor:0.5, sidewalk_factor:0.9, use_hills:0.5}},
+      directions_options:{units:'kilometers'}
+    };
+    const r = await fetch('https://valhalla1.openstreetmap.de/route?json='+encodeURIComponent(JSON.stringify(q)));
+    const j = await r.json();
+    const leg = j.trip && j.trip.legs && j.trip.legs[0];
+    if(!leg || !leg.shape) throw 0;
+    const out = {line: decodePoly6(leg.shape), dist: j.trip.summary.length, mins: j.trip.summary.time/60};
+    footCache.set(k,out); return out;
+  }catch(e){ footCache.set(k,null); return null; }
+}
+
 async function roadLine(list){
   const key = list.map(p=>p.lat.toFixed(4)+','+p.lng.toFixed(4)).join(';');
   if(routeCache.has(key)) return routeCache.get(key);
@@ -4361,10 +4399,13 @@ function legTime(a,b){
 async function fetchLeg(a,b){
   const mode = legMode(a,b), k = legKey(a,b,mode);
   if(legCache.has(k)) return legCache.get(k);
-  /* Il server demo OSRM espone SOLO il profilo driving: una richiesta "foot" verrebbe
-     servita lo stesso ma con tempi da automobile (13 min invece di 40 per Waverley →
-     Arthur's Seat). Uso quindi la distanza stradale reale e ricalcolo la durata a
-     velocità pedonale, senza fidarmi della durata restituita. */
+  /* A piedi chiedo a Valhalla, che ha il profilo pedonale vero. Se non risponde
+     (server di volontari) ripiego su OSRM auto: la distanza stradale è comunque
+     più vera della linea d'aria, e la durata la ricalcolo a passo d'uomo. */
+  if(mode === 'walking'){
+    const f = await footRoute(a,b);
+    if(f){ const out = {mins:f.mins, dist:f.dist, walkCalc:true}; legCache.set(k,out); return out; }
+  }
   try{
     const r = await fetch('https://router.project-osrm.org/route/v1/driving/'
       + a.lng+','+a.lat+';'+b.lng+','+b.lat+'?overview=false');
@@ -4728,9 +4769,10 @@ function drawMap(){
           layer.addLayer(lab);
 
           /* la tratta in auto mostra sempre il percorso reale su strada, mai il
-             collegamento puntinato in linea d'aria: se la rete manca resta comunque
-             visibile la linea diretta come stima, senza differenza di stile */
-          if(!walk) roadLine([a,b]).then(r => {
+             collegamento puntinato in linea d'aria; il tratto a piedi segue sentieri e
+             scalinate, sempre tratteggiato. Se la rete manca resta la linea diretta. */
+          const linePromise = walk ? footRoute(a,b) : roadLine([a,b]);
+          linePromise.then(r => {
             if(!r || !layer.hasLayer(seg)) return;
             seg.setLatLngs(r.line);
             /* l'etichetta va spostata sul punto a metà della traccia reale: con una
