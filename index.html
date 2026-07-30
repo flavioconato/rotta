@@ -391,6 +391,11 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 .insp-sub{display:block;font-size:11px;color:var(--fog);margin-top:1px}
 .tg-row{display:flex;gap:8px}
 .tg-row .toggle{flex:1;min-width:0}
+/* sullo schermo del telefono due pastiglie affiancate spezzavano l'etichetta
+   («Meteo / avverso»): sotto questa larghezza si impilano a tutta riga */
+@media (max-width:560px){
+  .tg-row{flex-direction:column;gap:0}
+}
 .base-hint-note{flex:1 0 100%;font-size:11.5px;line-height:1.45;color:var(--fog)}
 .base-hint button{
   margin-left:auto;flex:none;color:var(--ochre-2);font-weight:600;font-size:12px;
@@ -1847,6 +1852,10 @@ body.hide-legs .leg-lab{display:none}
       <span class="tick">✓</span>
       <span><b>Tappa in sequenza</b><span class="info-btn" tabindex="0" data-info="Acceso: la tappa prende un numero ed entra nel tragitto del giorno, con tempo e chilometri fino alla successiva. Spento: resta un pin del giorno senza numero, da vedere se c'è tempo — utile per un'idea di riserva o per un posto di passaggio.">i</span></span>
     </button>
+    <button class="toggle" id="fWalk" type="button">
+      <span class="tick">✓</span>
+      <span><b>Ci si arriva a piedi</b><span class="info-btn" tabindex="0" data-info="Normalmente il modo lo decide la distanza: sotto 1,3 km si cammina, sopra si va in auto. Accendi questa spunta per le tappe dentro una città, dove si va a piedi anche se il tratto è più lungo: il collegamento con la tappa precedente diventa pedonale.">i</span></span>
+    </button>
     <label>Contrassegno · adatto con</label>
     <div class="tg-row">
     <button class="toggle" id="fRain" type="button">
@@ -2107,7 +2116,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v69';
+const APP_VERSION = 'v70';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -4314,7 +4323,14 @@ const SPEED = {walking:4.5, driving:55};
    sotto la soglia di una passeggiata urbana si cammina. Vale per le tappe come
    per le basi, e funziona per il B&B in centro come per l'agriturismo fuori. */
 const BASE_WALK_KM = 1.5, WALK_KM = 1.3;
+/* la spunta "ci si arriva a piedi" (p.city) vale sul tratto IN ARRIVO alla
+   tappa marcata: è lì che l'utente sa di camminare, dentro una città, anche
+   quando i chilometri direbbero auto. Oltre i 12 km non si concede: sarebbe
+   una spunta dimenticata su una tappa poi spostata lontano. */
+const WALK_MAX_KM = 12;
 function legMode(a,b){
+  if(b.city && !a.isBase && km(a,b) <= WALK_MAX_KM) return 'walking';
+  if(a.city && b.isBase && km(a,b) <= WALK_MAX_KM) return 'walking';
   const soglia = (a.isBase || b.isBase) ? BASE_WALK_KM : WALK_KM;
   return km(a,b) <= soglia ? 'walking' : 'driving';
 }
@@ -6716,13 +6732,15 @@ function edit(id){
   sel.value = editing.dayId || '';
 
   const rainB = document.getElementById('fRain'), chainB = document.getElementById('fChain'),
-        kidB = document.getElementById('fKid');
+        kidB = document.getElementById('fKid'), walkB = document.getElementById('fWalk');
   rainB.classList.toggle('on', !!editing.rain);
   chainB.classList.toggle('on', inChain(editing));
   kidB.classList.toggle('on', !!editing.kid);
+  walkB.classList.toggle('on', !!editing.city);
   rainB.onclick = () => rainB.classList.toggle('on');
   chainB.onclick = () => chainB.classList.toggle('on');
   kidB.onclick = () => kidB.classList.toggle('on');
+  walkB.onclick = () => walkB.classList.toggle('on');
 
   const tg = document.getElementById('fType');  tg.innerHTML = '';
   Object.entries(TYPES).forEach(([k,v]) => {
@@ -6766,6 +6784,7 @@ document.getElementById('save').onclick = () => {
   editing.rain = document.getElementById('fRain').classList.contains('on');
   editing.kid  = document.getElementById('fKid').classList.contains('on');
   editing.chain = document.getElementById('fChain').classList.contains('on');
+  editing.city = document.getElementById('fWalk').classList.contains('on');
   editing.links = [...document.querySelectorAll('#fLinks .link-row')].map(r => ({
     label: r.querySelector('.lab').value.trim(),
     url: r.querySelector('.url').value.trim()

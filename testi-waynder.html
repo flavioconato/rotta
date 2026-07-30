@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Waynder — tutti i testi di aiuto (revisione)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#22303A; --ink-2:#EDEFEA; --ink-3:#DCE0D8; --fog:#5E6E78;
+  --paper:#F7F8F4; --sage:#9AD0C2; --sage-2:#6FB3A3; --ochre:#E7A93C; --route:#E0454B;
+  --moss:#1E8A6C; --sky:#2A93BE;
+  /* --sage-2 è la menta dei pannelli scuri dell'app: su carta chiara non supera
+     2,4:1 a nessun peso. Per il testo su fondo chiaro serve un verde scuro. */
+  --accent-txt:#12604A;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Public Sans",system-ui,sans-serif;font-size:15px;line-height:1.55;
+  text-wrap:pretty;
+}
+.sheet{max-width:860px;margin:0 auto;padding:46px 26px 90px}
+h1{font-family:"Bricolage Grotesque",sans-serif;font-size:31px;letter-spacing:-.02em;margin:0 0 6px}
+.lede{color:var(--fog);font-size:14.5px;margin:0 0 8px;max-width:62ch}
+.legend{
+  display:flex;flex-wrap:wrap;gap:8px 18px;margin:22px 0 0;padding:14px 16px;
+  background:#fff;border:1px solid var(--ink-3);border-radius:14px;font-size:12.5px;color:var(--fog)
+}
+.legend b{color:var(--ink)}
+h2{
+  font-family:"Bricolage Grotesque",sans-serif;font-size:20px;margin:44px 0 4px;
+  padding-top:22px;border-top:1px solid var(--ink-3);letter-spacing:-.01em
+}
+h2 .n{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--accent-txt);margin-right:9px}
+.sec-note{color:var(--fog);font-size:13.5px;margin:0 0 20px;max-width:66ch}
+.item{
+  background:#fff;border:1px solid var(--ink-3);border-radius:15px;
+  padding:15px 17px;margin-bottom:13px;position:relative;overflow:hidden
+}
+.item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--bar,var(--ink-3))}
+.item-head{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;margin-bottom:4px}
+.id{
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:6px;padding:2px 7px;color:var(--fog);flex:none
+}
+.item-head h3{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-size:16px}
+.meta{
+  display:flex;flex-wrap:wrap;gap:5px 7px;margin:9px 0 11px;
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase
+}
+.meta span{background:var(--ink-2);border-radius:5px;padding:3px 7px;color:var(--fog)}
+.meta span b{color:var(--ink);font-weight:600}
+.txt p{margin:0 0 8px}
+.txt p:last-child{margin-bottom:0}
+.txt{font-size:13.5px;line-height:1.55;color:#3C4A54}
+.txt em{font-style:normal;background:rgba(154,208,194,.28);padding:0 3px;border-radius:3px}
+.tiny{font-size:12.5px;color:var(--fog)}
+ul.plain{margin:0;padding-left:19px}
+ul.plain li{margin-bottom:5px;font-size:13.5px;color:#3C4A54}
+.dead{opacity:.6}
+@media print{
+  body{background:#fff}
+  .sheet{padding:0 0 20px;max-width:none}
+  .item,.legend{break-inside:avoid}
+  h2{break-after:avoid}
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<h1>Waynder — tutti i testi di aiuto</h1>
+<p class="lede">Ogni riquadro, fumetto e ⓘ che l'app può mostrare, in un posto solo: dove compare, quando compare, e cosa introduce. Il codice fra parentesi quadre è quello con cui puoi indicarmi la riga da cambiare — «riscrivi T2» o «togli C4».</p>
+<p class="lede" style="margin-top:10px"><b>Aggiornata alla v54.</b> 41 testi in tutto: 2 di invito al tutorial, 5 di tutorial, 4 tip di sezione, 5 coach, 7 ⓘ, 4 del meteo e 14 vari.</p>
+
+<div class="legend">
+  <span><b>T</b> invito e tutorial guidato del primo avvio</span>
+  <span><b>S</b> tip fisso di sezione</span>
+  <span><b>C</b> coach contestuale (una volta sola)</span>
+  <span><b>I</b> pulsante ⓘ dentro una scheda</span>
+  <span><b>M</b> meteo: perché non c'è</span>
+  <span><b>V</b> vari: fumetti, schede, stati vuoti</span>
+</div>
+
+<h2><span class="n">T</span>Tutorial guidato del primo avvio</h2>
+<p class="sec-note">Al primo avvio compare prima l'invito <b>T0</b>; il tutorial parte solo se lo si accetta, e si può rivedere in qualsiasi momento dall'icona <b>?</b> — in testata all'estremo destro, e sulla mappa nella colonna dei comandi — che prima chiede conferma con <b>T0b</b>. Cinque passi: il tutorial cambia sezione da sé, spiega, e al «Avanti» il riquadro <b>vola</b> in cima al pannello — esattamente dove quella spiegazione resta a vivere (vedi il gruppo <b>S</b>), con la ✕ per togliersela. Il primo passo non vola: la mappa non ha un tip fisso.</p>
+
+<div class="item" style="--bar:#5FA9B8">
+  <div class="item-head"><span class="id">T0</span><h3>È la tua prima volta su Waynder?</h3></div>
+  <div class="meta"><span>dove: <b>popup al primo avvio</b></span><span>prima del passo 1</span><span>due pulsanti</span></div>
+  <div class="txt">
+    <p>In un minuto ti mostro come funziona: la mappa, l'itinerario, le spese, le prenotazioni e il diario.</p>
+    <p>Puoi rivedere la guida quando vuoi dal <b>?</b> in alto a destra.</p>
+    <p class="tiny">Pulsanti: <b>La conosco già</b> (chiude e non torna più) · <b>Mostrami il tutorial</b> (avvia T1–T5).</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#5FA9B8">
+  <div class="item-head"><span class="id">T0b</span><h3>Vuoi ripercorrere il tutorial?</h3></div>
+  <div class="meta"><span>dove: <b>tocco sul ?</b></span><span>testata e mappa</span><span>due pulsanti</span></div>
+  <div class="txt">
+    <p>Cinque passi, un minuto: la mappa, l'itinerario, le spese, le prenotazioni e il diario.</p>
+    <p class="tiny">Pulsanti: <b>Non adesso</b> · <b>Sì, ripercorriamolo</b> (riavvia T1–T5 e rimette i tip di sezione).</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#3D5666">
+  <div class="item-head"><span class="id">T1</span><h3>La mappa è il viaggio</h3></div>
+  <div class="meta"><span>introduce: <b>la mappa</b></span><span>passo 1 di 5</span><span>non lascia un tip fisso</span></div>
+  <div class="txt">
+    <p>Ogni tappa è rappresentata da un pin del colore del suo giorno. La linea che unisce i pin è il percorso: sopra trovi <em>durata e distanza</em> del tratto, in auto o a piedi.</p>
+    <p>Tocca un pin per aprire la tappa; tienilo premuto e trascinalo per correggerne la posizione. I due pulsanti tondi in alto scelgono cosa mostrare: tutto, solo i giorni, solo le idee, oppure un giorno alla volta.</p>
+    <p>Il campo di ricerca in alto <em>sposta la vista</em>: scrivi Tokyo e la mappa si porta su Tokyo, senza aggiungere nulla. Se il posto ti interessa, lo trasformi in tappa con un tocco.</p>
+    <p>Le mappe che visualizzi vengono salvate sul dispositivo: in viaggio restano disponibili anche senza connessione.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#E0454B">
+  <div class="item-head"><span class="id">T2</span><h3>Tappe: prima crea, poi ordina</h3></div>
+  <div class="meta"><span>introduce: <b>Tappe</b></span><span>passo 2 di 5</span><span>vola su → <b>S1</b></span></div>
+  <div class="txt">
+    <p>Qui costruisci l'itinerario. Raccogli tutte le idee in <em>Brainstorming</em> senza preoccuparti delle date: le troverai in fondo alla finestra. Sulla mappa le riconosci dall'icona a più colori.</p>
+    <p>Quando il viaggio prende forma, tieni premuta un'idea e <em>trascinala nel giorno</em> a cui appartiene. Per ogni giorno puoi indicare la base di partenza e quella di arrivo, che corrispondono ai tuoi alloggi.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#E7A93C">
+  <div class="item-head"><span class="id">T3</span><h3>Spese: ogni spesa, una riga</h3></div>
+  <div class="meta"><span>introduce: <b>Spese</b></span><span>passo 3 di 5</span><span>vola su → <b>S2</b></span></div>
+  <div class="txt">
+    <p>Registra l'importo, chi ha pagato e per chi: Waynder divide la spesa e calcola <em>quanto ciascuno deve agli altri</em>, senza fogli di calcolo la sera.</p>
+    <p>Puoi usarla anche solo per annotare una spesa già saldata da tutti.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#2A93BE">
+  <div class="item-head"><span class="id">T4</span><h3>Prenotazioni: tutto pronto alla partenza</h3></div>
+  <div class="meta"><span>introduce: <b>Prenotazioni</b></span><span>passo 4 di 5</span><span>vola su → <b>S3</b></span></div>
+  <div class="txt">
+    <p>Voli, treni, hotel, biglietti: inserisci il codice e Waynder genera il <em>QR</em>, disponibile anche senza connessione. Puoi allegare la conferma o il PDF.</p>
+    <p>Le prenotazioni con una data compaiono nel giorno corrispondente dell'itinerario.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#1B7A5E">
+  <div class="item-head"><span class="id">T5</span><h3>Diario: tieni traccia del tuo viaggio</h3></div>
+  <div class="meta"><span>introduce: <b>Diario</b></span><span>passo 5 di 5</span><span>vola su → <b>S4</b></span><span>chiude con «Inizia a viaggiare»</span></div>
+  <div class="txt">
+    <p>Quando segni una tappa come <em>fatta</em>, qui si apre lo spazio per raccontare com'è andata e aggiungere le foto di quel momento.</p>
+    <p>L'itinerario resta il programma; il Diario raccoglie il ricordo.</p>
+  </div>
+</div>
+
+<h2><span class="n">S</span>Tip fisso in cima alla sezione</h2>
+<p class="sec-note">La striscia in cima al pannello, sotto il nome del viaggio. È il riquadro in cui si trasforma il passo del tutorial, e resta lì finché non la si chiude con la ✕ — una volta chiusa, quella sezione non la mostra più. Sono testi <b>diversi</b> da quelli del tutorial: più corti, più operativi, perché li si rilegge con l'app già in mano.</p>
+
+<div class="item" style="--bar:#E0454B">
+  <div class="item-head"><span class="id">S1</span><h3>Prima crea, poi ordina</h3></div>
+  <div class="meta"><span>sezione: <b>Tappe</b></span><span>arriva da <b>T2</b></span></div>
+  <div class="txt">
+    <p>Raccogli tutte le idee in <em>Brainstorming</em>, in fondo all'itinerario, senza preoccuparti delle date. Quando il viaggio prende forma, sposta ogni tappa nel giorno a cui appartiene.</p>
+    <p>Tocca una tappa per aprirla; usa il menù del giorno per rinominarlo, spostarlo o eliminarlo.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#E7A93C">
+  <div class="item-head"><span class="id">S2</span><h3>Ogni spesa, una riga</h3></div>
+  <div class="meta"><span>sezione: <b>Spese</b></span><span>arriva da <b>T3</b></span></div>
+  <div class="txt">
+    <p>Registra l'importo e chi ha pagato: Waynder divide la spesa fra i compagni di viaggio e calcola quanto ciascuno deve agli altri.</p>
+    <p>Puoi collegare una spesa a una tappa, per sapere quanto è costata davvero.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#2A93BE">
+  <div class="item-head"><span class="id">S3</span><h3>Tutto pronto alla partenza</h3></div>
+  <div class="meta"><span>sezione: <b>Prenotazioni</b></span><span>arriva da <b>T4</b></span></div>
+  <div class="txt">
+    <p>Inserisci voli, treni, hotel e biglietti con il relativo codice: Waynder genera il QR e lo mantiene disponibile anche senza connessione.</p>
+    <p>Le prenotazioni con una data compaiono nel giorno corrispondente dell'itinerario.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#1B7A5E">
+  <div class="item-head"><span class="id">S4</span><h3>Tieni traccia del tuo viaggio</h3></div>
+  <div class="meta"><span>sezione: <b>Diario</b></span><span>arriva da <b>T5</b></span></div>
+  <div class="txt">
+    <p>Segna una tappa come fatta nell'Itinerario: qui comparirà lo spazio per raccontare com'è andata, con le foto di quel momento.</p>
+    <p>Bastano due righe la sera: sono quelle che ti faranno ricordare i dettagli anche fra dieci anni.</p>
+  </div>
+</div>
+
+<h2><span class="n">C</span>Coach contestuali</h2>
+<p class="sec-note">Fumetti che compaiono <b>una volta sola</b>, e solo subito dopo il gesto che li rende comprensibili: non all'inizio, quando nessuna di quelle parole avrebbe ancora un riferimento sullo schermo. Si chiudono con «Ho capito» o da soli dopo 18 secondi.</p>
+
+<div class="item">
+  <div class="item-head"><span class="id">C1</span><h3>🏠 La base è dove dormi</h3></div>
+  <div class="meta"><span>scatta quando: <b>crei la prima base</b></span><span>introduce: le basi e i tratti verso l'alloggio</span></div>
+  <div class="txt">
+    <p>Hai indicato l'alloggio di quella giornata. La giornata parte da lì al mattino e vi torna la sera, così l'app calcola distanza e tempo anche del primo e dell'ultimo tratto — quelli che di solito sfuggono.</p>
+    <p>Se resti nello stesso posto per più notti non devi fare nulla: la base viene riproposta nei giorni successivi finché non la cambi. Se cambi alloggio, in quel giorno indica in <em>Parte da</em> quello precedente e in <em>Arriva a</em> quello nuovo: il trasferimento entra nel calcolo.</p>
+    <p>Per ogni base l'app crea già una riga in <em>Prenotazioni</em>: ti resta da inserire date, prezzo e codice quando prenoti.</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">C2</span><h3>📅 Ogni giorno ha il suo colore</h3></div>
+  <div class="meta"><span>scatta quando: <b>aggiungi un giorno</b></span><span>introduce: colori, date a catena, menù ⋯ del giorno</span></div>
+  <div class="txt">
+    <p>Il colore del giorno è lo stesso che vedi sui pin e sulla linea del percorso: dalla mappa capisci subito cosa succede quando. Tocca il pallino per cambiarlo.</p>
+    <p>Se assegni una data a questo giorno, l'app propone di compilare da sé tutte le successive. Il <em>⋯</em> accanto al nome inquadra il giorno sulla mappa, lo apre in Google Maps o lo elimina.</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">C3</span><h3>📍 Le tappe formano un percorso</h3></div>
+  <div class="meta"><span>scatta quando: <b>aggiungi una tappa a un giorno</b></span><span>introduce: numerazione, tempi, trascinamento</span></div>
+  <div class="txt">
+    <p>Le tappe di un giorno vengono numerate nell'ordine in cui le aggiungi, e fra una e l'altra compaiono tempo e distanza: in auto, oppure a piedi quando i due punti sono vicini.</p>
+    <p>Per cambiare l'ordine tieni premuta la tappa e trascinala dove vuoi: anche in un altro giorno, o nel Brainstorming. Per correggerne la posizione sulla mappa, tieni premuto il pin e trascinalo.</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">C4</span><h3>💡 Le idee vanno nel Brainstorming</h3></div>
+  <div class="meta"><span>scatta quando: <b>aggiungi una tappa senza giorno</b>, o con Ispirami</span><span>introduce: il Brainstorming</span></div>
+  <div class="txt">
+    <p>Una tappa senza giorno finisce in <em>Brainstorming</em>, in fondo all'itinerario: è lo spazio in cui raccogliere tutto quello che ti interessa vedere, comprese le idee che poi scarterai.</p>
+    <p>Quando il viaggio prende forma, <em>tieni premuta la tappa e trascinala</em> nel giorno giusto: entra nel percorso al suo posto, con numero e tempi. Puoi anche aprirla e scegliere il giorno dalla scheda.</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">C5</span><h3>📖 Il Diario si scrive da sé</h3></div>
+  <div class="meta"><span>scatta quando: <b>segni la prima tappa come fatta</b></span><span>introduce: il rapporto Itinerario ↔ Diario</span></div>
+  <div class="txt">
+    <p>Hai segnato una tappa come <em>visitata</em>: da adesso la trovi anche nel Diario, dove puoi raccontare com'è andata e aggiungere le foto.</p>
+    <p>L'itinerario resta il programma, il Diario raccoglie il ricordo: le due cose non si sovrappongono.</p>
+  </div>
+</div>
+
+<h2><span class="n">I</span>Pulsanti ⓘ dentro le schede</h2>
+<p class="sec-note">Il cerchietto <i>i</i> accanto a un'etichetta, nella scheda della tappa, della spesa o della prenotazione. Si tocca e si apre un fumetto: serve per i campi il cui <b>senso</b> non si indovina dal nome, non per ripetere il nome con altre parole.</p>
+
+<div class="item">
+  <div class="item-head"><span class="id">I1</span><h3>Tappa in sequenza</h3></div>
+  <div class="meta"><span>scheda: <b>tappa</b></span><span>sotto l'etichetta «Percorso»</span></div>
+  <div class="txt"><p>Acceso: la tappa prende un numero ed entra nel tragitto del giorno, con tempo e chilometri fino alla successiva. Spento: resta un pin del giorno senza numero, da vedere se c'è tempo — utile per un'idea di riserva o per un posto di passaggio.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">I1b</span><h3>Ci si arriva a piedi</h3></div>
+  <div class="meta"><span>scheda: <b>tappa</b></span><span>sotto l'etichetta «Percorso»</span></div>
+  <div class="txt"><p>Normalmente il modo lo decide la distanza: sotto 1,3 km si cammina, sopra si va in auto. Accendi questa spunta per le tappe dentro una città, dove si va a piedi anche se il tratto è più lungo: il collegamento con la tappa precedente diventa pedonale.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">I2</span><h3>Meteo avverso</h3></div>
+  <div class="meta"><span>scheda: <b>tappa</b></span><span>sotto «Contrassegno · adatto con»</span></div>
+  <div class="txt"><p>Da usare per i posti che funzionano anche sotto la pioggia: musei, chiese, mercati coperti, terme. Quando la previsione del giorno dà pioggia, l'app accende l'icona del meteo per ricordarti che hai già delle tappe di riserva pronte.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">I3</span><h3>Bimbo</h3></div>
+  <div class="meta"><span>scheda: <b>tappa</b></span><span>sotto «Contrassegno · adatto con»</span></div>
+  <div class="txt"><p>Da usare per i posti comodi con un bambino piccolo: si arriva col passeggino, non ci sono scale o sentieri difficili, e c'è qualcosa che lo diverte. Il pin porta il simbolo del passeggino, così scegli in fretta la tappa giusta quando la giornata si complica.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">I4</span><h3>Immagine</h3></div>
+  <div class="meta"><span>scheda: <b>tappa</b></span><span>introduce: la foto messa da sé e le alternative</span></div>
+  <div class="txt"><p>Se la tappa non ha una foto, l'app ne mette una da sé: la più vicina al punto fra quelle pubbliche di Wikimedia Commons. Non ti piace? Toccane un'altra tra le dieci proposte, o 🔍 per vederne altre. 📁 prende una foto dal telefono o dal computer, oppure incolli qui il link di un'immagine già online.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">I5</span><h3>Link</h3></div>
+  <div class="meta"><span>scheda: <b>tappa</b></span><span>introduce: a cosa servono i link salvati</span></div>
+  <div class="txt"><p>Le pagine che ti serviranno sul posto: orari e biglietti del sito ufficiale, la prenotazione, una guida. Compaiono sotto il nome della tappa e si aprono con un tocco, anche mentre sei in viaggio.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">I6</span><h3>Indirizzo</h3></div>
+  <div class="meta"><span>scheda: <b>prenotazione</b></span><span>solo tipo <b>Alloggio</b></span><span>introduce: titolo ≠ indirizzo</span></div>
+  <div class="txt"><p>Il titolo è come chiami la tappa («Edimburgo»), l'indirizzo è dove dormi davvero. Scrivi via e numero e tocca 📍: la base resta chiamata Edimburgo ma sulla mappa si sposta esattamente sull'hotel, e i chilometri della giornata vengono contati da lì.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">I7</span><h3>Pagata da</h3></div>
+  <div class="meta"><span>scheda: <b>spesa</b></span><span>introduce: più paganti, e la spesa a bilancio zero</span></div>
+  <div class="txt"><p>Chi ha tirato fuori i soldi. Puoi indicare più persone: l'importo si divide in parti uguali fra loro. Se hanno pagato tutti per tutti — un hotel già saldato, per esempio — accendi tutti sopra e tutti sotto: la spesa resta a bilancio zero e serve solo a tenerne nota.</p></div>
+</div>
+
+<h2><span class="n">M</span>Meteo: perché qui non c'è</h2>
+<p class="sec-note">Il <b>?</b> al posto dell'icona del meteo, nella testata del giorno. Uno solo dei quattro alla volta, secondo il motivo vero. Servono perché un'icona che manca senza spiegazione sembra un guasto dell'app.</p>
+
+<div class="item"><div class="item-head"><span class="id">M1</span><h3>Il giorno non ha data</h3></div>
+  <div class="txt"><p>Il meteo arriva quando il giorno ha una data: toccala qui accanto e scegli il giorno sul calendario.</p></div></div>
+<div class="item"><div class="item-head"><span class="id">M2</span><h3>Data già passata</h3></div>
+  <div class="txt"><p>Giorno già passato: le previsioni valgono solo da oggi in avanti.</p></div></div>
+<div class="item"><div class="item-head"><span class="id">M3</span><h3>Data troppo lontana</h3></div>
+  <div class="txt"><p>Ancora troppo lontano: le previsioni arrivano fino a 15 giorni da oggi. Ripassa più avanti.</p></div></div>
+<div class="item"><div class="item-head"><span class="id">M4</span><h3>Nessun luogo nel giorno</h3></div>
+  <div class="txt"><p>Manca un luogo da cui prendere la previsione: aggiungi a questo giorno almeno una tappa o la base, e il meteo compare da solo.</p></div></div>
+
+<h2><span class="n">V</span>Fumetti, schede e stati vuoti</h2>
+<p class="sec-note">Tutto il resto: spiegazioni che vivono dentro una scheda o al posto di un elenco vuoto.</p>
+
+<div class="item">
+  <div class="item-head"><span class="id">V1</span><h3>Due filtri, niente menù</h3></div>
+  <div class="meta"><span>dove: <b>vista solo mappa</b></span><span>una volta sola, 9 secondi</span><span>introduce: i due bottoni tondi</span></div>
+  <div class="txt"><p>Il primo mostra tutto, solo le tappe dei giorni o solo il Brainstorming. Il secondo isola un giorno alla volta: con un tocco lungo torni a vederli tutti.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V2</span><h3>Brainstorming vuoto → Lasciati ispirare</h3></div>
+  <div class="meta"><span>dove: <b>Tappe</b>, a viaggio del tutto vuoto</span><span>è un pulsante</span><span>introduce: Ispirami</span></div>
+  <div class="txt"><p>✨ Ancora nessuna tappa inserita.<br><b>Lasciati ispirare</b><br>Dimmi una nazione o una città: cerco i luoghi migliori e li aggiungo qui come tappe, con il loro pin sulla mappa.<br><b>[ ✨ Proponimi delle idee ]</b></p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V3</span><h3>Per quale posto vuoi delle idee?</h3></div>
+  <div class="meta"><span>dove: <b>popup</b> e <b>✨ in testata</b></span><span>da sé una volta per viaggio</span><span>introduce: Ispirami</span></div>
+  <div class="txt"><p>Scrivi una nazione o una città e cerco per te i luoghi più interessanti: li aggiungo automaticamente come tappe, con il loro pin sulla mappa, dentro <em>Brainstorming</em>. Da lì li sposti nei giorni, o cancelli quelli che non ti convincono.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V4</span><h3>Ispirami — come funziona</h3></div>
+  <div class="meta"><span>dove: <b>scheda Ispirami</b></span><span>introduce: la differenza zona / città</span></div>
+  <div class="txt"><p>Scrivi una regione o un paese e ti propongo le <b>città</b>; scrivi una città e ti propongo <b>cose da vedere</b> dentro. Spunta quelle che ti piacciono: diventano tappe con il loro pin sulla mappa, in <b>Brainstorming</b>.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V5</span><h3>Viaggiate insieme</h3></div>
+  <div class="meta"><span>dove: <b>icona condividi</b> nella testata</span><span>introduce: condividi vs unisciti</span></div>
+  <div class="txt">
+    <p>Waynder passa un viaggio da un telefono all'altro con un codice. Chi lo ha creato <b>condivide</b>, chi arriva <b>si unisce</b>: da quel momento vedete e modificate lo stesso itinerario.</p>
+    <p class="tiny">Riga 1 — <b>Condividi questo viaggio</b>: Genera il codice di <i>[nome viaggio]</i> e passalo a chi viene con te.</p>
+    <p class="tiny">Riga 2 — <b>Unisciti a un viaggio</b>: Hai ricevuto un codice? Incollalo qui e scarichi il viaggio di chi te l'ha mandato.</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V6</span><h3>La base della giornata</h3></div>
+  <div class="meta"><span>dove: <b>scheda «Aggiungi una tappa»</b>, quando cerchi una base</span><span>introduce: Parte da / Arriva a</span></div>
+  <div class="txt"><p>La base è l'alloggio della giornata. «Parte da» è quello dove ti sei svegliato, «Arriva a» quello dove dormirai: se sono lo stesso, la giornata è un giro; se sono diversi, è un trasferimento — e l'app conta chilometri e tempo da un capo all'altro.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V7</span><h3>Spostare una tappa</h3></div>
+  <div class="meta"><span>dove: <b>scheda tappa</b>, sotto le coordinate</span></div>
+  <div class="txt"><p>Per spostarla, tieni premuto il suo pin sulla mappa e trascinalo dove vuoi.</p></div>
+</div>
+
+<div class="item dead">
+  <div class="item-head"><span class="id">V8</span><h3>Waynder si usa in verticale (non più in uso)</h3></div>
+  <div class="meta"><span>dove: <b>telefono girato in orizzontale</b></span><span>copre tutto lo schermo</span></div>
+  <div class="txt"><p><b>Waynder si usa in verticale</b><br>La mappa e l'itinerario sono pensati per lo schermo dritto. Raddrizza il telefono e riprendi da dove eri.</p></div>
+</div>
+
+<div class="item dead">
+  <div class="item-head"><span class="id">V9</span><h3>Benvenuto in Waynder (non più in uso)</h3></div>
+  <div class="meta"><span>era: <b>la scheda di benvenuto</b></span><span>sostituita dal tutorial <b>T1–T5</b></span></div>
+  <div class="txt"><p>«Quattro sezioni, un viaggio intero» con le quattro righe di presentazione. Il codice c'è ancora ma non viene più mostrato: se preferisci tenerla <i>prima</i> del tutorial, si riaccende in un attimo.</p></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V10</span><h3>Campi obbligatori della prenotazione</h3></div>
+  <div class="meta"><span>dove: <b>scheda prenotazione</b>, sotto il Titolo</span></div>
+  <div class="txt">
+    <p>È il nome con cui la riconoscerai nell'elenco. I campi con <b>*</b> sono obbligatori, il resto lo aggiungi quando lo sai.</p>
+    <p class="tiny">Se salvi senza titolo: «Dai un titolo alla prenotazione: è come la riconoscerai nell'elenco.»</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V11</span><h3>Registro anche la spesa?</h3></div>
+  <div class="meta"><span>dove: <b>salvando una prenotazione con un costo</b></span><span>introduce: il legame prenotazione ↔ spesa</span></div>
+  <div class="txt">
+    <p><i>[titolo della prenotazione] · [importo]</i><br>Dimmi chi ha pagato e per chi, e la metto in Spese insieme alle altre. Poi i conti si pareggiano da sé.</p>
+    <p class="tiny">Pulsanti: <b>Aggiungi in Spese</b> · <b>Non tracciare questa spesa</b> (detto una volta, non lo richiede più per quella prenotazione).</p>
+    <p class="tiny">Se poi correggi il prezzo: «Spesa aggiornata a € 240,00».</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V12</span><h3>Riga di ricerca della mappa</h3></div>
+  <div class="meta"><span>dove: <b>in alto a sinistra sulla mappa</b></span><span>naviga, non crea</span></div>
+  <div class="txt">
+    <p>Segnaposto del campo: <i>Cerca un posto sulla mappa…</i></p>
+    <p class="tiny">Dopo il volo, la scheda del posto trovato offre <b>＋ Aggiungi come tappa</b>.</p>
+    <p class="tiny">Niente risultati: «Non trovo niente con questo nome. Prova a scriverlo in un altro modo, o aggiungi la nazione.»</p>
+    <p class="tiny">Senza rete: «Ricerca non raggiungibile: serve la rete. Puoi comunque toccare la mappa dal pulsante ＋ Tappa.»</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V13</span><h3>Scegline un'altra (foto della tappa)</h3></div>
+  <div class="meta"><span>dove: <b>scheda tappa</b>, sotto l'anteprima</span></div>
+  <div class="txt">
+    <p>Scegline un'altra qui sotto, oppure caricala tu con 📁. <i>Tocca ancora 🔍 per vederne altre.</i></p>
+    <p class="tiny">Varianti della coda: «Sono le ultime che ho trovato qui.» · «Sono finite: queste sono le prime di nuovo.»</p>
+    <p class="tiny">Se la tappa non ha ancora nessuna foto: «Tocca una foto per usarla.»</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V15</span><h3>Modifiche non salvate</h3></div>
+  <div class="meta"><span>dove: <b>chiudendo una spesa o una prenotazione</b></span><span>solo se qualcosa è cambiato</span></div>
+  <div class="txt">
+    <p>Hai cambiato qualcosa in questa spesa (o prenotazione). Se chiudi ora, la modifica va persa.</p>
+    <p class="tiny">Pulsanti: <b>Chiudi senza salvare</b> · <b>Salva</b>.</p>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="id">V14</span><h3>Comprimi / espandi ⇅</h3></div>
+  <div class="meta"><span>dove: <b>icona in testata</b>, in tutte le sezioni</span><span>solo tooltip</span></div>
+  <div class="txt">
+    <p>Tappe e Diario: «Comprimi tutti i giorni» / «Espandi tutti i giorni».</p>
+    <p>Spese: «Comprimi i dettagli delle spese» / «Espandi i dettagli delle spese».</p>
+    <p>Prenotazioni: «Comprimi i dettagli delle prenotazioni» / «Espandi i dettagli delle prenotazioni».</p>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
