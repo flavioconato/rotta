@@ -287,6 +287,12 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 #btnDay{background:var(--paper);color:#C22E36;border:1px solid rgba(211,50,58,.4)}
 #btnExpense{background:linear-gradient(135deg,#F3C877,var(--ochre));color:#3A2707}
 #btnBooking{background:linear-gradient(135deg,#2A93BE,#1E7FA6)}
+/* Ispirami, le foto e le cartoline erano icone in testata: azioni che si fanno,
+   non impostazioni, quindi scendono dove sta il pollice, accanto ad "aggiungi".
+   Piccole e crema come "nuovo giorno": la principale della sezione resta una. */
+#btnInsp{background:var(--paper);color:#C22E36;border:1px solid rgba(211,50,58,.4)}
+#btnCards{background:linear-gradient(135deg,#289073,#1B7A5E)}
+#btnPhotos{background:var(--paper);color:#15654E;border:1px solid rgba(27,122,94,.4)}
 
 /* ---------- header ---------- */
 .head{padding:.75rem 1rem .7rem;flex:none;border-bottom:1px solid var(--ink-3);position:relative}
@@ -461,6 +467,51 @@ span.day-name{cursor:pointer}
 }
 .hub-row h3{margin:0 0 3px;font-family:"Bricolage Grotesque",sans-serif;font-size:15px}
 .hub-row p{margin:0;font-size:12.5px;line-height:1.45;color:var(--fog)}
+/* ---------- mappa offline ---------- */
+.off-bar{height:9px;border-radius:999px;background:var(--ink-3);overflow:hidden;margin:11px 0 7px}
+.off-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sage),var(--sage-2));transition:width .2s}
+.off-stat{margin:0;font-size:12.5px;color:var(--fog);line-height:1.5}
+.off-stat b{color:var(--ink)}
+/* ---------- orari di apertura ---------- */
+.oh-box{
+  border:1px solid var(--ink-3);background:var(--ink-2);border-radius:var(--r-sm);
+  padding:11px 13px;font-size:13px;line-height:1.5;color:var(--ink)
+}
+.oh-box.empty-oh{color:var(--fog);font-size:12.5px}
+.oh-line{display:flex;justify-content:space-between;gap:12px;font-family:"JetBrains Mono",monospace;font-size:11.5px}
+.oh-line + .oh-line{margin-top:3px}
+.oh-line span:first-child{color:var(--fog)}
+.oh-today{
+  margin:9px 0 0;padding:7px 10px;border-radius:9px;font-size:12.5px;font-weight:600;
+  display:flex;align-items:center;gap:7px
+}
+.oh-today.ok{background:rgba(27,122,94,.12);color:#12503E}
+.oh-today.no{background:rgba(211,50,58,.12);color:#8F1F25}
+.oh-src{margin:8px 0 0;font-size:11.5px;line-height:1.45;color:var(--ink-4)}
+.oh-tag{font-style:normal;font-size:10px;font-weight:700;color:#8F1F25;
+  background:rgba(211,50,58,.12);border-radius:6px;padding:1px 5px;vertical-align:2px}
+/* ---------- cartoline (immagini da condividere) ---------- */
+.cards-wrap{display:flex;flex-direction:column;align-items:center;gap:11px}
+.cards-stage{
+  width:100%;display:grid;place-items:center;background:var(--ink-2);
+  border:1px solid var(--ink-3);border-radius:var(--r-sm);padding:13px;min-height:180px
+}
+.cards-stage canvas{max-width:100%;max-height:42vh;border-radius:8px;
+  box-shadow:0 14px 34px rgba(34,48,58,.22);display:block}
+.cards-stage p{margin:0;font-size:12.5px;color:var(--fog)}
+.cards-nav{display:flex;align-items:center;gap:11px}
+.cards-nav button{
+  width:34px;height:34px;border-radius:999px;border:1px solid var(--ink-3);
+  background:var(--paper);color:var(--ink);font-size:15px;display:grid;place-items:center
+}
+.cards-nav button:disabled{opacity:.35}
+.cards-count{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--fog);min-width:56px;text-align:center}
+.cards-fmt{display:flex;gap:7px;width:100%}
+.cards-fmt button{
+  flex:1;border:1px solid var(--ink-3);background:var(--ink-2);color:var(--fog);
+  border-radius:999px;padding:8px 10px;font-size:12px;font-weight:600
+}
+.cards-fmt button.on{background:var(--paper);border-color:var(--sage);color:var(--ink)}
 /* ---------- tutorial guidato del primo avvio ---------- */
 /* Il velo blocca l'app mentre il tutorial parla: così nessuno tocca a metà
    spiegazione e finisce in una schermata che il passo dopo non si aspetta. */
@@ -489,6 +540,10 @@ span.day-name{cursor:pointer}
 .tour-card h3{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-size:17px;letter-spacing:-.01em}
 .tour-card p{margin:0 0 7px;font-size:13px;line-height:1.5;color:var(--fog)}
 .tour-card p:last-of-type{margin-bottom:0}
+/* il collegamento di invito è lungo: senza questo sfonda il riquadro sul telefono */
+.join-link{display:block;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;line-height:1.45;
+  word-break:break-all;background:var(--ink-2);border:1px solid var(--ink-3);
+  border-radius:10px;padding:8px 10px}
 .tour-foot{display:flex;align-items:center;gap:10px;margin-top:15px}
 .tour-dots{display:flex;gap:5px;flex:1}
 .tour-dots i{width:6px;height:6px;border-radius:50%;background:var(--ink-3);transition:.2s}
@@ -586,6 +641,14 @@ span.day-name{cursor:pointer}
   border-radius:10px;padding:8px 2px;
 }
 .wx-hour span:nth-child(2){font-size:16px}
+/* contrassegno di presenza: sta in alto al centro, fuori dal flusso, e c'è
+   solo mentre l'altro dispositivo è collegato sul viaggio */
+#peerMark{
+  position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:60;
+  background:var(--paper);border:1px solid var(--ink-3);color:var(--fog);
+  border-radius:999px;padding:4px 11px;font-size:11px;letter-spacing:.02em;
+  box-shadow:0 4px 14px rgba(34,48,58,.10);pointer-events:none
+}
 .icon-btn{color:var(--fog);padding:5px 6px;border-radius:8px;font-size:13px;line-height:1;transition:.15s}
 .icon-btn:hover{color:var(--ink);background:var(--ink-3)}
 .icon-btn.danger{color:var(--fog);border:0;border-radius:8px;padding:5px 6px;font-size:13px;font-weight:400}
@@ -1275,6 +1338,14 @@ body.hide-legs .leg-lab{display:none}
 
 .more-list{display:flex;flex-direction:column;gap:8px}
 .more-list .chip{width:100%;justify-content:center}
+/* Il cassetto non è più una pila di pastiglie con un'icona incollata al testo:
+   ogni voce dice in una riga sotto cosa fa, perché "Cartoline" o "Mappa senza
+   rete" da soli non si spiegano. Stessa riga larga del riquadro "Viaggiate
+   insieme", che faceva già così. */
+.menu-list{display:flex;flex-direction:column;gap:0}
+.menu-list .hub-row .hub-ic{background:var(--ink-3);color:var(--ink)}
+.menu-list .hub-row[hidden]{display:none}
+.menu-hide{display:none}
 .more-ver{margin:13px 0 0;text-align:center;font-size:10.5px;color:var(--fog);opacity:.65}
 
 /* ---------- barra di comando ---------- */
@@ -1284,7 +1355,7 @@ body.hide-legs .leg-lab{display:none}
   background:linear-gradient(to top,var(--paper) 72%,rgba(245,242,234,0));
   transition:width .34s var(--ease)
 }
-.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
 .tabs button{
   position:relative;min-width:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
@@ -1298,6 +1369,10 @@ body.hide-legs .leg-lab{display:none}
 #tabBook.on{background:linear-gradient(135deg,#2A93BE,#1E7FA6);box-shadow:0 8px 20px rgba(30,127,166,.3)}
 #tabDiary.on{background:linear-gradient(135deg,#289073,#1B7A5E);box-shadow:0 8px 20px rgba(27,122,94,.3)}
 #tabMap.on{background:linear-gradient(135deg,#4B5B66,#31404A);box-shadow:0 8px 20px rgba(34,48,58,.3)}
+/* Il Menù non è una sesta sezione: apre un cassetto e non resta accesso. Resta
+   grigio anche mentre il cassetto è aperto, così "sei qui" continua a voler
+   dire una cosa sola. */
+#tabMenu.open{background:var(--ink-3);color:var(--ink)}
 .tabs button:hover:not(.on){background:var(--ink-3)}
 .tab-ic{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;overflow:visible;flex:none}
 .tab-ic .trail{opacity:.55}
@@ -1505,6 +1580,7 @@ body.hide-legs .leg-lab{display:none}
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="peerMark" hidden>● In due adesso</div>
 
 <div class="app">
   <aside class="panel">
@@ -1517,48 +1593,17 @@ body.hide-legs .leg-lab{display:none}
         <span id="saveState" class="save-state mono"></span>
       </div>
       <div class="head-tools">
-        <!-- L'ingranaggio da solo era un sacco senza fondo: le tre cose che si
-             cercano davvero (condividere, cambiare viaggio, rileggere la guida)
-             stanno qui fuori, in chiaro, in tutte le sezioni. Nel ⚙ resta il
-             resto. -->
-        <button class="head-ico" id="btnInstallHead" type="button" hidden title="Installa Waynder sul dispositivo" aria-label="Installa l'app">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 3.6v10.2M8.2 10.4 12 14.2l3.8-3.8"/>
-            <path d="M4.6 17.2v1.6a1.8 1.8 0 0 0 1.8 1.8h11.2a1.8 1.8 0 0 0 1.8-1.8v-1.6"/>
-          </svg>
-        </button>
-        <button class="head-ico" id="btnShareHub" type="button" title="Condividi questo viaggio o unisciti a un altro" aria-label="Condividi o unisciti">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="18" cy="5.4" r="2.6"/><circle cx="18" cy="18.6" r="2.6"/><circle cx="6" cy="12" r="2.6"/>
-            <path d="M8.3 10.8 15.7 6.7M8.3 13.2l7.4 4.1"/>
-          </svg>
-        </button>
-        <button class="head-ico" id="btnTripsHub" type="button" title="I tuoi viaggi" aria-label="I tuoi viaggi">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="7.4" width="18" height="12.8" rx="2.4"/>
-            <path d="M9 7.4V5.2a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 15 5.2v2.2"/>
-            <path d="M3 13.4h18"/>
-          </svg>
-        </button>
-        <button class="head-ico" id="btnInspHead" type="button" title="Ispirami: ti propongo tappe da mettere sulla mappa" aria-label="Ispirami">
-          <svg viewBox="0 0 24 24" aria-hidden="true" style="fill:currentColor;stroke:none">
-            <path d="M10.4 3.4l1.35 3.65 3.65 1.35-3.65 1.35L10.4 13.4 9.05 9.75 5.4 8.4l3.65-1.35z"/>
-            <path d="M17.4 13.6l.72 1.94 1.94.72-1.94.72-.72 1.94-.72-1.94-1.94-.72 1.94-.72z"/>
-          </svg>
-        </button>
+        <!-- Tutto quello che non è "fare qualcosa qui dentro" è passato al Menù
+             della barra in basso (condividi, i tuoi viaggi, la guida, la mappa
+             offline, installa); Ispirami, le foto e le cartoline sono scese fra
+             i tondi in basso a destra. In testata resta solo comprimi/espandi,
+             che riguarda l'elenco che si ha davanti. -->
         <button class="head-ico" id="btnFold" type="button" title="Comprimi tutti i giorni" aria-label="Comprimi tutti i giorni">
           <svg class="ic-fold" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4.5 12h15"/><path d="M8.4 7.4 12 3.9l3.6 3.5"/><path d="M8.4 16.6 12 20.1l3.6-3.5"/>
           </svg>
           <svg class="ic-unfold" viewBox="0 0 24 24" aria-hidden="true" hidden>
             <path d="M4.5 12h15"/><path d="M8.4 6.6 12 3.1l3.6 3.5"/><path d="M8.4 17.4 12 20.9l3.6-3.5"/>
-          </svg>
-        </button>
-        <button class="head-ico guide" id="btnGuideHub" type="button" title="Rivedi la guida" aria-label="Rivedi la guida">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="8.8"/>
-            <path d="M9.7 9.4a2.35 2.35 0 1 1 3.5 2.05c-.75.45-1.2.9-1.2 1.75v.5"/>
-            <circle cx="12" cy="16.9" r="1" style="fill:currentColor;stroke:none"/>
           </svg>
         </button>
       </div>
@@ -1579,6 +1624,29 @@ body.hide-legs .leg-lab{display:none}
           <path d="M4.2 8.4a2 2 0 0 1 2-2h11.6a2 2 0 0 1 2 2v9.4a2 2 0 0 1-2 2H6.2a2 2 0 0 1-2-2z"/>
           <path d="M8.4 4.4v3M15.6 4.4v3"/>
           <path d="M12 11.6v4.4M9.8 13.8h4.4"/>
+        </svg>
+      </button>
+      <!-- sopra "nuovo giorno": è dello stesso mondo (mettere tappe sulla
+           mappa), ma non è l'azione principale della sezione -->
+      <button class="fab fab-sm" id="btnInsp" type="button" title="Ispirami: ti propongo tappe da mettere sulla mappa" aria-label="Ispirami" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" style="fill:currentColor;stroke:none">
+          <path d="M10.4 3.4l1.35 3.65 3.65 1.35-3.65 1.35L10.4 13.4 9.05 9.75 5.4 8.4l3.65-1.35z"/>
+          <path d="M17.4 13.6l.72 1.94 1.94.72-1.94.72-.72 1.94-.72-1.94-1.94-.72 1.94-.72z"/>
+        </svg>
+      </button>
+      <!-- Diario: la cartolina è l'azione principale, sistemare le foto quella
+           di servizio che la prepara -->
+      <button class="fab" id="btnCards" type="button" title="Cartoline: un'immagine per tappa da mandare o pubblicare" aria-label="Cartoline" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3.2" y="5" width="17.6" height="14" rx="2.2"/>
+          <path d="M3.8 15.6 9 10.6l3.3 3.2 2.5-2.4 5.4 5.1"/>
+          <circle cx="15.9" cy="9.1" r="1.5"/>
+        </svg>
+      </button>
+      <button class="fab fab-sm" id="btnPhotos" type="button" title="Sistema le foto del viaggio nelle tappe giuste" aria-label="Sistema le foto nel Diario" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3.6 9.2a1.8 1.8 0 0 1 1.8-1.8h1.9l1.1-1.9h6.2l1.1 1.9h1.9a1.8 1.8 0 0 1 1.8 1.8v7.8a1.8 1.8 0 0 1-1.8 1.8H5.4a1.8 1.8 0 0 1-1.8-1.8z"/>
+          <circle cx="12" cy="12.9" r="3.1"/>
         </svg>
       </button>
       <button class="fab" id="btnExpense" type="button" title="Registra una spesa" aria-label="Registra una spesa" hidden>
@@ -1657,22 +1725,6 @@ body.hide-legs .leg-lab{display:none}
           </svg>
         </button>
       </div>
-      <div class="mf-wrap mf-sep" id="fltGuideWrap">
-        <button class="map-fbtn" id="fltGuide" type="button" title="Rivedi la guida" aria-label="Rivedi la guida">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="8.8"/>
-            <path d="M9.7 9.4a2.35 2.35 0 1 1 3.5 2.05c-.75.45-1.2.9-1.2 1.75v.5"/>
-            <circle cx="12" cy="16.9" r="1" style="fill:currentColor;stroke:none"/>
-          </svg>
-        </button>
-      </div>
-      <div class="mf-wrap" id="fltMoreWrap">
-        <button class="map-fbtn" id="fltMore" type="button" title="Altro" aria-label="Altro">
-          <svg viewBox="0 0 24 24" aria-hidden="true" style="fill:currentColor;stroke:none">
-            <circle cx="5.6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.4" cy="12" r="1.8"/>
-          </svg>
-        </button>
-      </div>
     </div>
   </div>
 </div>
@@ -1727,6 +1779,15 @@ body.hide-legs .leg-lab{display:none}
       </svg>
       <span class="tab-lab">Mappa</span>
     </button>
+    <!-- Un posto solo per le cose che valgono in tutte le sezioni: prima erano
+         cinque icone in testata più il ⋯ e il ? sulla mappa, e nessuna diceva
+         cosa faceva. -->
+    <button id="tabMenu" title="Menù: viaggi, condivisione, guida" aria-label="Menù">
+      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.4 7.4h15.2M4.4 12h15.2M4.4 16.6h15.2"/>
+      </svg>
+      <span class="tab-lab">Menù</span>
+    </button>
   </div>
 </div>
 
@@ -1738,20 +1799,46 @@ body.hide-legs .leg-lab{display:none}
     <div class="sheet-actions">
       <button class="btn" id="wcStart" style="flex:1">Inizia a viaggiare</button>
     </div>
-    <p class="wc-note">Puoi rivederlo quando vuoi dal ⋯ in alto</p>
+    <p class="wc-note">Puoi rivederlo quando vuoi dal Menù, in fondo alla barra</p>
   </div>
 </div>
 
 <div class="veil" id="moreVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
     <h2 id="moreTitle">Menù del viaggio</h2>
-    <div class="more-list">
-      <button class="chip" id="btnTrips" title="Apri, rinomina o crea un altro viaggio">🧳 I tuoi viaggi</button>
-      <button class="chip" id="btnShareTrip" title="Genera un codice per condividere questo viaggio con un altro dispositivo">🔗 Condividi questo viaggio</button>
-      <button class="chip" id="btnJoinTrip" title="Scarica un viaggio condiviso incollando il suo codice">🔑 Unisciti a un viaggio</button>
-      <button class="chip" id="btnInstall" hidden title="Installa Waynder sul dispositivo">⤓ Installa l'app</button>
-      <button class="chip" id="btnEmptyInspire" title="Cerca una nazione o una città: aggiungo le tappe migliori sulla mappa, in Brainstorming">✨ Non sai ancora dove andare?</button>
-      <button class="chip" id="btnReplayGuide" title="Rivedi il tutorial e i suggerimenti di ogni sezione">📘 Rivedi la guida</button>
+    <p class="hint" style="padding:0 0 12px">Le cose che valgono per tutto il viaggio, non per la sezione che hai davanti.</p>
+    <div class="menu-list">
+      <button class="hub-row" id="btnTripsHub" type="button">
+        <span class="hub-ic">🧳</span>
+        <span><h3>I tuoi viaggi</h3><p>Apri un altro viaggio, rinominalo, creane uno nuovo o salva una copia del file.</p></span>
+      </button>
+      <button class="hub-row" id="btnShareHub" type="button">
+        <span class="hub-ic">🔗</span>
+        <span><h3>Viaggiate insieme</h3><p>Manda questo viaggio a chi parte con te, o unisciti al suo con il codice che ti ha passato.</p></span>
+      </button>
+      <button class="hub-row" id="btnOffline" type="button">
+        <span class="hub-ic">⤓</span>
+        <span><h3>Mappa senza rete</h3><p>Scarica la zona del viaggio: in giro la mappa resta anche dove non prende.</p></span>
+      </button>
+      <button class="hub-row" id="btnInstall" type="button" hidden>
+        <span class="hub-ic">📲</span>
+        <span><h3>Installa Waynder</h3><p>Sulla schermata iniziale del telefono, e si apre a schermo pieno come le altre app.</p></span>
+      </button>
+      <button class="hub-row" id="btnGuideHub" type="button">
+        <span class="hub-ic">📘</span>
+        <span><h3>Rivedi la guida</h3><p>Il giro di presentazione e i suggerimenti di ogni sezione, da rileggere quando vuoi.</p></span>
+      </button>
+    </div>
+    <!-- comandi veri, azionati dalle righe qui sopra e dal riquadro "Viaggiate
+         insieme": restano nel documento perché è a loro che sono attaccati i
+         gestori, ma non si vedono più come pastiglie -->
+    <div class="menu-hide">
+      <input type="file" id="photoBatch" accept="image/*" multiple hidden>
+      <button class="chip" id="btnTrips" type="button">I tuoi viaggi</button>
+      <button class="chip" id="btnShareTrip" type="button">Condividi questo viaggio</button>
+      <button class="chip" id="btnJoinTrip" type="button">Unisciti a un viaggio</button>
+      <button class="chip" id="btnEmptyInspire" type="button">Non sai ancora dove andare?</button>
+      <button class="chip" id="btnReplayGuide" type="button">Rivedi la guida</button>
     </div>
     <p class="more-ver mono">Waynder <span id="verTag"></span></p>
     <div class="sheet-actions">
@@ -1867,6 +1954,9 @@ body.hide-legs .leg-lab{display:none}
       <span><b>Bimbo</b><span class="info-btn" tabindex="0" data-info="Da usare per i posti comodi con un bambino piccolo: si arriva col passeggino, non ci sono scale o sentieri difficili, e c'è qualcosa che lo diverte. Il pin porta il simbolo del passeggino, così scegli in fretta la tappa giusta quando la giornata si complica.">i</span></span>
     </button>
     </div>
+    <label>Orari di apertura <span class="info-btn" tabindex="0" data-info="Gli orari arrivano da OpenStreetMap, la mappa libera che alimenta anche i luoghi suggeriti. Sono scritti dai volontari, quindi possono essere vecchi o incompleti: valgono come primo controllo, non come garanzia. Prima di andarci, verifica sul sito del posto.">i</span></label>
+    <div class="oh-box empty-oh" id="fOhBox">Non li ho ancora cercati.</div>
+    <button class="chip" id="fOhGet" style="margin-top:7px" type="button">🕑 Cerca gli orari</button>
     <!-- "Visitata" viveva qui: si segna dal Diario, dove ha senso (segna come
          fatta, racconta, allega le foto), non nella scheda di programmazione. -->
     <label>Immagine <span class="info-btn" tabindex="0" data-info="Se la tappa non ha una foto, l'app ne mette una da sé: la più vicina al punto fra quelle pubbliche di Wikimedia Commons. Non ti piace? Toccane un'altra tra le dieci proposte, o 🔍 per vederne altre. 📁 prende una foto dal telefono o dal computer, oppure incolli qui il link di un'immagine già online.">i</span></label>
@@ -1920,6 +2010,59 @@ body.hide-legs .leg-lab{display:none}
     <div id="wxBody"></div>
     <div class="sheet-actions">
       <button class="btn ghost" id="wxClose" style="flex:1">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="offVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="offT">
+    <h2 id="offT">Mappa offline</h2>
+    <p class="hint" style="padding:0 0 4px">Scarica ora, con il wifi, i riquadri di mappa della zona del viaggio: all'estero senza dati la mappa resta disegnata invece di diventare grigia.</p>
+    <label for="offArea">Zona</label>
+    <select class="field" id="offArea"></select>
+    <label for="offZoom">Quanto dettaglio</label>
+    <select class="field" id="offZoom">
+      <option value="13">Essenziale — si riconoscono le strade grandi</option>
+      <option value="14" selected>Buono — si leggono le vie</option>
+      <option value="15">Dettagliato — anche i vicoli</option>
+    </select>
+    <div class="off-bar" id="offBar" hidden><i></i></div>
+    <p class="off-stat" id="offStat">—</p>
+    <div class="sheet-actions">
+      <button class="btn" id="offGo" style="flex:1">⤓ Scarica la mappa</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="offClear" style="flex:1">Svuota</button>
+      <button class="btn ghost" id="offClose" style="flex:1">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="cardsVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cardsT">
+    <h2 id="cardsT">Cartoline</h2>
+    <p class="hint" style="padding:0 0 4px">Una immagine per tappa, con la foto, il giorno e il nome: da mandare in chat o da pubblicare. La copertina raccoglie il percorso di tutto il viaggio.</p>
+    <label for="cardsPick">Cosa metto in cartolina</label>
+    <select class="field" id="cardsPick"></select>
+    <label>Formato</label>
+    <div class="cards-fmt">
+      <button type="button" data-fmt="sq" class="on">Quadrata 4:5</button>
+      <button type="button" data-fmt="story">Storia 9:16</button>
+    </div>
+    <div class="cards-wrap" style="margin-top:13px">
+      <div class="cards-stage" id="cardsStage"><p>Preparo…</p></div>
+      <div class="cards-nav">
+        <button type="button" id="cardsPrev" aria-label="Precedente">‹</button>
+        <span class="cards-count mono" id="cardsCount">— / —</span>
+        <button type="button" id="cardsNext" aria-label="Successiva">›</button>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn" id="cardsSave" style="flex:1">↓ Scarica</button>
+      <button class="btn ghost" id="cardsShare" style="flex:1" hidden>⇪ Condividi</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="cardsClose" style="flex:1">Chiudi</button>
     </div>
   </div>
 </div>
@@ -2116,7 +2259,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v73';
+const APP_VERSION = 'v79';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2212,7 +2355,7 @@ const fresh = () => ({
 /* ============ mappa ============ */
 const map = L.map('map',{zoomControl:false}).setView([45,9],5);
 L.control.zoom({position:'bottomright'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+const tileL = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
   maxZoom:19, attribution:'© OpenStreetMap · © CARTO'
 }).addTo(map);
 const layer = L.layerGroup().addTo(map);
@@ -2323,8 +2466,13 @@ function badge(mode){
 /* Campi che NON sono contenuto: le marche temporali, e la contabilità locale
    degli allegati già caricati (imgUrl/imgUrlSrc/fileUrl/fileUrlSrc/
    diaryPhotoCache), che esiste solo sul dispositivo che ha fatto l'upload e
-   non deve far sembrare "modificata" una tappa che nessuno ha toccato. */
-const NON_CONTENT = ['mAt','mBy','imgUrl','imgUrlSrc','fileUrl','fileUrlSrc','diaryPhotoCache'];
+   non deve far sembrare "modificata" una tappa che nessuno ha toccato.
+
+   Dalla v78 anche il meteo (wx/wxDetail): arriva da solo all'apertura del
+   viaggio e scade ogni sei ore, quindi bastava aprire l'app perché ogni
+   giorno del viaggio risultasse "modificato da me" e l'altro dispositivo si
+   ritrovasse modifiche da approvare che nessuno aveva fatto. */
+const NON_CONTENT = ['mAt','mBy','imgUrl','imgUrlSrc','fileUrl','fileUrlSrc','diaryPhotoCache','oh','ohNone','wx','wxDetail'];
 function stripStamp(e){
   const rest = {...e};
   NON_CONTENT.forEach(k => delete rest[k]);
@@ -2478,6 +2626,15 @@ async function boot(){
   startupView();
   /* al primo avvio non si chiama: ci pensa la fine del tutorial (o il rifiuto
      dell'invito), altrimenti i due popup partono insieme */
+  const invite = pendingJoinCode();
+  if(invite){
+    /* un invito appena aperto è la cosa più urgente: niente inviti al tutorial
+       né "lasciati ispirare" sopra il viaggio che sta arrivando */
+    subscribeShared(state.shareId);
+    try{ await joinTrip(invite); }
+    catch(e){ noteCard('Invito non aperto', 'Non sono riuscito a scaricare il viaggio di questo collegamento. Riprova quando la rete è più stabile.'); }
+    return;
+  }
   if(lsGet(OB_KEY)) maybeSuggestInspire();
   subscribeShared(state.shareId);
 }
@@ -3121,13 +3278,84 @@ async function handleIncomingShared(incoming, serverAt){
     await applyMerged(merged, summarizeMerge(before, merged));
     return;
   }
+  /* Nessun altro dispositivo collegato adesso: le due versioni non si stanno
+     davvero pestando i piedi, è solo che uno ha lavorato dopo l'altro. Vince
+     la marca temporale più recente voce per voce (la stessa regola della
+     scorciatoia "tieni la più recente" del riquadro) e non si chiede niente.
+     Il ripristino resta la rete di sicurezza: sopra è già stato salvato un
+     punto di ritorno con backupSnapshot. */
+  if(!peersOnline()){
+    const auto = new Map();
+    conflicts.forEach(c => auto.set(conflictKey(c), c.kind === 'delete-vs-modify'
+      ? (c.mine === null ? 'theirs' : 'mine')
+      : ((c.mine.mAt||0) >= (c.theirs.mAt||0) ? 'mine' : 'theirs')));
+    applyConflictResolutions(merged, conflicts, auto);
+    await applyMerged(merged, summarizeMerge(before, merged) || 'Aggiornato con l\u2019ultima versione online');
+    return;
+  }
   conflictCard(conflicts, async resolutions => {
     applyConflictResolutions(merged, conflicts, resolutions);
     await applyMerged(merged, summarizeMerge(before, merged));
   });
 }
 
+/* ============ chi è collegato adesso ============ */
+/* Il senso: se sul viaggio ci sono adesso due dispositivi, una modifica alla
+   stessa tappa è plausibile e vale la pena chiedere. Se invece si è da soli
+   — il caso normale: uno pianifica la sera, l'altra il giorno dopo — non c'è
+   niente da chiedere: l'ultima versione online è la buona, si adotta e basta.
+   Ogni dispositivo scrive un battito in trips/{id}/presence/{deviceId} e
+   legge gli altri; un battito più vecchio di PEER_TTL non conta più. */
+const PEER_TTL = 75000, PEER_BEAT = 25000;
+let unsubPeers = null, peerBeat = null, peerIds = new Set(), peerWarned = false, peerShare = null;
+const peersOnline = () => peerIds.size;
+
+function peerDoc(shareId){
+  return fbDb.collection('trips').doc(shareId).collection('presence').doc(DEVICE_ID);
+}
+async function beatPresence(shareId){
+  if(!fbReady || !shareId) return;
+  try{ await peerDoc(shareId).set({at: firebase.firestore.FieldValue.serverTimestamp()}); }catch(e){}
+}
+function paintPeerMark(){
+  const el = document.getElementById('peerMark');
+  if(el) el.hidden = !peersOnline();
+}
+function subscribePresence(shareId){
+  if(unsubPeers){ unsubPeers(); unsubPeers = null; }
+  if(peerBeat){ clearInterval(peerBeat); peerBeat = null; }
+  if(peerShare && peerShare !== shareId){ try{ peerDoc(peerShare).delete(); }catch(e){} }
+  peerIds = new Set(); peerWarned = false; peerShare = shareId || null;
+  paintPeerMark();
+  if(!fbReady || !shareId) return;
+  beatPresence(shareId);
+  peerBeat = setInterval(() => { if(!document.hidden) beatPresence(shareId); }, PEER_BEAT);
+  unsubPeers = fbDb.collection('trips').doc(shareId).collection('presence').onSnapshot(snap => {
+    const now = Date.now(), live = new Set();
+    snap.forEach(doc => {
+      if(doc.id === DEVICE_ID) return;
+      const at = doc.data().at;
+      if(at && now - at.toMillis() < PEER_TTL) live.add(doc.id);
+    });
+    const nuovo = [...live].some(id => !peerIds.has(id));
+    peerIds = live;
+    paintPeerMark();
+    if(nuovo && !peerWarned){
+      peerWarned = true;
+      toast('Siete in due su questo viaggio in questo momento: se toccate la stessa tappa, dopo bisogna scegliere quale versione tenere.');
+    }
+    if(!live.size) peerWarned = false;
+  }, () => {});
+}
+window.addEventListener('pagehide', () => {
+  if(peerShare){ try{ peerDoc(peerShare).delete(); }catch(e){} }
+});
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && peerShare) beatPresence(peerShare);
+});
+
 function subscribeShared(shareId){
+  subscribePresence(shareId);
   if(unsubShare){ unsubShare(); unsubShare = null; }
   if(!fbReady || !shareId) return;
   unsubShare = fbDb.collection('trips').doc(shareId).onSnapshot(async snap => {
@@ -3154,6 +3382,35 @@ async function shareTrip(){
     'Comunica questo codice alla tua compagna di viaggio (a voce, in chat…): lo inserirà con "Unisciti con un codice".',
     '<b>' + esc(state.shareId) + '</b>'
   ]);
+}
+
+/* Il codice da dettare era il punto in cui la condivisione si arenava: nessuno
+   detta vent'otto caratteri casuali. Il collegamento si manda in chat e fa tutto
+   da sé; il codice resta come ripiego per chi non può toccarlo. */
+function joinLink(code){
+  return location.origin + location.pathname + '#j=' + encodeURIComponent(code);
+}
+async function copyText(s){
+  try{ await navigator.clipboard.writeText(s); return true; }
+  catch(e){
+    /* Safari nega la scrittura fuori da un gesto diretto: ripiego sul vecchio
+       comando, che vuole un campo vero in pagina */
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = s; ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove(); return ok;
+    }catch(e2){ return false; }
+  }
+}
+/* Codice arrivato nell'indirizzo (#j=…): lo consumo subito e pulisco la barra,
+   altrimenti a ogni ricarica l'app riproverebbe a unirsi. */
+function pendingJoinCode(){
+  const m = /[#&]j=([^&]+)/.exec(location.hash || '');
+  if(!m) return null;
+  history.replaceState(null, '', location.pathname + location.search);
+  try{ return decodeURIComponent(m[1]); }catch(e){ return m[1]; }
 }
 
 async function joinTrip(code){
@@ -4275,7 +4532,7 @@ async function emptyInspireLoad(t){
   }
 }
 document.getElementById('btnEmptyInspire').onclick = openEmptyInspire;
-document.getElementById('btnInspHead').onclick = openEmptyInspire;
+document.getElementById('btnInsp').onclick = openEmptyInspire;
 document.getElementById('eiGo').onclick = emptyInspireSearch;
 document.getElementById('eiQ').addEventListener('keydown', e => { if(e.key === 'Enter') emptyInspireSearch(); });
 document.getElementById('eiClose').onclick = () => { document.getElementById('emptyInspVeil').hidden = true; };
@@ -5113,6 +5370,7 @@ function dayBlock(d, list){
           closeSheetMobile();
         }},
         {label:'Apri in Google Maps', onClick: () => openInGmaps(d, routeList(d))},
+        {label:'Ordina per il percorso più corto', onClick: () => sortDay(d)},
         {label:'Elimina il giorno', danger:true, onClick: () => confirmCard({
           ic: 'list',
           t: 'Elimino ' + esc(d.name) + '?',
@@ -5199,7 +5457,7 @@ function dayBlock(d, list){
             ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="">'
             : thumbPlaceholderHTML(p)) +
           '<div class="stop-body">' +
-            '<p class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+'</p>' +
+            '<p class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+ohClosedTag(p)+'</p>' +
             (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
             (links ? '<div class="links">'+links+'</div>' : '') +
           '</div>' +
@@ -5252,7 +5510,7 @@ function dayBlock(d, list){
             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+typeOf(p).d+'"/></svg>' +
           '</span>' +
           '<div class="alt-body">' +
-            '<button class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag">☂</i>':'')+(p.kid?' <i class="kid-tag">👶</i>':'')+'</button>' +
+            '<button class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag">☂</i>':'')+(p.kid?' <i class="kid-tag">👶</i>':'')+ohClosedTag(p)+'</button>' +
             (p.img ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
             (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
             (links ? '<div class="links">'+links+'</div>' : '') +
@@ -5537,10 +5795,12 @@ function diaryStopCard(p, color, brain){
     '<div class="diary-top">' +
       '<span class="alt-node" title="'+esc(typeOf(p).label)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+typeOf(p).d+'"/></svg></span>' +
       '<button class="stop-name">'+esc(p.name)+'</button>' +
-      '<button class="toggle-mini'+(p.visited?' on':'')+'">'+(p.visited?'✓ Visitata':'Segna come fatta')+'</button>' +
+      '<button class="toggle-mini vis'+(p.visited?' on':'')+'">'+(p.visited?'✓ Visitata':'Segna come fatta')+'</button>' +
+      '<button class="toggle-mini card-mini" title="Fai la cartolina di questa tappa" aria-label="Cartolina">🖼</button>' +
     '</div>';
   div.querySelector('.stop-name').onclick = () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); };
-  div.querySelector('.toggle-mini').onclick = () => {
+  div.querySelector('.card-mini').onclick = () => openCards(p.id);
+  div.querySelector('.toggle-mini.vis').onclick = () => {
     p.visited = !p.visited;
     if(p.visited && !p.visitedAt) p.visitedAt = Date.now();
     if(p.visited) coach('diary');
@@ -5649,6 +5909,843 @@ function openInGmaps(d, list){
   document.getElementById('gmapsTitle').textContent = d.name + ' su Google Maps';
   document.getElementById('gmapsVeil').hidden = false;
 }
+
+/* ============ foto del viaggio nel Diario ============ */
+/* Le foto sanno già dove sono state scattate: dentro il file, accanto
+   all'immagine, c'è la posizione del GPS e l'istante dell'otturatore. Basta
+   leggerli per far cadere ogni foto nella tappa giusta, invece di caricarle
+   una per una a mano. Chi ha il GPS spento non perde niente: quelle foto
+   restano fuori e lo dico. */
+function exifOf(file){
+  return new Promise(res => {
+    const rd = new FileReader();
+    rd.onerror = () => res(null);
+    rd.onload = () => { try{ res(parseExif(new DataView(rd.result))); }catch(e){ res(null); } };
+    /* l'EXIF sta all'inizio del file: leggerne 512 KB basta e non impegna la memoria */
+    rd.readAsArrayBuffer(file.slice(0, 512*1024));
+  });
+}
+function parseExif(v){
+  if(v.byteLength < 12 || v.getUint16(0) !== 0xFFD8) return null;
+  let off = 2, app1 = -1;
+  while(off + 4 < v.byteLength){
+    if(v.getUint8(off) !== 0xFF) break;
+    const mark = v.getUint8(off+1), len = v.getUint16(off+2);
+    if(mark === 0xE1 && v.getUint32(off+4) === 0x45786966){ app1 = off + 10; break; }
+    if(mark === 0xDA) break;
+    off += 2 + len;
+  }
+  if(app1 < 0) return null;
+  const le = v.getUint16(app1) === 0x4949;
+  const u16 = o => v.getUint16(o, le), u32 = o => v.getUint32(o, le);
+  if(u16(app1+2) !== 0x2A) return null;
+  const readIFD = base => {
+    const out = {};
+    const n = u16(base);
+    for(let i=0;i<n;i++){
+      const e = base + 2 + i*12;
+      out[u16(e)] = {type: u16(e+2), count: u32(e+4), val: e+8};
+    }
+    return out;
+  };
+  const rat = (o,k) => { const out = []; for(let i=0;i<k;i++){ const d = u32(o+i*8+4); out.push(d ? u32(o+i*8)/d : 0); } return out; };
+  const str = (o,k) => { let s = ''; for(let i=0;i<k;i++){ const c = v.getUint8(o+i); if(!c) break; s += String.fromCharCode(c); } return s; };
+  const deref = e => e.count * ({1:1,2:1,3:2,4:4,5:8,7:1,9:4,10:8}[e.type] || 1) > 4 ? app1 + u32(e.val) : e.val;
+  const ifd0 = readIFD(app1 + u32(app1+4));
+  let at = null, lat = null, lng = null;
+  if(ifd0[0x8769]){
+    const sub = readIFD(app1 + u32(ifd0[0x8769].val));
+    const t = sub[0x9003] || sub[0x9004];
+    if(t){
+      const s = str(deref(t), t.count);
+      const m = /^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(s);
+      if(m) at = new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +m[6]).getTime();
+    }
+  }
+  if(ifd0[0x8825]){
+    const g = readIFD(app1 + u32(ifd0[0x8825].val));
+    const dms = e => { const d = rat(deref(e), 3); return d[0] + d[1]/60 + d[2]/3600; };
+    if(g[2] && g[4]){
+      lat = dms(g[2]); lng = dms(g[4]);
+      if(g[1] && /S/i.test(str(deref(g[1]), 2))) lat = -lat;
+      if(g[3] && /W/i.test(str(deref(g[3]), 2))) lng = -lng;
+    }
+  }
+  return (lat != null || at) ? {lat, lng, at} : null;
+}
+const PHOTO_NEAR_KM = 0.45;   // oltre mezzo chilometro non è più "quella tappa"
+async function importPhotos(files){
+  const cands = state.places.filter(p => p.dayId);
+  if(!cands.length){
+    noteCard('Prima le tappe', 'Le foto si sistemano nelle tappe già presenti in un giorno: aggiungine qualcuna e poi riprova.');
+    return;
+  }
+  let done = 0, noGps = 0, tooFar = 0, full = 0;
+  const touched = new Set();
+  for(const f of files){
+    const ex = await exifOf(f);
+    if(!ex || ex.lat == null){ noGps++; continue; }
+    /* a parità di distanza vince la tappa del giorno in cui la foto è stata
+       scattata: due tappe vicine in giorni diversi non si rubano le foto */
+    const iso = ex.at ? new Date(ex.at).toISOString().slice(0,10) : null;
+    let best = null, bestD = Infinity;
+    cands.forEach(p => {
+      let d = km({lat:ex.lat, lng:ex.lng}, p);
+      const day = dayOf(p.dayId);
+      if(iso && day && day.date && day.date !== iso) d += 1.2;
+      if(d < bestD){ bestD = d; best = p; }
+    });
+    if(!best || bestD > PHOTO_NEAR_KM + (iso ? 1.2 : 0) && bestD > PHOTO_NEAR_KM){ tooFar++; continue; }
+    best.diaryPhotos = best.diaryPhotos || [];
+    if(best.diaryPhotos.length >= DIARY_PHOTO_MAX){ full++; continue; }
+    const data = await new Promise(r => shrinkImage(f, r));
+    if(!data){ noGps++; continue; }
+    best.diaryPhotos.push(data);
+    if(!best.visited){ best.visited = true; best.visitedAt = ex.at || Date.now(); }
+    touched.add(best.name);
+    done++;
+  }
+  if(done) { save(); render(); }
+  const lines = [];
+  lines.push(done
+    ? '<b>' + done + (done === 1 ? ' foto sistemata' : ' foto sistemate')
+      + '</b> in ' + touched.size + (touched.size === 1 ? ' tappa' : ' tappe') + ': ' + [...touched].map(esc).join(', ') + '.'
+    : 'Nessuna foto è finita in una tappa.');
+  if(noGps) lines.push(noGps + (noGps === 1 ? ' foto non ha' : ' foto non hanno') + ' la posizione salvata dentro il file: quelle vanno aggiunte a mano dalla tappa, nel Diario. (Sul telefono si attiva da Impostazioni → Fotocamera → Posizione.)');
+  if(tooFar) lines.push(noGps || done ? tooFar + ' scattate lontano da ogni tappa: le ho lasciate fuori.' : tooFar + ' foto sono state scattate lontano da ogni tappa del viaggio.');
+  if(full) lines.push(full + ' non ci stavano: quella tappa ha già il massimo delle foto.');
+  noteCard(done ? 'Diario aggiornato' : 'Non ho sistemato niente', lines, 'diary');
+}
+document.getElementById('btnPhotos').onclick = () => document.getElementById('photoBatch').click();
+document.getElementById('photoBatch').onchange = async e => {
+  const files = [...e.target.files];
+  e.target.value = '';
+  if(!files.length) return;
+  toast('Leggo ' + files.length + ' foto…');
+  await importPhotos(files);
+};
+
+/* ============ mappa offline ============ */
+/* La mappa è l'unica parte dell'app che senza rete non c'è: i riquadri sono
+   di terzi e si scaricano a vista. Qui li prendo tutti in una volta, per la
+   zona del viaggio, mentre c'è il wifi. Vanno in una cache tutta loro, che il
+   service worker non sfoltisce mai: le mappe di un viaggio non devono sparire
+   perché nel frattempo si è girato mezzo mondo sulla mappa. */
+const TILE_OFFLINE_CACHE = 'rotta-tiles-offline';
+const lon2x = (lon,z) => Math.floor((lon+180)/360 * Math.pow(2,z));
+const lat2y = (lat,z) => {
+  const r = lat*Math.PI/180;
+  return Math.floor((1 - Math.log(Math.tan(r) + 1/Math.cos(r))/Math.PI)/2 * Math.pow(2,z));
+};
+const OFF_ZMIN = 9, OFF_CAP = 2600;
+/* L'indirizzo va composto con le stesse regole di Leaflet — sottodominio scelto
+   da x+y e @2x sugli schermi fitti — altrimenti scaricherei riquadri che poi la
+   mappa non chiede mai, e la cache non combacerebbe. getTileUrl() di Leaflet non
+   serve: ignora lo zoom passato e usa quello della mappa in quel momento. */
+function offTileUrl(t){
+  const subs = (tileL.options.subdomains || 'abc');
+  return L.Util.template(tileL._url, {
+    s: subs[Math.abs(t.x + t.y) % subs.length],
+    x: t.x, y: t.y, z: t.z,
+    r: L.Browser.retina ? '@2x' : ''
+  });
+}
+function offBBox(){
+  const v = document.getElementById('offArea').value || 'all';
+  const pts = v === 'all' ? state.places.filter(p => p.dayId || !p.dayId) : all(v.slice(4));
+  const list = pts.filter(p => typeof p.lat === 'number');
+  (state.bases||[]).forEach(b => { if(v === 'all' && typeof b.lat === 'number') list.push(b); });
+  if(!list.length) return null;
+  const pad = 0.02;
+  return {
+    n: Math.max(...list.map(p=>p.lat)) + pad, s: Math.min(...list.map(p=>p.lat)) - pad,
+    e: Math.max(...list.map(p=>p.lng)) + pad, w: Math.min(...list.map(p=>p.lng)) - pad
+  };
+}
+function offTiles(){
+  const bb = offBBox();
+  if(!bb) return [];
+  const zmax = +document.getElementById('offZoom').value;
+  const out = [];
+  for(let z = OFF_ZMIN; z <= zmax; z++){
+    const x0 = lon2x(bb.w,z), x1 = lon2x(bb.e,z);
+    const y0 = lat2y(bb.n,z), y1 = lat2y(bb.s,z);
+    for(let x = x0; x <= x1; x++) for(let y = y0; y <= y1; y++) out.push({x,y,z});
+    if(out.length > OFF_CAP * 3) break;
+  }
+  return out;
+}
+function offSay(){
+  const t = offTiles();
+  const stat = document.getElementById('offStat');
+  const go = document.getElementById('offGo');
+  if(!t.length){ stat.textContent = 'Questo viaggio non ha ancora tappe sulla mappa.'; go.disabled = true; return; }
+  const mb = Math.round(t.length * 0.022 * 10)/10;   // ~22 KB per riquadro
+  if(t.length > OFF_CAP){
+    stat.innerHTML = 'Servirebbero <b>' + t.length + ' riquadri</b>: troppi. Abbassa il dettaglio, o scarica un giorno alla volta.';
+    go.disabled = true; return;
+  }
+  stat.innerHTML = '<b>' + t.length + ' riquadri</b>, circa <b>' + String(mb).replace('.',',') + ' MB</b>. Meglio con il wifi.';
+  go.disabled = false;
+}
+async function offCount(){
+  try{ return (await (await caches.open(TILE_OFFLINE_CACHE)).keys()).length; }catch(e){ return 0; }
+}
+async function openOffline(){
+  const sel = document.getElementById('offArea');
+  sel.innerHTML = '';
+  const opt = (v,t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); };
+  opt('all','Tutto il viaggio');
+  state.days.forEach(d => { if(all(d.id).length) opt('day:'+d.id, d.name); });
+  document.getElementById('offBar').hidden = true;
+  document.getElementById('offVeil').hidden = false;
+  offSay();
+  const n = await offCount();
+  const clr = document.getElementById('offClear');
+  clr.disabled = !n;
+  clr.textContent = n ? 'Svuota (' + n + ')' : 'Svuota';
+}
+document.getElementById('btnOffline').onclick = openOffline;
+document.getElementById('offClose').onclick = () => { document.getElementById('offVeil').hidden = true; };
+document.getElementById('offVeil').onclick = e => { if(e.target === document.getElementById('offVeil')) document.getElementById('offVeil').hidden = true; };
+document.getElementById('offArea').onchange = offSay;
+document.getElementById('offZoom').onchange = offSay;
+document.getElementById('offClear').onclick = async () => {
+  await caches.delete(TILE_OFFLINE_CACHE);
+  toast('Mappe offline svuotate');
+  openOffline();
+};
+let offBusy = false;
+document.getElementById('offGo').onclick = async () => {
+  if(offBusy) return;
+  const tiles = offTiles();
+  if(!tiles.length || tiles.length > OFF_CAP) return;
+  offBusy = true;
+  const bar = document.getElementById('offBar'), fill = bar.querySelector('i');
+  const stat = document.getElementById('offStat'), go = document.getElementById('offGo');
+  bar.hidden = false; go.disabled = true;
+  const was = go.textContent; go.textContent = 'Scarico…';
+  let ok = 0, fail = 0, i = 0;
+  const c = await caches.open(TILE_OFFLINE_CACHE);
+  const worker = async () => {
+    while(i < tiles.length){
+      const t = tiles[i++];
+      const url = offTileUrl(t);
+      try{
+        if(await c.match(url)){ ok++; }
+        else {
+          const res = await fetch(url, {mode:'cors'});
+          if(res && res.status === 200){ await c.put(url, res); ok++; } else fail++;
+        }
+      }catch(e){ fail++; }
+      const pct = Math.round((ok+fail)/tiles.length*100);
+      fill.style.width = pct + '%';
+      stat.innerHTML = '<b>' + pct + '%</b> · ' + (ok+fail) + ' di ' + tiles.length + ' riquadri';
+    }
+  };
+  await Promise.all([worker(),worker(),worker(),worker(),worker(),worker()]);
+  go.textContent = was; offBusy = false;
+  stat.innerHTML = fail
+    ? '<b>' + ok + ' riquadri salvati</b>, ' + fail + ' non arrivati: riprova per completare la zona.'
+    : '<b>Zona salvata.</b> Adesso questa mappa si apre anche senza rete.';
+  const n = await offCount();
+  const clr = document.getElementById('offClear');
+  clr.disabled = !n; clr.textContent = 'Svuota (' + n + ')';
+  offSay(); go.disabled = false;
+};
+
+/* ============ ordina il giorno ============ */
+/* Trascinare le tappe a mano per accorciare il tragitto è un lavoro che sa fare
+   la macchina. Su 5-10 tappe il giro più corto si trova in un istante: parto dal
+   vicino più prossimo e poi raddrizzo i nodi (2-opt). La base di partenza e
+   quella di arrivo restano ferme dove sono: sono l'alloggio, non una tappa.
+   Non riordino di mia iniziativa — propongo, e dico quanto si risparmia. */
+function pathKm(list){
+  let t = 0;
+  for(let i=1;i<list.length;i++) t += km(list[i-1], list[i]);
+  return t;
+}
+function shortestOrder(mid, from, to){
+  if(mid.length < 3) return mid.slice();
+  const left = mid.slice();
+  const out = [];
+  let cur = from || left[0];
+  if(!from) out.push(left.shift());
+  while(left.length){
+    let bi = 0, bd = Infinity;
+    left.forEach((p,i) => { const d = km(cur, p); if(d < bd){ bd = d; bi = i; } });
+    cur = left.splice(bi,1)[0];
+    out.push(cur);
+  }
+  /* 2-opt: rovescio i tratti che si incrociano finché il giro non migliora più */
+  const full = () => [].concat(from ? [from] : [], out, to ? [to] : []);
+  let best = pathKm(full()), moved = true, guard = 0;
+  while(moved && guard++ < 60){
+    moved = false;
+    for(let i=0;i<out.length-1;i++){
+      for(let j=i+1;j<out.length;j++){
+        const seg = out.slice(i, j+1).reverse();
+        const trial = out.slice(0,i).concat(seg, out.slice(j+1));
+        const t = pathKm([].concat(from ? [from] : [], trial, to ? [to] : []));
+        if(t < best - 0.0005){ out.splice(0, out.length, ...trial); best = t; moved = true; }
+      }
+    }
+  }
+  return out;
+}
+function sortDay(d){
+  const seq = stops(d.id);
+  if(seq.length < 3){
+    noteCard('Poco da ordinare', 'Con meno di tre tappe in sequenza l\'ordine è già quello: sposta le tappe a mano dal ⋯ della tappa.');
+    return;
+  }
+  const from = baseOf(d.baseFromId), to = baseOf(d.baseToId);
+  const before = pathKm([].concat(from ? [from] : [], seq, to ? [to] : []));
+  const next = shortestOrder(seq, from, to);
+  const after = pathKm([].concat(from ? [from] : [], next, to ? [to] : []));
+  const same = next.every((p,i) => p.id === seq[i].id);
+  if(same || after >= before - 0.05){
+    noteCard('Va già bene così', ['Ho provato tutte le combinazioni: l\'ordine che hai messo è già il più corto (o ci va così vicino da non valere lo scambio).'], 'list');
+    return;
+  }
+  const saved = before - after;
+  confirmCard({
+    ic: 'list',
+    t: 'Riordino ' + esc(d.name) + '?',
+    p: ['Cambiando l\'ordine delle tappe il tragitto passa da <b>' + before.toFixed(1).replace('.',',') +
+        ' km</b> a <b>' + after.toFixed(1).replace('.',',') + ' km</b>: ' + saved.toFixed(1).replace('.',',') + ' km in meno.',
+        'Nuovo ordine: ' + next.map((p,i) => (i+1)+'. '+esc(p.name)).join(' · '),
+        'Le tappe fuori percorso e la base non si spostano. Attento agli orari: il giro più corto non tiene conto di quando i posti sono aperti.'],
+    no: 'Lascia come sta', yes: 'Riordina', danger: false,
+    onYes: () => {
+      /* riscrivo l'ordine dentro state.places: le tappe del giorno prendono
+         le posizioni che avevano, nell'ordine nuovo */
+      const slots = [];
+      state.places.forEach((p,i) => { if(seq.some(x => x.id === p.id)) slots.push(i); });
+      slots.forEach((idx,k) => { state.places[idx] = next[k]; });
+      save(); render();
+      toast('Giorno riordinato · ' + saved.toFixed(1).replace('.',',') + ' km in meno');
+    }
+  });
+}
+
+/* ============ orari di apertura ============ */
+/* Sapere che il castello chiude alle 17 vale più di dieci ritocchi grafici.
+   Gli orari arrivano da OpenStreetMap via Overpass: sono scritti dai volontari
+   nella sintassi opening_hours, che qui leggo solo nella parte comune
+   (giorni della settimana e fasce orarie). Tutto quello che non capisco resta
+   scritto per esteso, senza inventare un "aperto" che non so garantire. */
+const OH_DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const OH_IT = {Mo:'Lun', Tu:'Mar', We:'Mer', Th:'Gio', Fr:'Ven', Sa:'Sab', Su:'Dom'};
+
+function ohRules(raw){
+  const out = [];
+  for(let part of String(raw||'').split(';')){
+    part = part.trim();
+    if(!part) continue;
+    if(/^24\/7$/i.test(part)){ out.push({days:[0,1,2,3,4,5,6], spans:[[0,1440]], all:true}); continue; }
+    /* mesi, settimane, date e vacanze: fuori dal mio alfabeto. Se compaiono
+       lascio perdere l'interpretazione e mostro solo il testo originale. */
+    if(/jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|week|\[|ph|su\[|easter/i.test(part.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su)\b/g,''))) return null;
+    const m = /^((?:(?:Mo|Tu|We|Th|Fr|Sa|Su)(?:\s*-\s*(?:Mo|Tu|We|Th|Fr|Sa|Su))?\s*,?\s*)+)?(.*)$/.exec(part);
+    if(!m) return null;
+    const daySpec = (m[1]||'').trim(), rest = (m[2]||'').trim();
+    let days = [];
+    if(!daySpec) days = [0,1,2,3,4,5,6];
+    else for(const chunk of daySpec.split(',')){
+      const c = chunk.trim(); if(!c) continue;
+      const r = /^(Mo|Tu|We|Th|Fr|Sa|Su)\s*-\s*(Mo|Tu|We|Th|Fr|Sa|Su)$/.exec(c);
+      if(r){
+        let a = OH_DAYS.indexOf(r[1]), b = OH_DAYS.indexOf(r[2]);
+        for(let i=0;i<7;i++){ const k = (a+i)%7; days.push(k); if(k === b) break; }
+      } else if(OH_DAYS.indexOf(c) >= 0) days.push(OH_DAYS.indexOf(c));
+      else return null;
+    }
+    if(/^(off|closed)$/i.test(rest)){ out.push({days, spans:[], closed:true}); continue; }
+    const spans = [];
+    for(const t of rest.split(',')){
+      const tm = /^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/.exec(t.trim());
+      if(!tm) return null;
+      let a = +tm[1]*60 + +tm[2], b = +tm[3]*60 + +tm[4];
+      if(b <= a) b += 1440;   // chiude dopo mezzanotte
+      spans.push([a,b]);
+    }
+    if(!spans.length) return null;
+    out.push({days, spans});
+  }
+  return out.length ? out : null;
+}
+/* cosa dicono gli orari per una data precisa (l'unica domanda che serve
+   davvero mentre si programma: quel giorno è aperto?) */
+function ohOnDate(raw, iso){
+  const rules = ohRules(raw);
+  if(!rules || !iso) return null;
+  const wd = new Date(iso+'T00:00:00').getDay();
+  let hit = null;
+  for(const r of rules) if(r.days.indexOf(wd) >= 0) hit = r;   // l'ultima regola valida vince
+  if(!hit) return {open:false, text:'chiuso'};
+  if(hit.closed) return {open:false, text:'chiuso'};
+  if(hit.all) return {open:true, text:'sempre aperto'};
+  const fmt = m => String(Math.floor((m%1440)/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+  return {open:true, text: hit.spans.map(s => fmt(s[0])+'–'+fmt(s[1])).join(', ')};
+}
+/* le righe leggibili, una per gruppo di giorni, nell'ordine della settimana */
+function ohLines(raw){
+  const rules = ohRules(raw);
+  if(!rules) return null;
+  const perDay = {};
+  [1,2,3,4,5,6,0].forEach(wd => {
+    let hit = null;
+    for(const r of rules) if(r.days.indexOf(wd) >= 0) hit = r;
+    const fmt = m => String(Math.floor((m%1440)/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+    perDay[wd] = !hit ? 'chiuso' : hit.closed ? 'chiuso' : hit.all ? 'sempre aperto'
+      : hit.spans.map(s => fmt(s[0])+'–'+fmt(s[1])).join(', ');
+  });
+  const order = [1,2,3,4,5,6,0], out = [];
+  let start = 0;
+  for(let i=1;i<=order.length;i++){
+    if(i < order.length && perDay[order[i]] === perDay[order[start]]) continue;
+    const a = OH_IT[OH_DAYS[order[start]]], b = OH_IT[OH_DAYS[order[i-1]]];
+    out.push({days: start === i-1 ? a : a+'–'+b, hours: perDay[order[start]]});
+    start = i;
+  }
+  return out;
+}
+/* somiglianza grezza fra il nome della tappa e quello del luogo su OSM:
+   basta a scartare il bar accanto al museo */
+function ohNameScore(a, b){
+  const norm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ');
+  const A = norm(a).split(/\s+/).filter(w => w.length > 2), B = new Set(norm(b).split(/\s+/));
+  if(!A.length) return 0;
+  return A.filter(w => B.has(w)).length / A.length;
+}
+async function fetchHours(p){
+  const q = '[out:json][timeout:20];nwr(around:120,'+p.lat.toFixed(6)+','+p.lng.toFixed(6)+')["opening_hours"];out tags center 40;';
+  const r = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body:'data='+encodeURIComponent(q),
+    headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+  const j = await r.json();
+  const els = (j.elements||[]).filter(e => e.tags && e.tags.opening_hours);
+  if(!els.length) return null;
+  const best = els.map(e => {
+    const la = e.lat != null ? e.lat : (e.center && e.center.lat), ln = e.lon != null ? e.lon : (e.center && e.center.lon);
+    const dist = (la != null && ln != null) ? km(p, {lat:la, lng:ln}) : 9;
+    return {e, score: ohNameScore(p.name, e.tags.name || '') * 2 - dist};
+  }).sort((a,b) => b.score - a.score)[0];
+  return {raw: best.e.tags.opening_hours, name: best.e.tags.name || '', at: Date.now()};
+}
+/* contrassegno "chiuso" in elenco: vale solo quando il giorno ha una data
+   e gli orari li ho capiti — altrimenti niente, meglio muti che bugiardi */
+function ohClosedTag(p){
+  if(!p.oh || !p.oh.raw || !p.dayId) return '';
+  const d = dayOf(p.dayId);
+  if(!d || !d.date) return '';
+  const s = ohOnDate(p.oh.raw, d.date);
+  return s && !s.open ? ' <i class="oh-tag" title="Secondo OpenStreetMap quel giorno è chiuso — verifica">chiuso</i>' : '';
+}
+
+function renderOhBox(p){
+  const box = document.getElementById('fOhBox');
+  const btn = document.getElementById('fOhGet');
+  if(!box) return;
+  box.classList.remove('empty-oh');
+  if(!p.oh || !p.oh.raw){
+    box.classList.add('empty-oh');
+    box.textContent = p.ohNone
+      ? 'Su OpenStreetMap non risultano orari per questo punto.'
+      : 'Non li ho ancora cercati.';
+    if(btn) btn.textContent = p.ohNone ? '🕑 Riprova' : '🕑 Cerca gli orari';
+    return;
+  }
+  const lines = ohLines(p.oh.raw);
+  const d = p.dayId ? dayOf(p.dayId) : null;
+  const today = d && d.date ? ohOnDate(p.oh.raw, d.date) : null;
+  box.innerHTML =
+    (lines
+      ? lines.map(l => '<div class="oh-line"><span>'+esc(l.days)+'</span><span>'+esc(l.hours)+'</span></div>').join('')
+      : '<div>'+esc(p.oh.raw)+'</div>') +
+    (today
+      ? '<p class="oh-today '+(today.open?'ok':'no')+'">'+(today.open?'✓':'✕')+' '+esc(d.name)+': '+esc(today.open?today.text:'chiuso')+'</p>'
+      : '') +
+    '<p class="oh-src">Da OpenStreetMap' + (p.oh.name ? ' · '+esc(p.oh.name) : '') +
+      '. Li scrivono i volontari: possono essere vecchi o incompleti, <b>verifica sul sito del posto</b> prima di andarci.</p>';
+  if(btn) btn.textContent = '🕑 Aggiorna gli orari';
+}
+document.getElementById('fOhGet').onclick = async () => {
+  if(!editing) return;
+  const btn = document.getElementById('fOhGet');
+  const was = btn.textContent; btn.textContent = 'Cerco…'; btn.disabled = true;
+  try{
+    const oh = await fetchHours(editing);
+    if(oh){ editing.oh = oh; editing.ohNone = false; }
+    else { editing.oh = null; editing.ohNone = true; }
+    const live = state.places.find(x => x.id === editing.id);
+    if(live){ live.oh = editing.oh; live.ohNone = editing.ohNone; save(); redrawDays(); }
+    renderOhBox(editing);
+  }catch(e){
+    btn.textContent = was;
+    noteCard('Orari non arrivati', 'Il servizio degli orari (Overpass, di OpenStreetMap) non ha risposto. Riprova tra poco: è gestito da volontari e a volte è sovraccarico.');
+  }
+  btn.disabled = false;
+};
+
+/* ============ cartoline ============ */
+/* Un viaggio si racconta con le immagini, non con un PDF. Ogni tappa diventa
+   una cartolina disegnata su tela: la foto dentro una cornice crema come nelle
+   schede dell'app, il numero nel colore del giorno, il nome grande, la nota del
+   diario se c'è, e in fondo la firma. La copertina disegna il percorso: non una
+   mappa vera (le tessere sono di terzi e non si possono riversare in un'immagine)
+   ma il tracciato dei giorni, che è la forma del viaggio. */
+const CARD_FMT = {
+  sq:    {w:1080, h:1350, photo:700, label:'Quadrata 4:5'},
+  story: {w:1080, h:1920, photo:1060, label:'Storia 9:16'}
+};
+const CARD_PAPER = '#F5F2EA', CARD_INK = '#22303A', CARD_FOG = '#5C6863', CARD_HAIR = '#DDE2DB';
+
+function loadImgSafe(src){
+  return new Promise(res => {
+    if(!src) return res(null);
+    const im = new Image();
+    /* senza crossOrigin la tela si "sporca" e toBlob non riesce più a uscire:
+       meglio nessuna foto che una cartolina che non si può salvare */
+    if(!/^data:/.test(src)) im.crossOrigin = 'anonymous';
+    im.onload = () => res(im);
+    im.onerror = () => res(null);
+    im.src = src;
+  });
+}
+let brandMarkPromise = null;
+const brandMark = () => (brandMarkPromise = brandMarkPromise || loadImgSafe('./icon-192.png'));
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+/* spezza il testo alla larghezza data e, se non basta, rimpicciolisce:
+   i nomi delle tappe vanno da "Duomo" a "Palazzo della Ragione e dintorni" */
+function fitLines(ctx, text, maxW, maxLines, size, minSize, fontFn){
+  let s = size, lines = [];
+  for(;;){
+    ctx.font = fontFn(s);
+    lines = [];
+    let cur = '';
+    for(const word of String(text||'').split(/\s+/)){
+      const t = cur ? cur+' '+word : word;
+      if(ctx.measureText(t).width <= maxW || !cur) cur = t;
+      else { lines.push(cur); cur = word; }
+    }
+    if(cur) lines.push(cur);
+    if(lines.length <= maxLines || s <= minSize) break;
+    s -= 4;
+  }
+  if(lines.length > maxLines){
+    lines = lines.slice(0, maxLines);
+    let last = lines[maxLines-1];
+    while(ctx.measureText(last+'…').width > maxW && last.length > 4) last = last.slice(0,-1);
+    lines[maxLines-1] = last+'…';
+  }
+  return {lines, size: s};
+}
+const cardMono = s => '600 '+s+'px "JetBrains Mono", monospace';
+const cardHead = s => '800 '+s+'px "Bricolage Grotesque", sans-serif';
+const cardBody = s => '400 '+s+'px "Public Sans", sans-serif';
+
+function cardBackdrop(ctx, F){
+  ctx.fillStyle = CARD_PAPER;
+  ctx.fillRect(0,0,F.w,F.h);
+  /* le stesse due velature calde del fondo dell'app, perché la cartolina
+     sembri ritagliata dallo schermo e non generata a parte */
+  const g1 = ctx.createRadialGradient(F.w*0.08, -F.h*0.05, 0, F.w*0.08, -F.h*0.05, F.w*0.9);
+  g1.addColorStop(0,'rgba(79,182,224,.13)'); g1.addColorStop(1,'rgba(79,182,224,0)');
+  ctx.fillStyle = g1; ctx.fillRect(0,0,F.w,F.h);
+  const g2 = ctx.createRadialGradient(F.w, F.h, 0, F.w, F.h, F.w*1.05);
+  g2.addColorStop(0,'rgba(231,169,60,.12)'); g2.addColorStop(1,'rgba(231,169,60,0)');
+  ctx.fillStyle = g2; ctx.fillRect(0,0,F.w,F.h);
+}
+
+async function cardFooter(ctx, F, right){
+  const M = 56, y = F.h - M;
+  ctx.strokeStyle = CARD_HAIR; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(M, y-92); ctx.lineTo(F.w-M, y-92); ctx.stroke();
+  const mark = await brandMark();
+  const s = 62;
+  if(mark){
+    ctx.save();
+    roundRect(ctx, M, y-62, s, s, 16); ctx.clip();
+    ctx.drawImage(mark, M, y-62, s, s);
+    ctx.restore();
+  }
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = CARD_INK; ctx.font = cardHead(34);
+  ctx.fillText('Waynder', M + s + 18, y-30);
+  ctx.fillStyle = CARD_FOG; ctx.font = cardMono(19);
+  ctx.fillText((state.title || 'Viaggio').toUpperCase(), M + s + 18, y-6);
+  if(right){
+    ctx.textAlign = 'right'; ctx.fillStyle = CARD_FOG; ctx.font = cardMono(19);
+    right.forEach((line,i) => ctx.fillText(line, F.w-M, y-30 + i*24));
+    ctx.textAlign = 'left';
+  }
+}
+
+const CARD_MONTHS = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+function cardDate(iso){
+  if(!iso) return '';
+  const d = new Date(iso+'T00:00:00');
+  return d.getDate()+' '+CARD_MONTHS[d.getMonth()]+' '+d.getFullYear();
+}
+function tripRange(){
+  const dd = state.days.filter(d => d.date).map(d => d.date).sort();
+  if(!dd.length) return '';
+  return dd[0] === dd[dd.length-1] ? cardDate(dd[0]) : cardDate(dd[0])+' – '+cardDate(dd[dd.length-1]);
+}
+
+async function drawStopCard(p, fmt){
+  const F = CARD_FMT[fmt] || CARD_FMT.sq;
+  const cv = document.createElement('canvas');
+  cv.width = F.w; cv.height = F.h;
+  const ctx = cv.getContext('2d');
+  cardBackdrop(ctx, F);
+  const M = 56, pw = F.w - M*2, ph = F.photo;
+  const d = dayOf(p.dayId);
+  const col = d ? (d.color || BRAIN_SOLID) : BRAIN_SOLID;
+  /* la foto del diario ha la precedenza su quella suggerita: è il ricordo vero */
+  const src = (p.diaryPhotos && p.diaryPhotos[0]) || p.img;
+  const im = await loadImgSafe(src);
+  ctx.save();
+  roundRect(ctx, M, M, pw, ph, 30);
+  if(im){
+    ctx.clip();
+    const r = Math.max(pw/im.width, ph/im.height);
+    const iw = im.width*r, ih = im.height*r;
+    ctx.drawImage(im, M + (pw-iw)/2, M + (ph-ih)/2, iw, ih);
+  } else {
+    /* senza foto la cornice si comporta come i segnaposto dell'app:
+       tratteggio e glifo del tipo nel colore del giorno */
+    ctx.fillStyle = col + '1F'; ctx.fill();
+    ctx.setLineDash([14,11]); ctx.lineWidth = 3; ctx.strokeStyle = col + '66'; ctx.stroke();
+    ctx.setLineDash([]);
+    const t = typeOf(p), gs = Math.min(pw, ph) * 0.34;
+    ctx.translate(M + pw/2 - gs/2, M + ph/2 - gs/2);
+    ctx.scale(gs/24, gs/24);
+    ctx.fillStyle = col; ctx.globalAlpha = .62;
+    ctx.fill(new Path2D(t.d));
+  }
+  ctx.restore();
+  /* numero della tappa nel percorso del giorno */
+  const idx = d && d.id ? stops(d.id).findIndex(x => x.id === p.id) : -1;
+  if(idx >= 0){
+    const cx = M + 66, cy = M + 66;
+    ctx.beginPath(); ctx.arc(cx, cy, 48, 0, Math.PI*2);
+    ctx.fillStyle = col; ctx.fill();
+    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = cardHead(46);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(idx+1), cx, cy+2);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
+
+  let y = M + ph + 62;
+  /* occhiello: pallino del giorno, nome del giorno, data */
+  ctx.beginPath(); ctx.arc(M+9, y-9, 9, 0, Math.PI*2); ctx.fillStyle = col; ctx.fill();
+  ctx.fillStyle = CARD_FOG; ctx.font = cardMono(21);
+  const eyebrow = [(d ? d.name : 'Brainstorming').toUpperCase(), cardDate(d && d.date)].filter(Boolean).join('  ·  ');
+  ctx.fillText(eyebrow, M+30, y);
+
+  y += 22;
+  const name = fitLines(ctx, p.name, pw, 3, 86, 52, cardHead);
+  ctx.fillStyle = CARD_INK;
+  name.lines.forEach(l => { y += name.size*1.02; ctx.fillText(l, M, y); });
+
+  const t = typeOf(p);
+  const tags = [t.label, p.rain ? '☂ anche con la pioggia' : '', p.kid ? '👶 adatta ai bambini' : '',
+                p.visited ? '✓ visitata' : ''].filter(Boolean).join('  ·  ');
+  y += 50;
+  ctx.fillStyle = CARD_FOG; ctx.font = cardMono(22);
+  ctx.fillText(tags, M, y);
+
+  const note = p.diaryNote || p.notes;
+  const footTop = F.h - 56 - 92;
+  if(note){
+    y += 50;
+    const maxLines = Math.max(0, Math.floor((footTop - y - 20) / 42));
+    if(maxLines > 0){
+      const nl = fitLines(ctx, note, pw, Math.min(maxLines, fmt === 'story' ? 8 : 4), 30, 30, cardBody);
+      ctx.fillStyle = CARD_INK;
+      nl.lines.forEach(l => { y += 42; ctx.fillText(l, M, y); });
+    }
+  }
+  await cardFooter(ctx, F, [p.lat.toFixed(4)+'° N', p.lng.toFixed(4)+'° E']);
+  return cv;
+}
+
+async function drawCoverCard(fmt){
+  const F = CARD_FMT[fmt] || CARD_FMT.sq;
+  const cv = document.createElement('canvas');
+  cv.width = F.w; cv.height = F.h;
+  const ctx = cv.getContext('2d');
+  cardBackdrop(ctx, F);
+  const M = 56, pw = F.w - M*2;
+  let y = M + 74;
+  ctx.fillStyle = CARD_FOG; ctx.font = cardMono(21);
+  ctx.fillText('IL VIAGGIO', M, y);
+  const title = fitLines(ctx, state.title || 'Viaggio senza nome', pw, 3, 104, 60, cardHead);
+  ctx.fillStyle = CARD_INK;
+  title.lines.forEach(l => { y += title.size*1.04; ctx.fillText(l, M, y); });
+  y += 46;
+  const nStops = state.places.filter(p => p.dayId).length;
+  const meta = [tripRange(), state.days.length + (state.days.length === 1 ? ' giorno' : ' giorni'),
+                nStops + (nStops === 1 ? ' tappa' : ' tappe')].filter(Boolean).join('  ·  ');
+  ctx.fillStyle = CARD_FOG; ctx.font = cardMono(22);
+  ctx.fillText(meta, M, y);
+
+  /* il tracciato: un giorno per colore, nell'ordine del percorso */
+  const top = y + 54, bot = F.h - 56 - 112, boxH = bot - top;
+  const pts = [];
+  state.days.forEach(d => { stops(d.id).forEach(p => pts.push({p, col: d.color || BRAIN_SOLID, day: d.id})); });
+  if(pts.length >= 1 && boxH > 160){
+    const lats = pts.map(x => x.p.lat), lngs = pts.map(x => x.p.lng);
+    const la0 = Math.min(...lats), la1 = Math.max(...lats);
+    const ln0 = Math.min(...lngs), ln1 = Math.max(...lngs);
+    const kx = Math.cos((la0+la1)/2 * Math.PI/180);
+    const spanX = Math.max((ln1-ln0)*kx, 1e-4), spanY = Math.max(la1-la0, 1e-4);
+    const pad = 54;
+    const sc = Math.min((pw-pad*2)/spanX, (boxH-pad*2)/spanY);
+    const cxm = M + pw/2, cym = top + boxH/2;
+    const proj = p => [cxm + ((p.lng - (ln0+ln1)/2) * kx) * sc,
+                       cym - (p.lat - (la0+la1)/2) * sc];
+    ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    state.days.forEach(d => {
+      const seq = pts.filter(x => x.day === d.id);
+      if(seq.length < 2) return;
+      ctx.strokeStyle = (d.color || BRAIN_SOLID) + 'CC';
+      ctx.beginPath();
+      seq.forEach((x,i) => { const [X,Y] = proj(x.p); i ? ctx.lineTo(X,Y) : ctx.moveTo(X,Y); });
+      ctx.stroke();
+    });
+    pts.forEach(x => {
+      const [X,Y] = proj(x.p);
+      ctx.beginPath(); ctx.arc(X, Y, 11, 0, Math.PI*2);
+      ctx.fillStyle = x.col; ctx.fill();
+      ctx.lineWidth = 4; ctx.strokeStyle = CARD_PAPER; ctx.stroke();
+    });
+  }
+  await cardFooter(ctx, F, ['fatto con Waynder']);
+  return cv;
+}
+
+/* ---------- scheda delle cartoline ---------- */
+const cardsVeil = document.getElementById('cardsVeil');
+let cardsFmt = 'sq', cardsTargets = [], cardsAt = 0, cardsBusy = false;
+
+function cardsSlug(s){
+  return String(s||'waynder').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40) || 'waynder';
+}
+function cardsBuildPick(only){
+  const sel = document.getElementById('cardsPick');
+  sel.innerHTML = '';
+  const opt = (v,t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); };
+  opt('all', 'Tutto il viaggio (copertina + tappe)');
+  if(state.places.some(p => p.visited)) opt('visited', 'Solo le tappe visitate');
+  state.days.forEach(d => { if(stops(d.id).length) opt('day:'+d.id, d.name + ' (' + stops(d.id).length + ')'); });
+  if(only) opt('one:'+only, 'Solo questa tappa');
+  sel.value = only ? 'one:'+only : 'all';
+}
+function cardsResolve(){
+  const v = document.getElementById('cardsPick').value || 'all';
+  if(v === 'all'){
+    const list = [{cover:true}];
+    state.days.forEach(d => stops(d.id).forEach(p => list.push({p})));
+    return list;
+  }
+  if(v === 'visited') return state.places.filter(p => p.visited).map(p => ({p}));
+  if(v.startsWith('day:')) return stops(v.slice(4)).map(p => ({p}));
+  if(v.startsWith('one:')){
+    const p = state.places.find(x => x.id === v.slice(4));
+    return p ? [{p}] : [];
+  }
+  return [];
+}
+async function cardsRender(){
+  const stage = document.getElementById('cardsStage');
+  const item = cardsTargets[cardsAt];
+  document.getElementById('cardsCount').textContent = cardsTargets.length
+    ? (cardsAt+1) + ' / ' + cardsTargets.length : '— / —';
+  document.getElementById('cardsPrev').disabled = cardsAt <= 0;
+  document.getElementById('cardsNext').disabled = cardsAt >= cardsTargets.length-1;
+  if(!item){ stage.innerHTML = '<p>Non c\'è ancora niente da mettere in cartolina.</p>'; return; }
+  stage.innerHTML = '<p>Preparo…</p>';
+  const cv = item.cover ? await drawCoverCard(cardsFmt) : await drawStopCard(item.p, cardsFmt);
+  stage.innerHTML = ''; stage.appendChild(cv);
+}
+async function cardsAll(){
+  const out = [];
+  for(let i=0;i<cardsTargets.length;i++){
+    const it = cardsTargets[i];
+    const cv = it.cover ? await drawCoverCard(cardsFmt) : await drawStopCard(it.p, cardsFmt);
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+    if(blob) out.push(new File([blob],
+      'waynder-' + cardsSlug(state.title) + '-' + String(i+1).padStart(2,'0') + '-' +
+      cardsSlug(it.cover ? 'copertina' : it.p.name) + '.png', {type:'image/png'}));
+  }
+  return out;
+}
+async function openCards(onlyId){
+  await (document.fonts && document.fonts.ready);
+  cardsBuildPick(onlyId);
+  cardsTargets = cardsResolve(); cardsAt = 0;
+  cardsVeil.hidden = false;
+  /* la condivisione con allegati esiste solo sul telefono: sul portatile
+     resta il solo scarico, senza un pulsante che non farebbe niente */
+  const canShare = !!(navigator.canShare && navigator.canShare({files:[new File([new Blob()],'x.png',{type:'image/png'})]}));
+  document.getElementById('cardsShare').hidden = !canShare;
+  cardsRender();
+}
+document.getElementById('btnCards').onclick = () => openCards();
+document.getElementById('cardsClose').onclick = () => { cardsVeil.hidden = true; };
+cardsVeil.onclick = e => { if(e.target === cardsVeil) cardsVeil.hidden = true; };
+document.getElementById('cardsPick').onchange = () => { cardsTargets = cardsResolve(); cardsAt = 0; cardsRender(); };
+document.getElementById('cardsPrev').onclick = () => { if(cardsAt > 0){ cardsAt--; cardsRender(); } };
+document.getElementById('cardsNext').onclick = () => { if(cardsAt < cardsTargets.length-1){ cardsAt++; cardsRender(); } };
+document.querySelectorAll('.cards-fmt button').forEach(b => b.onclick = () => {
+  cardsFmt = b.dataset.fmt;
+  document.querySelectorAll('.cards-fmt button').forEach(x => x.classList.toggle('on', x === b));
+  cardsRender();
+});
+document.getElementById('cardsSave').onclick = async () => {
+  if(cardsBusy || !cardsTargets.length) return;
+  cardsBusy = true;
+  const btn = document.getElementById('cardsSave');
+  const was = btn.textContent; btn.textContent = 'Preparo…';
+  try{
+    const files = await cardsAll();
+    for(let i=0;i<files.length;i++){
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(files[i]); a.download = files[i].name;
+      document.body.appendChild(a); a.click(); a.remove();
+      /* uno alla volta con un respiro: il browser blocca gli scarichi a raffica */
+      await new Promise(r => setTimeout(r, 320));
+      URL.revokeObjectURL(a.href);
+    }
+    toast(files.length === 1 ? 'Cartolina scaricata' : files.length + ' cartoline scaricate');
+  }catch(e){ noteCard('Cartolina non riuscita', 'Non sono riuscito a comporre l\'immagine. Se la tappa ha una foto arrivata dal web, riprova con la rete attiva.'); }
+  btn.textContent = was; cardsBusy = false;
+};
+document.getElementById('cardsShare').onclick = async () => {
+  if(cardsBusy || !cardsTargets.length) return;
+  cardsBusy = true;
+  const btn = document.getElementById('cardsShare');
+  const was = btn.textContent; btn.textContent = 'Preparo…';
+  try{
+    const files = await cardsAll();
+    await navigator.share({files, title: state.title || 'Waynder'});
+  }catch(e){ if(e && e.name !== 'AbortError') toast('Condivisione annullata'); }
+  btn.textContent = was; cardsBusy = false;
+};
 
 /* ============ spese condivise ============ */
 function normalize(){
@@ -6779,6 +7876,7 @@ function edit(id){
   chainB.classList.toggle('on', inChain(editing));
   kidB.classList.toggle('on', !!editing.kid);
   walkB.classList.toggle('on', !!editing.city);
+  renderOhBox(editing);
   rainB.onclick = () => rainB.classList.toggle('on');
   chainB.onclick = () => chainB.classList.toggle('on');
   kidB.onclick = () => kidB.classList.toggle('on');
@@ -7330,7 +8428,7 @@ function updateTabsState(){
      sempre lì; su telefono compaiono solo quando la mappa è davvero visibile */
   const phone = window.matchMedia('(max-width:880px)').matches;
   const showMapCtl = mapOnly || !phone;
-  ['fltStopsWrap','fltDayWrap','fltGuideWrap','fltMoreWrap'].forEach(id => { document.getElementById(id).hidden = !showMapCtl; });
+  ['fltStopsWrap','fltDayWrap'].forEach(id => { document.getElementById(id).hidden = !showMapCtl; });
   if(!showMapCtl) document.getElementById('mfTip').hidden = true;
   if(phone && !mapOnly && (stopFilter !== 'all' || dayFilter !== null)){
     stopFilter = 'all'; dayFilter = null;
@@ -7357,8 +8455,11 @@ function setView(v){
      giorni, in Spese e Prenotazioni ritira il dettaglio delle righe. */
   document.getElementById('btnAddPlace').hidden = v !== 'list';
   document.getElementById('btnDay').hidden = v !== 'list';
-  /* le stelline restano in chiaro in Tappe: è da lì che nasce un viaggio */
-  document.getElementById('btnInspHead').hidden = v !== 'list';
+  /* le stelline restano in Tappe: è da lì che nasce un viaggio */
+  document.getElementById('btnInsp').hidden = v !== 'list';
+  /* foto e cartoline appartengono al Diario: è lì che il viaggio diventa ricordo */
+  document.getElementById('btnPhotos').hidden = v !== 'diary';
+  document.getElementById('btnCards').hidden = v !== 'diary';
   document.getElementById('btnFold').hidden = false;
   /* l'icona del ⇅ dipende dalla sezione: senza questo restava quella di prima
      e prometteva il contrario di quello che poi fa */
@@ -7759,6 +8860,7 @@ function askCard(o){
       cloneTabIcon(o.ic || 'map', '') + '</span><h3>' + o.t + '</h3></div>' +
     o.p.map(x => '<p>' + x + '</p>').join('') +
     '<div class="tour-foot">' +
+      (o.extra ? '<button class="tour-no" type="button" data-extra="1">' + o.extra + '</button>' : '') +
       (o.solo ? '' : '<button class="tour-no" type="button">' + o.no + '</button>') +
       '<button class="tour-next' + (o.danger ? ' danger' : '') + '" type="button">' + o.yes + '</button>' +
     '</div>';
@@ -7779,7 +8881,11 @@ function askCard(o){
     setTimeout(() => { veil.remove(); card.remove(); }, 320);
   };
   const no = () => { close(); if(o.onNo) o.onNo(); };
-  const noB = card.querySelector('.tour-no');
+  const exB = card.querySelector('.tour-no[data-extra]');
+  /* il pulsante extra non chiude il riquadro: serve a copiare e poter
+     verificare che sia andata (l'etichetta cambia in "Copiato ✓") */
+  if(exB) exB.onclick = () => { if(o.onExtra) o.onExtra(exB); };
+  const noB = card.querySelector('.tour-no:not([data-extra])');
   if(noB) noB.onclick = no;
   card.querySelector('.tour-next').onclick = () => { close(); if(o.onYes) setTimeout(o.onYes, 240); };
   veil.addEventListener('click', ev => { if(ev.target === veil) no(); });
@@ -8023,9 +9129,8 @@ document.getElementById('wcStart').onclick = () => {
 };
 
 const moreVeil = document.getElementById('moreVeil');
-/* L'ingranaggio non c'è più: condividere, cambiare viaggio, ispirarsi e la
-   guida sono icone in chiaro nella testata. Il cassetto resta raggiungibile
-   dal ⋯ della mappa, dove vive anche "Installa l'app". */
+/* Dalla v79 c'è un posto solo per queste cose: il Menù della barra in basso,
+   sesto tasto dopo Mappa. La testata del pannello non le ospita più. */
 const shareHubVeil = document.getElementById('shareHubVeil');
 document.getElementById('btnShareHub').onclick = () => {
   document.getElementById('hubTripName').textContent = (state.title || 'questo viaggio');
@@ -8036,13 +9141,24 @@ document.getElementById('hubShare').onclick = () => { shareHubVeil.hidden = true
 document.getElementById('hubJoin').onclick = () => { shareHubVeil.hidden = true; document.getElementById('btnJoinTrip').click(); };
 document.getElementById('btnTripsHub').onclick = openTrips;
 document.getElementById('btnGuideHub').onclick = askReplay;
-document.getElementById('fltGuide').onclick = askReplay;
+document.getElementById('tabMenu').onclick = openMenu;
 /* qualunque voce del menù lo chiude: è un cassetto, non una schermata */
 document.querySelectorAll('#moreVeil .more-list .chip').forEach(b => {
   b.addEventListener('click', () => { moreVeil.hidden = true; });
 });
-document.getElementById('fltMore').onclick = () => { moreVeil.hidden = false; };
+/* una riga toccata è una risposta data: il cassetto si chiude e lascia il posto
+   a quello che ha aperto */
+document.querySelectorAll('#moreVeil .menu-list .hub-row').forEach(b => {
+  b.addEventListener('click', () => { moreVeil.hidden = true; });
+});
+function openMenu(){ moreVeil.hidden = false; }
 document.getElementById('moreClose').onclick = () => { moreVeil.hidden = true; };
+/* il tasto della barra resta acceso finché il cassetto è aperto, comunque venga
+   chiuso (voce, ✕, tocco fuori) */
+new MutationObserver(() => {
+  document.getElementById('tabMenu').classList.toggle('open', !moreVeil.hidden);
+}).observe(moreVeil, {attributes:true, attributeFilter:['hidden']});
+moreVeil.addEventListener('click', e => { if(e.target === moreVeil) moreVeil.hidden = true; });
 document.getElementById('btnReplayGuide').onclick = () => {
   lsDel(OB_KEY); lsDel(TIPS_KEY); lsDel(SEEN_KEY);
   moreVeil.hidden = true;
@@ -8186,7 +9302,7 @@ let installEvt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   installEvt = e;
-  ['btnInstall','btnInstallHead'].forEach(id => {
+  ['btnInstall'].forEach(id => {
     const b = document.getElementById(id);
     if(b) b.hidden = false;
   });
@@ -8202,13 +9318,12 @@ async function doInstall(){
   hideInstall();
 }
 function hideInstall(){
-  ['btnInstall','btnInstallHead'].forEach(id => {
+  ['btnInstall'].forEach(id => {
     const b = document.getElementById(id);
     if(b) b.hidden = true;
   });
 }
 document.getElementById('btnInstall').onclick = () => { moreVeil.hidden = true; doInstall(); };
-document.getElementById('btnInstallHead').onclick = doInstall;
 window.addEventListener('appinstalled', hideInstall);
 
 boot();

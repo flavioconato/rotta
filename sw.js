@@ -5,12 +5,16 @@
    I tile sono a numero chiuso: oltre il limite si buttano i più vecchi,
    altrimenti dopo qualche esplorazione l'app occuperebbe centinaia di MB. */
 
-const VERSION = 'v73';
+const VERSION = 'v79';
 const APP_CACHE = 'rotta-app-' + VERSION;
 /* La cache delle mappe NON porta la versione: le piastrelle scaricate prima di
    partire devono sopravvivere agli aggiornamenti dell'app, altrimenti un
    aggiornamento in viaggio cancellerebbe le mappe offline. */
 const TILE_CACHE= 'rotta-tiles';
+/* Le mappe scaricate a mano prima di partire stanno in una cache separata che
+   NON si sfoltisce mai: se stessero con le altre, girare la mappa per mezz'ora
+   basterebbe a cancellare la zona del viaggio proprio quando serve. */
+const TILE_OFFLINE = 'rotta-tiles-offline';
 const TILE_MAX  = 1200;   // ~40-60 MB, copre ampiamente una regione come la Scozia
 
 const APP_FILES = [
@@ -47,7 +51,7 @@ self.addEventListener('activate', e => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter(k => k.startsWith('rotta-') && k !== APP_CACHE && k !== TILE_CACHE)
+      .filter(k => k.startsWith('rotta-') && k !== APP_CACHE && k !== TILE_CACHE && k !== TILE_OFFLINE)
       .map(k => caches.delete(k)));
     /* niente clients.claim(): prendendo il controllo della pagina già aperta
        faceva apparire un controller mentre il worker era ancora in attesa,
@@ -93,6 +97,9 @@ self.addEventListener('fetch', e => {
   // Tile della mappa: prima la cache, poi la rete che aggiorna in silenzio
   if(/basemaps\.cartocdn\.com|tile\.openstreetmap\.org/.test(url.hostname)){
     e.respondWith((async () => {
+      const off = await caches.open(TILE_OFFLINE);
+      const saved = await off.match(req);
+      if(saved) return saved;
       const c = await caches.open(TILE_CACHE);
       const hit = await c.match(req);
       if(hit) return hit;
