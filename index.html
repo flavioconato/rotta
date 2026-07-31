@@ -5629,9 +5629,11 @@ function dayFootEl(d){
   foot.innerHTML =
     '<button class="day-cmd" type="button" data-cmd="fit"><i>⛶</i>Inquadra</button>' +
     '<button class="day-cmd' + (allWalk ? ' on' : '') + '" type="button" data-cmd="walk"' +
-      ' aria-pressed="' + (allWalk ? 'true' : 'false') + '"><i>🚶</i>Tutto a piedi</button>' +
-    '<button class="day-cmd" type="button" data-cmd="gmaps"><i>➔</i>Google Maps</button>' +
-    '<button class="day-cmd" type="button" data-cmd="sort"><i>⇅</i>Percorso più corto</button>';
+      ' aria-pressed="' + (allWalk ? 'true' : 'false') + '"><i>🚶</i>A piedi</button>' +
+    '<button class="day-cmd" type="button" data-cmd="gmaps"><i>➔</i>' +
+      '<b class="lg">Google Maps</b><b class="sm">Maps</b></button>' +
+    '<button class="day-cmd" type="button" data-cmd="sort"><i>⇅</i>' +
+      '<b class="lg">Ottimizza percorso</b><b class="sm">Ottimizza</b></button>';
   foot.querySelector('[data-cmd="walk"]').onclick = () => dayAllWalk(d, !allWalk);
   foot.querySelector('[data-cmd="fit"]').onclick = () => {
     const f = all(d.id);
