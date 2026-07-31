@@ -283,6 +283,67 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 .fab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .fab-sm{width:42px;height:42px;box-shadow:0 8px 20px rgba(34,48,58,.24)}
 .fab-sm svg{width:19px;height:19px}
+/* ---------- selezione multipla di tappe ---------- */
+/* Nasce dalla pressione lunga rilasciata senza trascinare. Stessa geometria dei
+   tondi, che intanto si tolgono di mezzo: in selezione c'è una sola azione. */
+.selbar{
+  position:fixed;z-index:1700;left:0;width:400px;padding:0 18px;
+  bottom:calc(96px + env(safe-area-inset-bottom,0px));
+  display:flex;justify-content:flex-end;pointer-events:none
+}
+@media (min-width:881px){ .selbar{left:var(--gap);bottom:calc(var(--gap) + 96px)} }
+@media (max-width:880px){ .selbar{width:100%} }
+@media (max-width:600px){ .selbar{bottom:calc(80px + env(safe-area-inset-bottom,0px))} }
+.selbar-in{
+  pointer-events:auto;display:flex;align-items:center;gap:8px;max-width:100%;
+  background:var(--paper);border:1px solid var(--ink-3);border-radius:16px;
+  padding:7px 7px 7px 14px;box-shadow:0 16px 34px -14px rgba(34,48,58,.5)
+}
+.selbar-n{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+.selbar-in button{
+  flex:none;border:0;border-radius:11px;padding:9px 13px;font:inherit;
+  font-size:12.5px;font-weight:600;cursor:pointer;background:var(--route);color:#fff
+}
+.selbar-in button.ghost{background:var(--ink-2);color:var(--fog);padding:9px 12px}
+body.selmode .fabs{opacity:0;pointer-events:none}
+/* in selezione il tocco scegli, non apre: niente sollevamento al passaggio */
+body.selmode .stop-card:hover{transform:none;box-shadow:none;border-color:var(--ink-3)}
+/* Quattro tappe selezionate devono vedersi al volo: spunta al posto del numero,
+   riquadro rosso pieno, e le altre si fanno da parte sbiadendo. Il dondolio dura
+   poco e parte sfalsato per riga, così si nota il cambio senza dare il mal di mare. */
+@keyframes selWiggle{
+  0%{transform:rotate(0) scale(1)} 20%{transform:rotate(-.9deg) scale(1.012)}
+  55%{transform:rotate(.9deg) scale(1.012)} 100%{transform:rotate(0) scale(1)}
+}
+@keyframes selPop{ from{transform:scale(.4);opacity:0} to{transform:scale(1);opacity:1} }
+body.selmode .stop:not(.sel),
+body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
+.stop.sel,.alt-item.sel{opacity:1;filter:none}
+.stop.sel .stop-card{
+  border-color:var(--route);
+  box-shadow:inset 0 0 0 2px var(--route),0 10px 22px -14px rgba(211,50,58,.6);
+  background:#FDF2F2;
+  animation:selWiggle .42s ease-in-out both;
+  animation-delay:calc(var(--seli,0) * 40ms)
+}
+.stop.sel .stop-card::before{background:var(--route)}
+/* la spunta copre il numero del nastro: è lo stesso posto, quindi non allarga la riga */
+.stop.sel .node{box-shadow:0 0 0 3px rgba(211,50,58,.18)}
+.stop.sel .node-n{
+  background:var(--route);border-color:#fff;color:#fff;
+  min-width:17px;height:17px;top:-5px;right:-5px;font-size:0;
+  animation:selPop .2s ease-out both
+}
+.stop.sel .node-n::after{content:"✓";font-size:10px;font-weight:700;line-height:1}
+.alt-item.sel{
+  border-radius:10px;background:#FDF2F2;
+  box-shadow:inset 0 0 0 2px var(--route);
+  animation:selWiggle .42s ease-in-out both;
+  animation-delay:calc(var(--seli,0) * 40ms)
+}
+@media (prefers-reduced-motion:reduce){
+  .stop.sel .stop-card,.alt-item.sel,.stop.sel .node-n{animation:none}
+}
 #btnAddPlace{background:linear-gradient(135deg,#E0454B,#D3323A)}
 #btnDay{background:var(--paper);color:#C22E36;border:1px solid rgba(211,50,58,.4)}
 #btnExpense{background:linear-gradient(135deg,#F3C877,var(--ochre));color:#3A2707}
@@ -674,14 +735,29 @@ span.day-name{cursor:pointer}
    rubano spazio ai giorni chiusi, e nel ⋯ resta solo "elimina" — che dietro
    una conferma ci sta bene. Pastiglie basse, colore del testo secondario:
    sono comandi di servizio, non l'azione principale della sezione. */
-.day-foot{display:flex;flex-wrap:wrap;gap:7px;padding:0 19px 16px}
+/* Una riga sola, sempre: quattro pastiglie che andavano a capo facevano sembrare
+   il giorno finito due volte. Non vanno a capo, si stringono — e sotto i 560 px
+   le due etichette lunghe passano alla forma corta. */
+.day-foot{display:flex;flex-wrap:nowrap;gap:7px;padding:0 19px 16px}
 .day-cmd{
-  flex:none;display:inline-flex;align-items:center;gap:6px;
+  flex:0 1 auto;min-width:0;display:inline-flex;align-items:center;gap:6px;justify-content:center;
   padding:7px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;
   background:var(--ink-2);border:1px solid var(--ink-3);color:var(--fog);transition:.15s
 }
 .day-cmd:hover{border-color:var(--sage);color:var(--ink);transform:translateY(-1px)}
-.day-cmd i{font-style:normal;font-size:13px;line-height:1;opacity:.85}
+.day-cmd i{font-style:normal;font-size:13px;line-height:1;opacity:.85;flex:none}
+.day-cmd b{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.day-cmd .sm{display:none}
+@media (max-width:560px){
+  .day-foot{gap:5px;padding:0 14px 14px}
+  .day-cmd{padding:7px 9px;font-size:11.5px;gap:5px}
+  .day-cmd .lg{display:none}
+  .day-cmd .sm{display:inline}
+}
+/* "tutto a piedi" è uno stato, non un'azione: quando il giorno è tutto pedonale
+   la pastiglia resta accesa, così si legge com'è il giorno senza aprire nulla */
+.day-cmd.on{background:rgba(27,122,94,.1);border-color:var(--moss);color:var(--moss)}
+.day-cmd.on:hover{border-color:var(--moss);color:var(--moss)}
 /* ---------- il nastro (signature) ---------- */
 .rail{list-style:none;margin:0;padding:0 19px 16px 19px}
 .stop{position:relative;padding-left:37px;padding-bottom:6px}
@@ -1949,7 +2025,7 @@ body.hide-legs .leg-lab{display:none}
     </button>
     <button class="toggle" id="fWalk" type="button">
       <span class="tick">✓</span>
-      <span><b>Ci si arriva a piedi</b><span class="info-btn" tabindex="0" data-info="Normalmente il modo lo decide la distanza: sotto 1,3 km si cammina, sopra si va in auto. Accendi questa spunta per le tappe dentro una città, dove si va a piedi anche se il tratto è più lungo: il collegamento con la tappa precedente diventa pedonale.">i</span></span>
+      <span><b>Ci si arriva a piedi</b><span class="info-btn" tabindex="0" data-info="Ogni tratto è in auto finché non dici il contrario, anche se è corto: nessuno decide per te. Accendi la spunta e il collegamento con la tappa precedente diventa pedonale, seguendo i sentieri e le strade percorribili a piedi. Per tutte le tappe di un giorno in un colpo usa ‘Tutto a piedi’ in fondo al giorno.">i</span></span>
     </button>
     <label>Contrassegno · adatto con</label>
     <div class="tg-row">
@@ -2267,7 +2343,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v85';
+const APP_VERSION = 'v86';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -4614,6 +4690,7 @@ function render(){
   if(renderHeld){ renderPending = true; return; }
   drawMap();
   drawList();
+  paintSel();
   updateFold();
   renderMapFilters();
   refreshLegs();
@@ -4622,20 +4699,18 @@ function render(){
 
 /* velocità di riserva, usate solo finché non arriva il dato reale */
 const SPEED = {walking:4.5, driving:55};
-/* A piedi o in auto lo decide la distanza, non un interruttore da ricordarsi:
-   sotto la soglia di una passeggiata urbana si cammina. Vale per le tappe come
-   per le basi, e funziona per il B&B in centro come per l'agriturismo fuori. */
-const BASE_WALK_KM = 1.5, WALK_KM = 1.3;
-/* la spunta "ci si arriva a piedi" (p.city) vale sul tratto IN ARRIVO alla
-   tappa marcata: è lì che l'utente sa di camminare, dentro una città, anche
-   quando i chilometri direbbero auto. Oltre i 12 km non si concede: sarebbe
-   una spunta dimenticata su una tappa poi spostata lontano. */
-const WALK_MAX_KM = 12;
+/* A piedi o in auto lo decide chi viaggia, non i chilometri: prima l'app
+   camminava da sé sotto una certa distanza e cambiava il tratto alle spalle di
+   chi lo aveva impostato. Ora il modo di default è l'auto e resta l'auto finché
+   non si accende la spunta "ci si arriva a piedi" (p.city) sulla tappa — o
+   "Tutto a piedi" sul giorno. Nessun tetto di chilometri: se uno dice che quel
+   tratto lo fa a piedi, è a piedi.
+   La spunta vale sul tratto IN ARRIVO alla tappa marcata, e sul rientro alla
+   base quando parte da una tappa marcata. */
 function legMode(a,b){
-  if(b.city && km(a,b) <= WALK_MAX_KM) return 'walking';
-  if(a.city && b.isBase && km(a,b) <= WALK_MAX_KM) return 'walking';
-  const soglia = (a.isBase || b.isBase) ? BASE_WALK_KM : WALK_KM;
-  return km(a,b) <= soglia ? 'walking' : 'driving';
+  if(b.city) return 'walking';
+  if(a.city && b.isBase) return 'walking';
+  return 'driving';
 }
 function dur(mins){
   mins = Math.max(1, Math.round(mins));
@@ -5205,7 +5280,10 @@ function drawList(){
    entrambe le direzioni, si tocca per scegliere tra le basi già create,
    crearne una nuova (stessa ricerca delle tappe) o rimuoverla. */
 /* tempo e distanza di una tratta, nella stessa forma usata sulla mappa: vale
-   anche per le tratte con la base, dove la giornata comincia e finisce. */
+   anche per le tratte con la base, dove la giornata comincia e finisce.
+   La base va marcata isBase come fa routeList(), altrimenti legMode() la prende
+   per una tappa qualsiasi: il rientro finiva in auto nell'elenco mentre sulla
+   mappa era a piedi. */
 function segHTML(a, b){
   const t = legTime(a, b);
   return '<div class="seg mono">'+(t.mode==='walking'?'🚶':'🚗')+' '+(t.real?'':'~')+dur(t.mins)+' · '+fmt(t.dist)+' ↓</div>';
@@ -5224,7 +5302,7 @@ function baseStopLi(d, which, label, icon, next){
       '<span class="base-pill-lab">'+esc(label)+'</span>' +
       (b ? '<span class="base-pill-name">'+esc(b.name)+'</span>' : '<span class="base-pill-hint">tocca per aggiungere</span>') +
     '</button>' +
-    (b && next ? segHTML(b, next) : '');
+    (b && next ? segHTML({...b, isBase:true}, next) : '');
   li.querySelector('.base-pill-hit').onclick = e => {
     e.stopPropagation();
     const btn = e.currentTarget;
@@ -5471,7 +5549,7 @@ function dayBlock(d, list){
         '<button class="icon-btn stop-menu" title="Altre azioni" aria-label="Altre azioni">⋯</button>' +
       '</div>' +
       (i < list.length-1 ? segHTML(p, list[i+1])
-        : (d.id && baseOf(d.baseToId) ? segHTML(p, baseOf(d.baseToId)) : ''));
+        : (d.id && baseOf(d.baseToId) ? segHTML(p, {...baseOf(d.baseToId), isBase:true}) : ''));
 
     const top = li.querySelector('.stop-top'), menuB = li.querySelector('.stop-menu');
     const thumbImg = li.querySelector('img.thumb');
@@ -5483,6 +5561,7 @@ function dayBlock(d, list){
       e.stopPropagation();
       showActionMenu(menuB, [
         {label:'Mostra sulla mappa', onClick: () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); }},
+        {label:'Seleziona (per spostarne più di una)', onClick: () => selEnter(p.id)},
         {label:'Sposta su', onClick: () => move(p, -1)},
         {label:'Sposta giù', onClick: () => move(p, 1)},
         {label:'Modifica', onClick: () => edit(p.id)},
@@ -5542,10 +5621,18 @@ function dayBlock(d, list){
 function dayFootEl(d){
   const foot = document.createElement('div');
   foot.className = 'day-foot';
+  /* Un giorno in città si fa tutto a piedi: accendere la spunta tappa per tappa
+     erano sei schede da aprire. L'etichetta non cambia mai — è un interruttore:
+     acceso quando tutte le tappe sono pedonali, spento appena una non lo è. */
+  const inDay = all(d.id).filter(p => !isPoi(p));
+  const allWalk = inDay.length && inDay.every(p => p.city);
   foot.innerHTML =
     '<button class="day-cmd" type="button" data-cmd="fit"><i>⛶</i>Inquadra</button>' +
+    '<button class="day-cmd' + (allWalk ? ' on' : '') + '" type="button" data-cmd="walk"' +
+      ' aria-pressed="' + (allWalk ? 'true' : 'false') + '"><i>🚶</i>Tutto a piedi</button>' +
     '<button class="day-cmd" type="button" data-cmd="gmaps"><i>➔</i>Google Maps</button>' +
     '<button class="day-cmd" type="button" data-cmd="sort"><i>⇅</i>Percorso più corto</button>';
+  foot.querySelector('[data-cmd="walk"]').onclick = () => dayAllWalk(d, !allWalk);
   foot.querySelector('[data-cmd="fit"]').onclick = () => {
     const f = all(d.id);
     if(f.length) map.fitBounds(L.latLngBounds(f.map(p => [p.lat, p.lng])).pad(.25));
@@ -5554,6 +5641,18 @@ function dayFootEl(d){
   foot.querySelector('[data-cmd="gmaps"]').onclick = () => openInGmaps(d, routeList(d));
   foot.querySelector('[data-cmd="sort"]').onclick = () => sortDay(d);
   return foot;
+}
+
+/* La spunta "ci si arriva a piedi" (p.city) su tutte le tappe del giorno in un
+   colpo. I segnaposti restano fuori: non fanno parte del percorso. Nessun tetto
+   di chilometri, come in legMode(): se il giorno si fa a piedi, si fa a piedi. */
+function dayAllWalk(d, on){
+  const inDay = all(d.id).filter(p => !isPoi(p));
+  if(!inDay.length) return;
+  inDay.forEach(p => { if(on) p.city = true; else delete p.city; });
+  save(); render();
+  if(!on){ toast('Il giorno torna tutto in auto'); return; }
+  toast(inDay.length + (inDay.length === 1 ? ' tappa' : ' tappe') + ' a piedi');
 }
 
 /* ============ trascinamento delle tappe ============ */
@@ -5568,6 +5667,9 @@ function dayFootEl(d){
   const scroller = listBox.closest('.scroll');
   let src = null, place = null, ghost = null, line = null;
   let timer = null, dragging = false, x0 = 0, y0 = 0, justDragged = false, af = null;
+  /* se il dito non si sposta dopo la presa il gesto non va perso: al rilascio
+     apre la selezione multipla invece di rimettere la tappa dov'era */
+  let movedFar = false;
 
   const clear = () => { clearTimeout(timer); timer = null; };
 
@@ -5585,6 +5687,7 @@ function dayFootEl(d){
     if(!document.body.contains(row) || !r.width) { place = null; return; }
     src = row;
     dragging = true;
+    movedFar = false;
     if(navigator.vibrate) navigator.vibrate(18);
     document.querySelectorAll('.drag-ghost').forEach(g => g.remove());
     document.querySelectorAll('.drag-src').forEach(g => g.classList.remove('drag-src'));
@@ -5707,7 +5810,7 @@ function dayFootEl(d){
   }
 
   listBox.addEventListener('pointerdown', e => {
-    if(dragging) return;
+    if(dragging || selMode) return;   // in selezione il tocco sceglie, non prende
     if(e.button != null && e.button !== 0) return;
     const row = e.target.closest('[data-place]');
     if(!row || e.target.closest('button,a,input,textarea')) return;
@@ -5725,19 +5828,142 @@ function dayFootEl(d){
 
   document.addEventListener('pointermove', e => {
     if(!dragging) return;
+    if(Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10) movedFar = true;
     moveGhost(e.clientX, e.clientY);
     showLine(targetAt(e.clientX, e.clientY));
     autoScroll(e.clientY);
   });
-  document.addEventListener('pointerup', e => { if(dragging) drop(e.clientX, e.clientY); });
+  document.addEventListener('pointerup', e => {
+    if(!dragging) return;
+    if(movedFar){ drop(e.clientX, e.clientY); return; }
+    /* preso e rilasciato sul posto: è una scelta, non uno spostamento */
+    const id = place && place.id;
+    end();
+    if(id) selEnter(id);
+  });
   document.addEventListener('pointercancel', () => { if(dragging) end(); });
   /* blocca lo scorrimento della pagina mentre si trascina col dito */
   document.addEventListener('touchmove', e => { if(dragging) e.preventDefault(); }, {passive:false});
   /* il tocco che chiude un trascinamento non deve anche aprire la tappa */
   listBox.addEventListener('click', e => {
-    if(justDragged){ e.stopPropagation(); e.preventDefault(); }
+    if(justDragged){ e.stopPropagation(); e.preventDefault(); return; }
+    if(!selMode) return;
+    const row = e.target.closest('[data-place]');
+    if(!row) return;
+    e.stopPropagation(); e.preventDefault();
+    selToggle(row.dataset.place);
   }, true);
 })();
+
+/* ============ selezione multipla di tappe ============ */
+/* Rifare un giorno spostando sei tappe una alla volta era il gesto più noioso
+   dell'app. La pressione lunga già nelle dita apre la selezione: da lì un tocco
+   semplice aggiunge o toglie, e la barra in basso le sposta tutte insieme.
+   La selezione sta nello stato, non nel documento: l'elenco si ridisegna da solo
+   (percorsi, meteo) e paintSel() la ridipinge dopo ogni render. */
+let selMode = false;
+const selIds = new Set();
+
+function selBar(){
+  let b = document.getElementById('selBar');
+  if(b) return b;
+  b = document.createElement('div');
+  b.id = 'selBar';
+  b.className = 'selbar';
+  b.hidden = true;
+  b.innerHTML =
+    '<div class="selbar-in">' +
+      '<span class="selbar-n" id="selCount">1 tappa selezionata</span>' +
+      '<button type="button" id="selMove">Sposta in un giorno</button>' +
+      '<button type="button" class="ghost" id="selDone" title="Esci dalla selezione" aria-label="Esci dalla selezione">✕</button>' +
+    '</div>';
+  document.body.appendChild(b);
+  b.querySelector('#selMove').onclick = selMoveAsk;
+  b.querySelector('#selDone').onclick = () => selExit();
+  return b;
+}
+
+function selEnter(id){
+  selMode = true;
+  selIds.clear();
+  if(id) selIds.add(id);
+  document.body.classList.add('selmode');
+  selBar().hidden = false;
+  paintSel();
+  toast('Tappa selezionata · tocca le altre da aggiungere');
+}
+function selExit(){
+  if(!selMode) return;
+  selMode = false;
+  selIds.clear();
+  document.body.classList.remove('selmode');
+  const b = document.getElementById('selBar');
+  if(b) b.hidden = true;
+  paintSel();
+}
+function selToggle(id){
+  if(selIds.has(id)) selIds.delete(id); else selIds.add(id);
+  if(!selIds.size){ selExit(); return; }   // svuotata a mano: si esce da sé
+  if(navigator.vibrate) navigator.vibrate(8);
+  paintSel();
+}
+function paintSel(){
+  let i = 0;
+  document.querySelectorAll('#list [data-place]').forEach(r => {
+    const on = selMode && selIds.has(r.dataset.place);
+    if(on && !r.classList.contains('sel')) r.style.setProperty('--seli', i++);
+    r.classList.toggle('sel', on);
+    if(!on) r.style.removeProperty('--seli');
+  });
+  const c = document.getElementById('selCount');
+  if(c) c.textContent = selIds.size + (selIds.size === 1 ? ' tappa selezionata' : ' tappe selezionate');
+}
+/* in quale giorno finiscono: un giorno per riga, col suo colore e quante tappe
+   ha già, più Brainstorming per tirarle fuori dal percorso */
+function selMoveAsk(){
+  const picked = [...selIds];
+  if(!picked.length) return;
+  const items = state.days.map(d => {
+    const n = all(d.id).length;
+    return {
+      label: d.name,
+      sub: n ? n + (n === 1 ? ' tappa' : ' tappe') : 'ancora vuoto',
+      ic: '<span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:'+(d.grad||d.color)+'"></span>',
+      value: d.id
+    };
+  });
+  items.push({label:'Brainstorming', sub:'fuori dai giorni', ic:'○', value:null});
+  pickCard({
+    ic:'list',
+    t:'Sposta ' + picked.length + (picked.length === 1 ? ' tappa' : ' tappe'),
+    p:['Vanno in fondo al giorno che scegli, nell’ordine in cui sono adesso.'],
+    items, no:'Annulla',
+    onPick: dayId => selMoveTo(dayId, picked)
+  });
+}
+function selMoveTo(dayId, ids){
+  const arr = state.places;
+  /* nell'ordine dell'array, non in quello dei tocchi: la sequenza che si vede
+     nell'elenco è quella che conta */
+  const moving = arr.filter(p => ids.includes(p.id));
+  if(!moving.length){ selExit(); return; }
+  moving.forEach(p => {
+    p.dayId = dayId;
+    if(!isPoi(p)) p.chain = !!dayId;   // i segnaposti restano segnaposti
+    arr.splice(arr.indexOf(p), 1);
+  });
+  const sib = arr.filter(p => p.dayId === dayId);
+  const at = sib.length ? arr.indexOf(sib[sib.length-1]) + 1 : arr.length;
+  arr.splice(at, 0, ...moving);
+  save();
+  const dest = dayId ? (dayOf(dayId)?.name || 'quel giorno') : 'Brainstorming';
+  const n = moving.length, nome = moving[0].name;
+  selExit();
+  render();
+  toast(n === 1 ? '“' + nome + '” spostata in ' + dest
+                : n + ' tappe spostate in ' + dest);
+}
+/* Esc passa da closeTopOverlay(): la selezione è un livello come gli altri */
 
 function move(p, dir){
   const sib = state.places.filter(x => x.dayId === p.dayId);
@@ -8016,9 +8242,28 @@ function edit(id){
   box.innerHTML = '';
   (editing.links||[]).forEach(l => linkRow(l.label, l.url));
   veil.hidden = false;
+  stopSigOpen = stopSig();
   autoFocus(document.getElementById('fName'));
 }
 window.edit = edit;
+
+/* Uscire dalla scheda con “indietro” o toccando fuori buttava via tutto senza
+   dire niente. Stessa rete di spese e prenotazioni: la firma dei campi all'apertura,
+   confrontata alla chiusura. Se è cambiata si chiede, altrimenti si chiude in
+   silenzio — aprire una tappa per guardarla non deve far comparire un riquadro. */
+let stopSigOpen = '';
+function stopSig(){
+  const on = id => document.getElementById(id).classList.contains('on') ? '1' : '0';
+  return [document.getElementById('fName').value,
+    document.getElementById('fNote').value,
+    document.getElementById('fImg').value,
+    document.getElementById('fDay').value,
+    (document.querySelector('#fType .type-opt.on')||{dataset:{}}).dataset.type || '',
+    on('fRain'), on('fKid'), on('fChain'), on('fWalk'),
+    [...document.querySelectorAll('#fLinks .link-row')]
+      .map(r => r.querySelector('.lab').value + '\u241f' + r.querySelector('.url').value).join('\u241e')
+  ].join('|');
+}
 
 function linkRow(label, url){
   const row = document.createElement('div');
@@ -8054,15 +8299,32 @@ document.getElementById('save').onclick = () => {
 /* chiudere senza salvare una tappa mai confermata (appena creata toccando la
    mappa o da un risultato di ricerca, poi subito Annulla) non deve lasciarla
    comunque nell'itinerario come "Nuova tappa" vuota. */
-function closeEditor(){
-  if(editing && editing.id === freshPlaceId){
+function closeEditor(force){
+  /* una tappa appena creata e mai confermata non conta come “modifica”: lì la
+     domanda giusta è già stata data per risposta con Annulla */
+  const fresh = editing && editing.id === freshPlaceId;
+  if(!force && editing && !fresh && stopSig() !== stopSigOpen){
+    askCard({
+      ic: 'list',
+      t: 'Modifiche non salvate',
+      p: ['Hai cambiato qualcosa in questa tappa. Se chiudi ora, la modifica va persa.'],
+      no: 'Chiudi senza salvare',
+      yes: 'Salva',
+      onNo: () => closeEditor(true),
+      onYes: () => document.getElementById('save').click()
+    });
+    return;
+  }
+  if(fresh){
     state.places = state.places.filter(x => x.id !== editing.id);
     freshPlaceId = null;
     save(); render();
   }
   veil.hidden = true;
+  editing = null;
+  stopSigOpen = '';
 }
-document.getElementById('cancel').onclick = closeEditor;
+document.getElementById('cancel').onclick = () => closeEditor();
 
 /* elimina una tappa con conferma: condivisa tra il pulsante "Elimina" della
    scheda di modifica e il ✕ diretto sulle card dell'elenco, per non tenere
@@ -8078,14 +8340,13 @@ function deletePlace(id){
     onYes: () => {
       if(id === freshPlaceId) freshPlaceId = null;
       state.places = state.places.filter(x => x.id !== id);
-      if(editing && editing.id === id) veil.hidden = true;
+      if(editing && editing.id === id){ veil.hidden = true; editing = null; }
       save(); render();
     }
   });
 }
 document.getElementById('del').onclick = () => deletePlace(editing.id);
 veil.onclick = e => { if(e.target === veil) closeEditor(); };
-
 /* ============ dettaglio tappa (sola visualizzazione) ============ */
 const stopViewVeil = document.getElementById('stopViewVeil');
 function stopDetailBody(p){
@@ -8180,6 +8441,9 @@ function closeTopOverlay(){
   }
   if(moving){ moving = null; document.body.classList.remove('moving'); return true; }
   if(pickMode){ setPick(false); return true; }
+  /* la selezione multipla è una modalità aperta sopra l'elenco: l'indietro la
+     chiude prima del pannello, altrimenti la barra restava appesa a schermo */
+  if(selMode){ selExit(); return true; }
   /* su telefono il pannello è a tutti gli effetti una schermata aperta sopra
      la mappa: il primo "indietro" lo richiude */
   if(window.matchMedia('(max-width:880px)').matches && document.body.classList.contains('panel-open')){
@@ -8559,6 +8823,7 @@ function updateTabsState(){
 
 const EYEBROW = {list:'Itinerario', cost:'Spese condivise', book:'Prenotazioni', diary:'Diario di viaggio'};
 function setView(v){
+  if(v !== 'list') selExit();   // la selezione vive solo dentro Tappe
   view = v;
   document.body.dataset.view = v;
   const eb = document.querySelector('.eyebrow');
