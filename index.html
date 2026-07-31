@@ -295,20 +295,19 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 #btnPhotos{background:var(--paper);color:#15654E;border:1px solid rgba(27,122,94,.4)}
 
 /* ---------- header ---------- */
-.head{padding:.75rem 1rem .7rem;flex:none;border-bottom:1px solid var(--ink-3);position:relative}
+.head{padding:.7rem 1rem .62rem;flex:none;border-bottom:1px solid var(--ink-3);position:relative}
 .head::after{
   content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:1px;
   background:linear-gradient(90deg,var(--route),var(--ochre) 26%,var(--sage) 52%,var(--moss) 74%,transparent 96%);opacity:.5
 }
 .head-row{display:flex;align-items:center;gap:9px}
+.head-row .head-ico{margin-left:2px}
 /* Cinque icone e il nome del viaggio sulla stessa riga non ci stanno: il
    pannello è largo 400px e il titolo — che è l'intestazione della schermata,
    ed è anche modificabile — si riduceva a otto caratteri. Sono due cose
    diverse, e stanno su due righe: sopra come ti chiami questo viaggio, sotto
    la fila di comandi. */
-.head-tools{display:flex;align-items:center;gap:8px;margin-top:9px}
 @media (max-width:400px){
-  .head-tools{gap:6px}
   .head-ico{width:31px;height:31px;border-radius:10px}
   .head-ico svg{width:17px;height:17px}
 }
@@ -666,8 +665,23 @@ span.day-name{cursor:pointer}
 .day-head-actions > *:hover{background:var(--ink-3);border-color:var(--ink-3);color:var(--ink)}
 .day-head-actions .wx-icon-btn.rain-ready{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));color:var(--ink)}
 .day-head-actions .wx-icon-btn:disabled{opacity:.5;cursor:default}
+.day-head-actions .day-del svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.day-head-actions .day-del:hover{color:#C4272C;border-color:rgba(196,39,44,.4);background:rgba(196,39,44,.07)}
 .day-head-actions .wx-help{font-weight:700;color:var(--fog)}
 .day-head-actions .wx-help:hover{color:var(--ink);border-color:var(--ink-4)}
+/* I tre comandi del giorno stavano dietro il ⋯, dove non li trovava nessuno.
+   Ora sono in chiaro in fondo al giorno aperto: si vedono scorrendo, non
+   rubano spazio ai giorni chiusi, e nel ⋯ resta solo "elimina" — che dietro
+   una conferma ci sta bene. Pastiglie basse, colore del testo secondario:
+   sono comandi di servizio, non l'azione principale della sezione. */
+.day-foot{display:flex;flex-wrap:wrap;gap:7px;padding:0 19px 16px}
+.day-cmd{
+  flex:none;display:inline-flex;align-items:center;gap:6px;
+  padding:7px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;
+  background:var(--ink-2);border:1px solid var(--ink-3);color:var(--fog);transition:.15s
+}
+.day-cmd:hover{border-color:var(--sage);color:var(--ink);transform:translateY(-1px)}
+.day-cmd i{font-style:normal;font-size:13px;line-height:1;opacity:.85}
 /* ---------- il nastro (signature) ---------- */
 .rail{list-style:none;margin:0;padding:0 19px 16px 19px}
 .stop{position:relative;padding-left:37px;padding-bottom:6px}
@@ -1222,7 +1236,7 @@ body.hide-legs .leg-lab{display:none}
 .who-b.neg{color:var(--rust)}
 .trip-row .who-n{cursor:pointer}
 .trip-when{display:block;font-weight:400;color:var(--fog);font-size:10.5px;margin-top:2px}
-.add-row{display:flex;gap:6px}
+.add-row{display:flex;gap:6px;margin-top:10px}
 .add-row .field{flex:1;font-size:13px;padding:9px 10px}
 .exp{padding:9px 0;border-bottom:1px solid var(--ink-3)}
 .exp:last-of-type{border-bottom:0}
@@ -1519,8 +1533,7 @@ body.hide-legs .leg-lab{display:none}
   @media (max-height:480px){
     .head{padding:.5rem 1rem}
     #tripTitle{font-size:16px}
-    .head-tools{margin-top:6px}
-    .head-tools .head-ico{width:30px;height:30px}
+    .head-row .head-ico{width:30px;height:30px}
     .bar{padding:7px 14px 10px}
     .fabs{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
     .sheet{max-height:96dvh;padding:16px 16px 14px}
@@ -1584,20 +1597,15 @@ body.hide-legs .leg-lab{display:none}
 
 <div class="app">
   <aside class="panel">
-    <!-- Due righe: sopra il nome del viaggio (è l'intestazione della schermata,
-         e si modifica scrivendoci sopra), sotto la fila di comandi. Il nome
-         della sezione lo dice già il tab acceso. -->
+    <!-- Una riga sola: il nome del viaggio (è l'intestazione della schermata,
+         e si modifica scrivendoci sopra), lo stato del salvataggio e l'unico
+         comando rimasto. Il nome della sezione lo dice già il tab acceso.
+         Comprimi/espandi da solo non vale una seconda riga: sta in fondo alla
+         prima, dove l'occhio arriva comunque leggendo il titolo. -->
     <div class="head">
       <div class="head-row">
         <input id="tripTitle" placeholder="Nome del viaggio" autocomplete="off">
         <span id="saveState" class="save-state mono"></span>
-      </div>
-      <div class="head-tools">
-        <!-- Tutto quello che non è "fare qualcosa qui dentro" è passato al Menù
-             della barra in basso (condividi, i tuoi viaggi, la guida, la mappa
-             offline, installa); Ispirami, le foto e le cartoline sono scese fra
-             i tondi in basso a destra. In testata resta solo comprimi/espandi,
-             che riguarda l'elenco che si ha davanti. -->
         <button class="head-ico" id="btnFold" type="button" title="Comprimi tutti i giorni" aria-label="Comprimi tutti i giorni">
           <svg class="ic-fold" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4.5 12h15"/><path d="M8.4 7.4 12 3.9l3.6 3.5"/><path d="M8.4 16.6 12 20.1l3.6-3.5"/>
@@ -2259,7 +2267,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v79';
+const APP_VERSION = 'v82';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -5308,7 +5316,10 @@ function dayBlock(d, list){
       (d.id ?
         '<div class="day-head-actions">' +
           wxIconBtnHTML(d) +
-          '<button class="icon-btn" data-act="menu" title="Altre azioni" aria-label="Altre azioni">⋯</button>' +
+          '<button class="icon-btn day-del" data-act="del" title="Elimina il giorno" aria-label="Elimina il giorno">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 7.2h13.2M9.6 7.2V5.6a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2v1.6"/>' +
+            '<path d="M7 7.2l.8 11a1.4 1.4 0 0 0 1.4 1.3h5.6a1.4 1.4 0 0 0 1.4-1.3l.8-11"/><path d="M10.6 10.6v5.6M13.4 10.6v5.6"/></svg>' +
+          '</button>' +
         '</div>'
         : '') +
     '</div>' +
@@ -5361,28 +5372,23 @@ function dayBlock(d, list){
         }
       });
     };
-    const menuB = head.querySelector('[data-act="menu"]');
-    menuB.onclick = e => {
+    /* le altre tre azioni stanno in fondo al giorno, in chiaro: qui era
+       rimasto un menù di una voce sola, e un menù di una voce non è un menù.
+       Il cestino chiede conferma da sé. */
+    const delB = head.querySelector('[data-act="del"]');
+    delB.onclick = e => {
       e.stopPropagation();
-      showActionMenu(menuB, [
-        {label:'Inquadra sulla mappa', onClick: () => {
-          const f = all(d.id); if(f.length) map.fitBounds(L.latLngBounds(f.map(p=>[p.lat,p.lng])).pad(.25));
-          closeSheetMobile();
-        }},
-        {label:'Apri in Google Maps', onClick: () => openInGmaps(d, routeList(d))},
-        {label:'Ordina per il percorso più corto', onClick: () => sortDay(d)},
-        {label:'Elimina il giorno', danger:true, onClick: () => confirmCard({
-          ic: 'list',
-          t: 'Elimino ' + esc(d.name) + '?',
-          p: ['Il giorno sparisce, ma le sue tappe non si perdono: tornano in <b>Brainstorming</b>, pronte da smistare in un altro giorno.'],
-          no: 'Lascia stare', yes: 'Elimina il giorno',
-          onYes: () => {
-            state.places.forEach(p => { if(p.dayId===d.id) p.dayId = null; });
-            state.days = state.days.filter(x=>x.id!==d.id);
-            save(); render();
-          }
-        })}
-      ]);
+      confirmCard({
+        ic: 'list',
+        t: 'Elimino ' + esc(d.name) + '?',
+        p: ['Il giorno sparisce, ma le sue tappe non si perdono: tornano in <b>Brainstorming</b>, pronte da smistare in un altro giorno.'],
+        no: 'Lascia stare', yes: 'Elimina il giorno',
+        onYes: () => {
+          state.places.forEach(p => { if(p.dayId===d.id) p.dayId = null; });
+          state.days = state.days.filter(x=>x.id!==d.id);
+          save(); render();
+        }
+      });
     };
     const wxB = head.querySelector('.wx-icon-btn');
     if(wxB && !wxB.disabled) wxB.onclick = e => { e.stopPropagation(); openWeather(d.id); };
@@ -5526,7 +5532,28 @@ function dayBlock(d, list){
       body.appendChild(wrap);
     });
   }
+  if(d.id && list.length) body.appendChild(dayFootEl(d));
   return sec;
+}
+
+/* Inquadra, Google Maps e "percorso più corto": erano voci del ⋯ della testata
+   del giorno, cioè invisibili. Qui chiudono il giorno aperto, dove si arriva
+   dopo aver letto le sue tappe — che è il momento in cui servono. */
+function dayFootEl(d){
+  const foot = document.createElement('div');
+  foot.className = 'day-foot';
+  foot.innerHTML =
+    '<button class="day-cmd" type="button" data-cmd="fit"><i>⛶</i>Inquadra</button>' +
+    '<button class="day-cmd" type="button" data-cmd="gmaps"><i>➔</i>Google Maps</button>' +
+    '<button class="day-cmd" type="button" data-cmd="sort"><i>⇅</i>Percorso più corto</button>';
+  foot.querySelector('[data-cmd="fit"]').onclick = () => {
+    const f = all(d.id);
+    if(f.length) map.fitBounds(L.latLngBounds(f.map(p => [p.lat, p.lng])).pad(.25));
+    closeSheetMobile();
+  };
+  foot.querySelector('[data-cmd="gmaps"]').onclick = () => openInGmaps(d, routeList(d));
+  foot.querySelector('[data-cmd="sort"]').onclick = () => sortDay(d);
+  return foot;
 }
 
 /* ============ trascinamento delle tappe ============ */
@@ -5878,9 +5905,22 @@ function gmapsLinks(list, mode){
   return out;
 }
 
+/* window.open('_blank') dentro una pagina installata o incorniciata non sempre
+   apre una scheda vera: a volte carica nella stessa finestra, e Google Maps si
+   rifiuta di comparire lì dentro (ERR_BLOCKED_BY_RESPONSE). Un collegamento
+   vero, cliccato nello stesso gesto dell'utente, esce sempre di casa. */
+function openExternal(url){
+  const a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => a.remove(), 0);
+}
+
 function openInGmaps(d, list){
   if(list.length < 2){
-    if(list.length === 1) window.open('https://www.google.com/maps/search/?api=1&query='+list[0].lat.toFixed(6)+'%2C'+list[0].lng.toFixed(6), '_blank');
+    if(list.length === 1) openExternal('https://www.google.com/maps/search/?api=1&query='+list[0].lat.toFixed(6)+'%2C'+list[0].lng.toFixed(6));
     return;
   }
   /* spezzo il giorno dove cambia il modo: i blocchi cittadini escono come percorsi a piedi.
@@ -5897,7 +5937,7 @@ function openInGmaps(d, list){
   const links = [];
   blocks.forEach(b => { if(b.pts.length > 1) links.push(...gmapsLinks(b.pts, b.mode).map(l => ({...l, mode:b.mode}))); });
 
-  if(links.length === 1){ window.open(links[0].url, '_blank'); return; }
+  if(links.length === 1){ openExternal(links[0].url); return; }
 
   const box = document.getElementById('gmapsList');
   box.innerHTML =
