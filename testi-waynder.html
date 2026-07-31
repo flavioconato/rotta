@@ -170,7 +170,7 @@ ul.plain li{margin-bottom:5px;font-size:13.5px;color:#3C4A54}
   <div class="item-head"><span class="id">S2</span><h3>Ogni spesa, una riga</h3></div>
   <div class="meta"><span>sezione: <b>Spese</b></span><span>arriva da <b>T3</b></span></div>
   <div class="txt">
-    <p>Registra l'importo e chi ha pagato: Waynder divide la spesa fra i compagni di viaggio e calcola quanto ciascuno deve agli altri.</p>
+    <p>Registra l'importo e chi ha pagato: Waynder divide la spesa fra le persone del viaggio e calcola quanto ciascuno deve agli altri.</p>
     <p>Puoi collegare una spesa a una tappa, per sapere quanto è costata davvero.</p>
   </div>
 </div>
@@ -254,7 +254,7 @@ ul.plain li{margin-bottom:5px;font-size:13.5px;color:#3C4A54}
 <div class="item">
   <div class="item-head"><span class="id">I1b</span><h3>Ci si arriva a piedi</h3></div>
   <div class="meta"><span>scheda: <b>tappa</b></span><span>sotto l'etichetta «Percorso»</span></div>
-  <div class="txt"><p>Normalmente il modo lo decide la distanza: sotto 1,3 km si cammina, sopra si va in auto. Accendi questa spunta per le tappe dentro una città, dove si va a piedi anche se il tratto è più lungo: il collegamento con la tappa precedente diventa pedonale.</p></div>
+  <div class="txt"><p>Ogni tratto è in auto finché non dici il contrario, anche se è corto: nessuno decide per te. Accendi la spunta e il collegamento con la tappa precedente diventa pedonale, a qualsiasi distanza. Per fare un giorno intero a piedi c’è la pastiglia <b>🚶 Tutto a piedi</b> in fondo al giorno.</p></div>
 </div>
 
 <div class="item">
@@ -353,7 +353,7 @@ ul.plain li{margin-bottom:5px;font-size:13.5px;color:#3C4A54}
 </div>
 
 <h2><span class="n">N</span>Cartoline, orari, foto e mappa offline</h2>
-<p class="sec-note">Le funzioni aggiunte da v74 a v76. Cartoline e foto stanno fra i tondi in basso a destra del <b>Diario</b>, la mappa offline nel <b>Menù</b>, gli orari nella scheda della tappa, il riordino nel <b>⋯</b> della testata del giorno.</p>
+<p class="sec-note">Le funzioni aggiunte da v74 a v76. Cartoline e foto stanno fra i tondi in basso a destra del <b>Diario</b>, la mappa offline nel <b>Menù</b>, gli orari nella scheda della tappa, il riordino nella striscia in fondo al giorno aperto (dalla v81 «Inquadra», «Google Maps» e «Percorso più corto» sono in chiaro lì; nel <b>⋯</b> della testata resta solo «Elimina il giorno»).</p>
 
 <div class="item">
   <div class="item-head"><span class="id">N1</span><h3>Condividi questo viaggio (con collegamento)</h3></div>
@@ -502,10 +502,37 @@ ul.plain li{margin-bottom:5px;font-size:13.5px;color:#3C4A54}
 
 <div class="item">
   <div class="item-head"><span class="id">V15</span><h3>Modifiche non salvate</h3></div>
-  <div class="meta"><span>dove: <b>chiudendo una spesa o una prenotazione</b></span><span>solo se qualcosa è cambiato</span></div>
+  <div class="meta"><span>dove: <b>chiudendo una tappa, una spesa o una prenotazione</b></span><span>solo se qualcosa è cambiato</span><span>tappa da v86</span></div>
   <div class="txt">
-    <p>Hai cambiato qualcosa in questa spesa (o prenotazione). Se chiudi ora, la modifica va persa.</p>
-    <p class="tiny">Pulsanti: <b>Chiudi senza salvare</b> · <b>Salva</b>.</p>
+    <p>Hai cambiato qualcosa in questa tappa (o spesa, o prenotazione). Se chiudi ora, la modifica va persa.</p>
+    <p class="tiny">Pulsanti: <b>Chiudi senza salvare</b> · <b>Salva</b>. Una tappa appena creata e mai confermata non chiede niente: viene eliminata come prima.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#D3323A">
+  <div class="item-head"><span class="id">V16</span><h3>Tappa selezionata</h3></div>
+  <div class="meta"><span>dove: <b>Tappe</b>, dopo una pressione lunga senza trascinare</span><span>messaggino</span><span>v86</span></div>
+  <div class="txt">
+    <p>Tappa selezionata · tocca le altre da aggiungere</p>
+    <p class="tiny">Barra in basso: <b>N tappe selezionate</b> · <b>Sposta in un giorno</b> · <b>✕</b>. Si esce anche con l’indietro del telefono, con Esc o togliendo tutte le selezioni.</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#D3323A">
+  <div class="item-head"><span class="id">V17</span><h3>Sposta N tappe</h3></div>
+  <div class="meta"><span>dove: <b>riquadro di scelta del giorno</b></span><span>v86</span></div>
+  <div class="txt">
+    <p>Vanno in fondo al giorno che scegli, nell’ordine in cui sono adesso.</p>
+    <p class="tiny">Un giorno per riga col suo colore e quante tappe ha, più <b>Brainstorming</b> per tirarle fuori dal percorso. A cose fatte: «*N* tappe spostate in *giorno*».</p>
+  </div>
+</div>
+
+<div class="item" style="--bar:#1B7A5E">
+  <div class="item-head"><span class="id">V18</span><h3>Tutto a piedi</h3></div>
+  <div class="meta"><span>dove: <b>pastiglia in fondo al giorno aperto</b></span><span>interruttore</span><span>v86</span></div>
+  <div class="txt">
+    <p>Accesa: «*N* tappe a piedi». Spenta: «Il giorno torna tutto in auto».</p>
+    <p class="tiny">L’etichetta non cambia mai — resta <b>🚶 Tutto a piedi</b>, verde quando tutte le tappe del giorno sono pedonali. Nessun tetto di chilometri.</p>
   </div>
 </div>
 
