@@ -2025,7 +2025,7 @@ body.hide-legs .leg-lab{display:none}
 <div class="veil" id="offVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="offT">
     <h2 id="offT">Mappa offline</h2>
-    <p class="hint" style="padding:0 0 4px">Scarica ora, con il wifi, i riquadri di mappa della zona del viaggio: all'estero senza dati la mappa resta disegnata invece di diventare grigia.</p>
+    <p class="hint" style="padding:0 0 4px">Scarica ora, con il wifi, i riquadri di mappa della zona del viaggio: all'estero senza dati la mappa resta disegnata invece di diventare grigia. Non prendo tutto il rettangolo fra una tappa e l'altra: solo la zona attorno alle tappe e una fascia lungo i tratti. Restano <b>sul dispositivo</b>, nello spazio di Waynder, finché non tocchi «Svuota».</p>
     <label for="offArea">Zona</label>
     <select class="field" id="offArea"></select>
     <label for="offZoom">Quanto dettaglio</label>
@@ -2267,7 +2267,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v82';
+const APP_VERSION = 'v85';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2748,7 +2748,7 @@ document.getElementById('btnShareTrip').onclick = shareTrip;
 document.getElementById('btnJoinTrip').onclick = () => {
   promptCard({
     t: 'Unisciti con un codice',
-    p: ['Incolla qui il codice di condivisione che ti ha comunicato il tuo compagno di viaggio.'],
+    p: ['Incolla qui il codice di condivisione che ti ha passato chi viaggia con te.'],
     placeholder: 'Codice di condivisione',
     yes: 'Unisciti',
     onYes: code => joinTrip(code)
@@ -2874,7 +2874,7 @@ function cloudPayload(tripState){
    viene confrontato con `updatedAt`, che Firestore scrive con l'orologio del
    SERVER. Scriverlo con Date.now() (l'orologio del telefono) mescola due
    misure diverse: se il telefono corre avanti di un minuto, gli aggiornamenti
-   veri della compagna hanno updatedAt più basso del paletto e vengono
+   veri dell'altra persona hanno updatedAt più basso del paletto e vengono
    scartati in silenzio — nessuna fusione, nessun avviso, lavoro perso. Ed è
    la perdita silenziosa che tutto questo meccanismo esiste per evitare.
 
@@ -3387,7 +3387,7 @@ async function shareTrip(){
   }
   subscribeShared(state.shareId);
   noteCard('Condividi questo viaggio', [
-    'Comunica questo codice alla tua compagna di viaggio (a voce, in chat…): lo inserirà con "Unisciti con un codice".',
+    'Comunica questo codice a chi viaggia con te (a voce, in chat…): lo inserirà con "Unisciti con un codice".',
     '<b>' + esc(state.shareId) + '</b>'
   ]);
 }
@@ -6077,7 +6077,13 @@ const lat2y = (lat,z) => {
   const r = lat*Math.PI/180;
   return Math.floor((1 - Math.log(Math.tan(r) + 1/Math.cos(r))/Math.PI)/2 * Math.pow(2,z));
 };
-const OFF_ZMIN = 9, OFF_CAP = 2600;
+/* OFF_WARN non è un divieto: è la soglia oltre la quale lo scarico si ferma a
+   chiedere. Prima bastava superarla perché il pulsante si spegnesse, e la
+   scelta la faceva l'app al posto di chi scarica — che invece sa quanto spazio
+   ha e se è sotto wifi. OFF_MAX resta un tetto vero, ma alto: i riquadri
+   arrivano dai server pubblici di OpenStreetMap, che sono volontari, e oltre
+   quel numero non è più "una zona", è mezza nazione. */
+const OFF_ZMIN = 9, OFF_WARN = 2600, OFF_MAX = 24000;
 /* L'indirizzo va composto con le stesse regole di Leaflet — sottodominio scelto
    da x+y e @2x sugli schermi fitti — altrimenti scaricherei riquadri che poi la
    mappa non chiede mai, e la cache non combacerebbe. getTileUrl() di Leaflet non
@@ -6102,18 +6108,70 @@ function offBBox(){
     e: Math.max(...list.map(p=>p.lng)) + pad, w: Math.min(...list.map(p=>p.lng)) - pad
   };
 }
-function offTiles(){
-  const bb = offBBox();
-  if(!bb) return [];
-  const zmax = +document.getElementById('offZoom').value;
-  const out = [];
-  for(let z = OFF_ZMIN; z <= zmax; z++){
-    const x0 = lon2x(bb.w,z), x1 = lon2x(bb.e,z);
-    const y0 = lat2y(bb.n,z), y1 = lat2y(bb.s,z);
-    for(let x = x0; x <= x1; x++) for(let y = y0; y <= y1; y++) out.push({x,y,z});
-    if(out.length > OFF_CAP * 3) break;
+/* Fino alla v84 si scaricava il RETTANGOLO che contiene tutte le tappe: con
+   Milano e Napoli nello stesso viaggio finivano dentro Roma, l'Appennino e due
+   mari, cioè decine di migliaia di riquadri di cui se ne usava una manciata.
+   Ora si scarica un CORRIDOIO: un cerchio largo attorno a ogni tappa (lì ci si
+   muove a piedi e serve il dettaglio) e una fascia stretta lungo i tratti fra
+   una tappa e l'altra (lì basta non perdere la strada). Roma resta fuori, a
+   meno che il tragitto non ci passi davvero.
+
+   La fascia segue la linea dritta fra due tappe, non la strada: la strada vera
+   la conosce solo il router, che qui non si può interrogare tratto per tratto
+   senza tempestarlo di richieste. Il raggio è abbastanza largo da coprire le
+   deviazioni normali di un'autostrada o di una statale. */
+const OFF_R_STOP = 3.2;   // km attorno a una tappa
+const OFF_R_LEG  = 2.4;   // km ai lati di un tratto
+/* ai livelli larghi un riquadro copre già decine di km: allargare il corridoio
+   non costa quasi niente e evita i buchi ai bordi quando si sposta la mappa */
+function offRadius(z, base){ return z <= 11 ? base * 3 : base; }
+
+/* i riquadri di un cerchio di raggio km attorno a un punto, a un dato zoom */
+function offDisc(set, lat, lng, km, z){
+  const dLat = km / 111.32;
+  const dLng = km / (111.32 * Math.max(Math.cos(lat * Math.PI / 180), .01));
+  const x0 = lon2x(lng - dLng, z), x1 = lon2x(lng + dLng, z);
+  const y0 = lat2y(lat + dLat, z), y1 = lat2y(lat - dLat, z);
+  for(let x = x0; x <= x1; x++) for(let y = y0; y <= y1; y++) set.add(z+'/'+x+'/'+y);
+}
+/* le sequenze di punti da coprire: ogni giorno il suo percorso (basi comprese),
+   e le idee del Brainstorming come punti isolati */
+function offPaths(){
+  const v = document.getElementById('offArea').value || 'all';
+  const ok = p => p && typeof p.lat === 'number' && typeof p.lng === 'number';
+  const paths = [];
+  if(v === 'all'){
+    state.days.forEach(d => { const l = routeList(d).filter(ok); if(l.length) paths.push(l); });
+    const brain = stops(null).filter(ok);
+    brain.forEach(p => paths.push([p]));
+  } else {
+    const d = state.days.find(x => x.id === v.slice(4));
+    if(d){ const l = routeList(d).filter(ok); if(l.length) paths.push(l); }
   }
-  return out;
+  return paths;
+}
+function offTiles(){
+  const paths = offPaths();
+  if(!paths.length) return [];
+  const zmax = +document.getElementById('offZoom').value;
+  const set = new Set();
+  for(let z = OFF_ZMIN; z <= zmax; z++){
+    const rStop = offRadius(z, OFF_R_STOP), rLeg = offRadius(z, OFF_R_LEG);
+    paths.forEach(pts => {
+      pts.forEach(p => offDisc(set, p.lat, p.lng, rStop, z));
+      for(let i = 1; i < pts.length; i++){
+        const a = pts[i-1], b = pts[i];
+        /* un campione ogni raggio: i cerchi si sovrappongono e la fascia
+           resta continua anche su tratte lunghe */
+        const dLat = (b.lat - a.lat), dLng = (b.lng - a.lng);
+        const km = Math.hypot(dLat * 111.32, dLng * 111.32 * Math.cos((a.lat + b.lat) / 2 * Math.PI / 180));
+        const n = Math.min(Math.ceil(km / rLeg), 1200);
+        for(let s = 1; s < n; s++) offDisc(set, a.lat + dLat * s / n, a.lng + dLng * s / n, rLeg, z);
+      }
+    });
+    if(set.size > OFF_MAX) break;
+  }
+  return [...set].map(k => { const [z,x,y] = k.split('/'); return {z:+z, x:+x, y:+y}; });
 }
 function offSay(){
   const t = offTiles();
@@ -6121,11 +6179,14 @@ function offSay(){
   const go = document.getElementById('offGo');
   if(!t.length){ stat.textContent = 'Questo viaggio non ha ancora tappe sulla mappa.'; go.disabled = true; return; }
   const mb = Math.round(t.length * 0.022 * 10)/10;   // ~22 KB per riquadro
-  if(t.length > OFF_CAP){
-    stat.innerHTML = 'Servirebbero <b>' + t.length + ' riquadri</b>: troppi. Abbassa il dettaglio, o scarica un giorno alla volta.';
+  const peso = '<b>' + t.length + ' riquadri</b>, circa <b>' + String(mb).replace('.',',') + ' MB</b>';
+  if(t.length > OFF_MAX){
+    stat.innerHTML = peso + ': è più di quanto i server pubblici di OpenStreetMap accettino in una volta. Abbassa il dettaglio o scarica un giorno alla volta.';
     go.disabled = true; return;
   }
-  stat.innerHTML = '<b>' + t.length + ' riquadri</b>, circa <b>' + String(mb).replace('.',',') + ' MB</b>. Meglio con il wifi.';
+  stat.innerHTML = t.length > OFF_WARN
+    ? peso + '. Sono tanti: assicurati di avere spazio e wifi — chiedo conferma prima di partire.'
+    : peso + '. Meglio con il wifi.';
   go.disabled = false;
 }
 async function offCount(){
@@ -6159,7 +6220,24 @@ let offBusy = false;
 document.getElementById('offGo').onclick = async () => {
   if(offBusy) return;
   const tiles = offTiles();
-  if(!tiles.length || tiles.length > OFF_CAP) return;
+  if(!tiles.length || tiles.length > OFF_MAX) return;
+  /* sopra la soglia si chiede, non si vieta: la scelta è di chi scarica */
+  if(tiles.length > OFF_WARN){
+    const mb = Math.round(tiles.length * 0.022);
+    confirmCard({
+      ic: 'map',
+      t: 'Scarico ' + tiles.length + ' riquadri?',
+      p: ['Sono circa <b>' + mb + ' MB</b> sul dispositivo e qualche minuto di attesa: conviene essere sotto wifi.',
+          'Restano finché non svuoti tu la mappa offline. Se lo spazio è poco, puoi anche scaricare un giorno alla volta.'],
+      no: 'Lascia stare', yes: 'Scarica lo stesso', danger: false,
+      onYes: () => offDownload(tiles)
+    });
+    return;
+  }
+  offDownload(tiles);
+};
+async function offDownload(tiles){
+  if(offBusy) return;
   offBusy = true;
   const bar = document.getElementById('offBar'), fill = bar.querySelector('i');
   const stat = document.getElementById('offStat'), go = document.getElementById('offGo');
@@ -6192,7 +6270,7 @@ document.getElementById('offGo').onclick = async () => {
   const clr = document.getElementById('offClear');
   clr.disabled = !n; clr.textContent = 'Svuota (' + n + ')';
   offSay(); go.disabled = false;
-};
+}
 
 /* ============ ordina il giorno ============ */
 /* Trascinare le tappe a mano per accorciare il tragitto è un lavoro che sa fare
@@ -7781,7 +7859,7 @@ function maybeTrackBookingExpense(b, prevCost){
   if(b.noExpense) return;
   normalize();
   if(state.people.length < 2){
-    /* senza compagni di viaggio non c'è niente da dividere: la spesa non serve */
+    /* con una persona sola non c'è niente da dividere: la spesa non serve */
     return;
   }
   bxBooking = b;
@@ -8777,7 +8855,7 @@ const TIPS = {
     'Raccogli tutte le idee in <b>Brainstorming</b>, in fondo all\u2019itinerario, senza preoccuparti delle date. Quando il viaggio prende forma, sposta ogni tappa nel giorno a cui appartiene.',
     'Tocca una tappa per aprirla; usa il menù del giorno per rinominarlo, spostarlo o eliminarlo.']},
   cost: {t:'Ogni spesa, una riga', p:[
-    'Registra l\u2019importo e chi ha pagato: Waynder divide la spesa fra i compagni di viaggio e calcola quanto ciascuno deve agli altri.',
+    'Registra l\u2019importo e chi ha pagato: Waynder divide la spesa fra le persone del viaggio e calcola quanto ciascuno deve agli altri.',
     'Puoi collegare una spesa a una tappa, per sapere quanto è costata davvero.']},
   book: {t:'Tutto pronto alla partenza', p:[
     'Inserisci voli, treni, hotel e biglietti con il relativo codice: Waynder genera il QR e lo mantiene disponibile anche senza connessione.',
@@ -8836,7 +8914,7 @@ const WC_ROWS = [
   ['list','linear-gradient(135deg,#E0454B,#D3323A)','#fff','Tappe',
    'Butta dentro tutte le idee, alla rinfusa, in <b>Brainstorming</b>. Poi le organizzi giorno per giorno.'],
   ['cost','linear-gradient(135deg,#F3C877,#E7A93C)','#3A2707','Spese',
-   'Annota ogni spesa mentre la fai: Waynder la divide fra i compagni e dice chi deve cosa.'],
+   'Annota ogni spesa mentre la fai: Waynder la divide fra chi partecipa e dice chi deve cosa.'],
   ['book','linear-gradient(135deg,#2A93BE,#1E7FA6)','#fff','Prenotazioni',
    'Voli, hotel, biglietti: codici e QR sempre a portata, anche senza rete.'],
   ['diary','linear-gradient(135deg,#289073,#1B7A5E)','#fff','Diario',
