@@ -299,17 +299,21 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
   background:var(--paper);border:1px solid var(--ink-3);border-radius:16px;
   padding:7px 7px 7px 14px;box-shadow:0 16px 34px -14px rgba(34,48,58,.5)
 }
-.selbar-n{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.selbar-n{flex:0 0 auto;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+/* le quattro azioni hanno lo stesso peso: nessuna è più importante, e il rosso
+   resta al cestino — al tocco, dove significa qualcosa */
+.selbar-acts{display:flex;align-items:center;gap:4px;margin-left:auto}
 .selbar-in button{
-  flex:none;border:0;border-radius:11px;padding:9px 13px;font:inherit;
-  font-size:12.5px;font-weight:600;cursor:pointer;background:var(--route);color:#fff
+  flex:none;width:40px;height:40px;border:0;border-radius:11px;padding:0;
+  display:grid;place-items:center;cursor:pointer;background:none;color:var(--ink)
 }
-.selbar-in button.ghost{background:var(--ink-2);color:var(--fog);padding:9px 12px}
-.selbar-in button.trash{font-size:14px;padding:8px 12px}
+.selbar-in button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.selbar-in button:hover{background:var(--ink-2)}
 .selbar-in button.trash:hover,.selbar-in button.trash:active{background:var(--route);color:#fff}
-/* col cestino in più la barra sfondava lo schermo a 360 px e la ✕ per uscire
-   finiva fuori: sotto questa larghezza l'etichetta si accorcia */
-@media (max-width:430px){ .selbar-long{display:none} }
+.selbar-x{color:var(--fog) !important;margin-left:2px;position:relative}
+.selbar-x::before{content:'';position:absolute;left:-3px;top:9px;bottom:9px;width:1px;background:var(--ink-3)}
+/* la barra deve stare in 360 px: l'etichetta è corta e le azioni sono icone */
+@media (max-width:430px){ .selbar-in{padding:6px 6px 6px 12px;gap:6px} }
 body.selmode .fabs{opacity:0;pointer-events:none}
 /* in selezione il tocco scegli, non apre: niente sollevamento al passaggio */
 body.selmode .stop-card:hover{transform:none;box-shadow:none;border-color:var(--ink-3)}
@@ -714,7 +718,7 @@ span.day-name{cursor:pointer}
    spazio con margini negativi, così il bersaglio cresce e la pillola no */
 .day-date{
   flex:none;width:92px;background:none;border:0;padding:0;
-  height:44px;margin:-14px 0;position:relative;z-index:1;
+  height:34px;margin:-9px 0;position:relative;z-index:1;
   font-size:11px;color:var(--ink);color-scheme:dark;
 }
 .day-name{
@@ -968,6 +972,39 @@ body[data-view="list"] .empty::before{background:rgba(229,72,77,.12);border-colo
 .ro-kind{margin:2px 0 0;font-size:11px;color:var(--fog)}
 .ro-stop .ro-note{margin:6px 0 0;font-size:12.5px;line-height:1.45;color:var(--fog);white-space:pre-wrap}
 .ro-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+/* la pastiglia dell'area sta in testata accanto al nome: è un dato del viaggio,
+   non un comando, quindi non ha l'aria di un pulsante finché non è vuota */
+.area-pill{
+  flex:none;max-width:44%;display:inline-flex;align-items:center;gap:5px;position:relative;
+  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:999px;
+  padding:3px 10px;font-size:11.5px;color:var(--fog);cursor:pointer;line-height:1.5
+}
+.area-pill b{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.area-pill::after{content:'';position:absolute;inset:-10px -4px}
+.area-pill:hover{border-color:var(--ink-4)}
+.area-pill.unset{border-style:dashed}
+.area-pill.unset b{color:var(--fog);font-weight:500}
+.area-picked{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.area-tag{
+  display:inline-flex;align-items:center;gap:6px;background:var(--ink-2);
+  border:1px solid var(--ink-3);border-radius:999px;padding:5px 6px 5px 11px;font-size:12.5px;color:var(--ink)
+}
+.area-tag i{font-style:normal;font-size:11px;color:var(--fog)}
+.area-x{
+  width:22px;height:22px;border-radius:50%;border:0;background:none;color:var(--fog);
+  font-size:11px;cursor:pointer;display:grid;place-items:center;position:relative
+}
+.area-x::after{content:'';position:absolute;inset:-8px}
+.area-x:hover{background:var(--ink-3);color:var(--ink)}
+.area-none{margin:0;font-size:12.5px;color:var(--fog);line-height:1.5}
+.area-world{margin-top:12px;width:100%;justify-content:center}
+.area-world.on{background:var(--ink-3);border-color:var(--ink-4);color:var(--ink)}
+/* «I miei posti»: niente giorni, niente spese, prenotazioni o diario — resta
+   l'elenco dei posti e la mappa. Il titolo non si modifica: è lo stesso per tutti. */
+body.mine #tabCost,body.mine #tabBook,body.mine #tabDiary,
+body.mine #btnDay,body.mine .area-pill,body.mine #btnFold{display:none}
+body.mine #tripTitle{pointer-events:none}
+.stop-from{margin:2px 0 0;font-size:11px;color:var(--fog);font-style:italic}
 .ro-links a{font-size:11.5px;color:var(--sage-2)}
 .ro-thumb{flex:none;width:62px;height:62px;object-fit:cover;border-radius:9px}
 .ro-empty{margin:0;font-size:12.5px;color:var(--fog);border:1px dashed var(--ink-4);border-radius:10px;padding:12px}
@@ -1821,6 +1858,7 @@ body.hide-legs .leg-lab{display:none}
     <div class="head">
       <div class="head-row">
         <input id="tripTitle" placeholder="Nome del viaggio" autocomplete="off">
+        <button class="area-pill unset" id="areaPill" type="button" title="L’area del viaggio: nazioni o città dove cercare">◉ <b>Dove si va?</b></button>
         <span id="saveState" class="save-state mono"></span>
         <button class="head-ico" id="btnFold" type="button" title="Comprimi tutti i giorni" aria-label="Comprimi tutti i giorni">
           <svg class="ic-fold" viewBox="0 0 24 24" aria-hidden="true">
@@ -2032,6 +2070,10 @@ body.hide-legs .leg-lab{display:none}
     <h2 id="moreTitle">Menù del viaggio</h2>
     <p class="hint" style="padding:0 0 12px">Le cose che valgono per tutto il viaggio, non per la sezione che hai davanti.</p>
     <div class="menu-list">
+      <button class="hub-row" id="btnMineHub" type="button">
+        <span class="hub-ic">◎</span>
+        <span><h3>I miei posti</h3><p>Ogni tappa che salvi finisce anche qui, e qui puoi segnarne di nuovi senza decidere subito in che viaggio.</p></span>
+      </button>
       <button class="hub-row" id="btnTripsHub" type="button">
         <span class="hub-ic">🧳</span>
         <span><h3>I tuoi viaggi</h3><p>Apri un altro viaggio, rinominalo, creane uno nuovo o salva una copia del file.</p></span>
@@ -2085,6 +2127,22 @@ body.hide-legs .leg-lab{display:none}
     </button>
     <div class="sheet-actions">
       <button class="btn ghost" id="shareHubClose" style="flex:1">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="areaVeil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h2>Dove si va?</h2>
+    <p class="sheet-note">Una o più nazioni, una o più città. La ricerca delle tappe e Ispirami partono da qui.</p>
+    <input id="areaQ" class="field" placeholder="Scozia, Giappone, Lisbona…" autocomplete="off">
+    <div class="results" id="areaRes" hidden></div>
+    <div class="area-picked" id="areaPicked"></div>
+    <button class="chip area-world" id="areaWorld" type="button">🌍 Ovunque nel mondo</button>
+    <p class="sheet-note">«Ovunque» toglie ogni filtro: serve per usare un viaggio come raccolta di posti sparsi per il mondo.</p>
+    <div class="row-btns">
+      <button class="btn ghost" id="areaSkip" type="button">Annulla</button>
+      <button class="btn primary" id="areaSave" type="button">Salva</button>
     </div>
   </div>
 </div>
@@ -2481,7 +2539,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v91';
+const APP_VERSION = 'v94';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2820,7 +2878,8 @@ async function write(){
   try{
     /* structuredClone implicito: salvo l'oggetto, non una stringa */
     await dbSet(tripKey(state.id), JSON.parse(JSON.stringify(state)));
-    await touchIndex(state.id, state.title, Date.now());
+    if(!isMine()) await touchIndex(state.id, state.title, Date.now());
+    mirrorSync();
     storageOK = true; dirty = false; badge('saved');
   }catch(e){
     console.warn('salvataggio non riuscito:', e && e.message);
@@ -2831,6 +2890,200 @@ async function write(){
   /* la sincronizzazione cloud va in background e non deve mai rallentare né
      bloccare il salvataggio locale, che resta sempre la fonte di verità */
   if(state.shareId) pushToCloud(state);
+}
+
+/* ============ I miei posti ============ */
+/* Uno spazio che c'è sempre, uguale per tutti: ogni tappa salvata in un viaggio
+   ci arriva in copia, e ci si possono mettere posti che non appartengono ancora
+   a nessun viaggio. La copia porta con sé da dove viene (`srcTrip`/`srcId`), e
+   questo è quello che la tiene onesta: rinominare o cancellare la tappa nel
+   viaggio aggiorna la copia invece di lasciare un doppione orfano. Sotto il
+   cofano è un viaggio senza giorni, quindi elenco, mappa e ricerca sono gli
+   stessi — niente da reimparare. */
+const MINE_ID = '__mine';
+const MINE_TITLE = 'I miei posti';
+let mineDoc = null, mineTimer = null;
+function isMine(){ return !!state && state.id === MINE_ID; }
+async function mineLoad(){
+  if(mineDoc) return mineDoc;
+  let d = null;
+  if(db){ try{ d = await dbGet(tripKey(MINE_ID)); }catch(e){} }
+  if(!d || !Array.isArray(d.places)){
+    d = Object.assign(fresh(), {id:MINE_ID, title:MINE_TITLE, days:[], places:[], shareId:null});
+  }
+  d.kind = 'places';
+  d.area = {world:true, items:[]};
+  mineDoc = d;
+  return d;
+}
+async function mineWrite(){
+  if(!db || !mineDoc) return;
+  try{ await dbSet(tripKey(MINE_ID), JSON.parse(JSON.stringify(mineDoc))); }catch(e){}
+}
+const MIRROR_KEYS = ['name','lat','lng','type','notes','links','img','imgCredit','rain','kid','city','cc','ccn'];
+/* la copia si allinea a ogni salvataggio, con un respiro: si scrive una volta
+   sola quando l'utente ha smesso di digitare */
+function mirrorSync(){
+  if(!db || !state || isMine()) return;
+  clearTimeout(mineTimer);
+  mineTimer = setTimeout(async () => {
+    const d = await mineLoad();
+    const tripId = state.id, title = state.title || 'Un viaggio';
+    const live = new Set();
+    let touched = false;
+    (state.places || []).forEach(p => {
+      if(!p || p.lat == null) return;
+      live.add(p.id);
+      let m = d.places.find(x => x.srcTrip === tripId && x.srcId === p.id);
+      if(!m){
+        m = {id:uid(), dayId:null, srcTrip:tripId, srcId:p.id, chain:true};
+        d.places.push(m); touched = true;
+      }
+      MIRROR_KEYS.forEach(k => {
+        if(JSON.stringify(m[k]) !== JSON.stringify(p[k])){ m[k] = p[k]; touched = true; }
+      });
+      if(m.srcTitle !== title){ m.srcTitle = title; touched = true; }
+    });
+    const before = d.places.length;
+    d.places = d.places.filter(x => x.srcTrip !== tripId || live.has(x.srcId));
+    if(d.places.length !== before) touched = true;
+    if(touched) await mineWrite();
+  }, 1400);
+}
+async function openMine(){
+  await mineLoad();
+  await mineWrite();
+  const mv = document.getElementById('moreVeil');
+  if(mv) mv.hidden = true;
+  if(isMine()){ setView('list'); return; }
+  await switchTrip(MINE_ID, {close:true});
+  setView('list');
+}
+/* le tappe di un viaggio (o dei Miei posti) copiate in un altro viaggio: è la
+   metà locale della condivisione, e non passa dalla rete */
+function copyToTrip(ids){
+  const picked = (ids || []).map(id => (state.places || []).find(p => p.id === id)).filter(Boolean);
+  if(!picked.length) return;
+  const items = tripIndex.filter(t => t.id !== state.id && t.id !== MINE_ID)
+    .map(t => ({label: t.title || 'Senza nome', sub:'viaggio', ic:'🧳', value:t.id}));
+  if(!isMine()) items.push({label: MINE_TITLE, sub:'la tua raccolta', ic:'◎', value:MINE_ID});
+  if(!items.length){ noteCard('Nessun altro viaggio', 'Crea prima un altro viaggio: qui compariranno tutti quelli che hai.'); return; }
+  pickCard({
+    ic:'map', t:'Copia ' + picked.length + (picked.length === 1 ? ' tappa dove?' : ' tappe dove?'),
+    p:['Le tappe arrivano in Brainstorming, senza giorno: le sistemi quando vuoi. L’originale resta dov’è.'],
+    items, no:'Annulla',
+    onPick: async id => {
+      const copies = picked.map(p => {
+        const c = {id:uid(), dayId:null, chain:true};
+        MIRROR_KEYS.forEach(k => { if(p[k] !== undefined) c[k] = JSON.parse(JSON.stringify(p[k])); });
+        return c;
+      });
+      if(id === MINE_ID){
+        const d = await mineLoad();
+        copies.forEach(c => d.places.push(c));
+        await mineWrite();
+        toast(copies.length + (copies.length === 1 ? ' tappa copiata' : ' tappe copiate') + ' in «' + MINE_TITLE + '»');
+      } else if(db){
+        const t = await dbGet(tripKey(id));
+        if(!t || !t.places){ toast('Non riesco ad aprire quel viaggio'); return; }
+        copies.forEach(c => t.places.push(c));
+        await dbSet(tripKey(id), t);
+        await touchIndex(id, t.title, Date.now());
+        toast(copies.length + (copies.length === 1 ? ' tappa copiata' : ' tappe copiate') + ' in «' + (t.title || 'quel viaggio') + '»');
+      }
+      selExit();
+    }
+  });
+}
+
+/* ============ condividi delle tappe (#p=CODICE) ============ */
+/* Non tutto il viaggio: dieci posti scelti a mano, che chi riceve fa atterrare
+   dove vuole \u2014 in un suo viaggio, o nei suoi posti. \u00c8 l'importazione che mancava
+   all'esportazione: fin qui si poteva condividere solo un viaggio intero, e
+   quindi soltanto con chi ci sarebbe venuto. */
+const PACK_KEYS = ['name','lat','lng','type','notes','links','img','imgCredit','rain','kid','city','cc','ccn'];
+function packLink(code){
+  return location.origin + location.pathname + '#p=' + encodeURIComponent(code);
+}
+function pendingPackCode(){
+  const m = /[#&]p=([^&]+)/.exec(location.hash || '');
+  if(!m) return null;
+  try{ return decodeURIComponent(m[1]); }catch(e){ return m[1]; }
+}
+async function sharePack(ids){
+  const picked = (ids || []).map(id => (state.places || []).find(p => p.id === id)).filter(Boolean);
+  if(!picked.length) return;
+  if(!fbReady){ noteCard('Serve la rete', 'Per fare un collegamento le tappe devono passare dal cloud, e in questo momento non \u00e8 raggiungibile.'); return; }
+  toast('Preparo il collegamento\u2026');
+  try{
+    /* il pacchetto vive fra i viaggi, non in una collezione a sé: le regole del
+       cloud aprono «trips», e una collezione nuova veniva rifiutata in scrittura
+       — da fuori sembrava un problema di rete */
+    const ref = fbDb.collection('trips').doc();
+    await ref.set({
+      kind: 'pack',
+      from: state.title || '',
+      at: Date.now(),
+      places: picked.map(p => {
+        const c = {};
+        PACK_KEYS.forEach(k => { if(p[k] !== undefined && p[k] !== null) c[k] = p[k]; });
+        return c;
+      })
+    });
+    const url = packLink(ref.id);
+    askCard({
+      ic:'link',
+      t: picked.length + (picked.length === 1 ? ' tappa pronta' : ' tappe pronte'),
+      p:['Chi apre questo collegamento vede le tappe e sceglie in quale suo viaggio farle atterrare. Funziona anche con chi non ha mai usato Waynder.',
+         '<span class="share-code">' + esc(url) + '</span>'],
+      no:'Chiudi', yes:'Invia\u2026',
+      extra:{label:'\u29c9 Copia il collegamento', onTap: async b => {
+        const ok = await copyText(url);
+        b.textContent = ok ? 'copiato \u2713' : 'copia non riuscita';
+        setTimeout(() => { b.textContent = '\u29c9 Copia il collegamento'; }, 2200);
+      }},
+      onYes: async () => {
+        if(navigator.share){ try{ await navigator.share({title:'Tappe da Waynder', url}); }catch(e){} }
+        else copyText(url);
+      }
+    });
+    selExit();
+  }catch(e){ noteCard('Non riesco a condividere', 'Il collegamento non \u00e8 stato creato: riprova quando la rete \u00e8 pi\u00f9 stabile.'); }
+}
+async function openPack(code){
+  if(!fbReady){ noteCard('Serve la rete', 'Per aprire delle tappe condivise serve un collegamento a internet.'); return; }
+  let d = null;
+  try{
+    const snap = await fbDb.collection('trips').doc(code).get();
+    if(snap.exists) d = snap.data();
+  }catch(e){}
+  if(!d || !Array.isArray(d.places) || !d.places.length || d.kind !== 'pack'){
+    noteCard('Tappe non trovate', 'Questo collegamento non porta a delle tappe condivise: può essere incompleto, oppure è il collegamento di un viaggio intero.');
+    return;
+  }
+  const rows = d.places;
+  checkCard({
+    ic:'map',
+    t: rows.length + (rows.length === 1 ? ' tappa condivisa' : ' tappe condivise'),
+    p:[(d.from ? 'Da <b>' + esc(d.from) + '</b>. ' : '') +
+       'Arrivano in Brainstorming di <b>' + esc(state.title || 'questo viaggio') + '</b>, senza giorno. Togli la spunta a quelle che non ti servono.'],
+    items: rows.map(r => ({label: r.name || 'Senza nome',
+      sub: (typeOf(r).label || '') + (r.notes ? ' \u00b7 ' + r.notes.slice(0, 60) : ''),
+      ic:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + typeOf(r).d + '"/></svg>'})),
+    no:'Lascia stare', yes:'Aggiungi',
+    onYes: idx => {
+      let n = 0;
+      idx.map(i => rows[i]).forEach(r => {
+        if(state.places.some(p => km(p, r) < .12)) return;
+        const c = {id:uid(), dayId:null, chain:true};
+        PACK_KEYS.forEach(k => { if(r[k] !== undefined) c[k] = r[k]; });
+        state.places.push(c);
+        n++;
+      });
+      save(); render();
+      toast(n ? n + (n === 1 ? ' tappa aggiunta' : ' tappe aggiunte') : 'Erano gi\u00e0 tutte nell\u2019itinerario');
+    }
+  });
 }
 
 async function boot(){
@@ -2876,6 +3129,14 @@ async function boot(){
   document.getElementById('tripTitle').value = state.title || '';
   if(state.view) map.setView([state.view.lat, state.view.lng], state.view.z);
   badge(storageOK ? 'saved' : 'unsaved');
+  areaPaint();
+  /* tappe condivise arrivate nell'indirizzo (#p=…): si consumano subito e si
+     pulisce la barra, altrimenti a ogni ricarica ricomparirebbe la domanda */
+  const packCode = pendingPackCode();
+  if(packCode){
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+    setTimeout(() => openPack(packCode), 900);
+  }
   openTodayOnce();
   render();
   scrollToTodayOnce();
@@ -2908,6 +3169,7 @@ async function switchTrip(id, opts){
   seedStampBaseline();
   await dbSet(ACTIVE_KEY, id);
   document.getElementById('tripTitle').value = state.title || '';
+  areaPaint();
   if(state.view) map.setView([state.view.lat, state.view.lng], state.view.z);
   render();
   if(view === 'cost') drawCosts();
@@ -2931,6 +3193,7 @@ async function newTrip(opts){
     storageOK = true;
   }
   document.getElementById('tripTitle').value = t.title;
+  areaPaint();
   map.setView([t.view.lat, t.view.lng], t.view.z);
   render();
   badge(storageOK ? 'saved' : 'unsaved');
@@ -2938,6 +3201,9 @@ async function newTrip(opts){
     closeTripsSheet();
     const ti = document.getElementById('tripTitle');
     autoFocus(ti, true);
+    /* l'area si chiede subito, ma senza sbarrare la strada: chi non lo sa
+       ancora tocca «Lo decido dopo» e la pastiglia in testata resta lì */
+    if(opts.askArea !== false) setTimeout(() => openArea({fresh:true}), 480);
   } else {
     drawTrips();
   }
@@ -2974,7 +3240,7 @@ function fmtTripDate(ts){
 
 function drawTrips(){
   const box = document.getElementById('tripsList');
-  const sorted = tripIndex.slice().sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
+  const sorted = tripIndex.filter(t => t.id !== MINE_ID).sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
   box.innerHTML = sorted.map(t => (
     '<div class="who trip-row">'+
       '<span class="who-n" data-open="'+t.id+'">'+esc(t.title||'Senza nome')+
@@ -3799,6 +4065,13 @@ async function openReadOnly(code){
     inn.innerHTML = '<p class="ro-load">Non trovo questo itinerario: il collegamento pu\u00f2 essere incompleto, oppure il viaggio non \u00e8 pi\u00f9 condiviso.</p>' + roSign();
     return;
   }
+  /* codice di un pacchetto di tappe al posto di un viaggio: qui non c'\u00e8 un
+     itinerario da mostrare, ci sono delle tappe da prendere */
+  if(data.kind === 'pack'){
+    wrap.remove();
+    document.body.classList.remove('ro-on');
+    return openPack(code);
+  }
   inn.innerHTML = roHTML(data);
   document.title = (data.title ? data.title + ' \u00b7 ' : '') + 'Waynder';
 }
@@ -3810,6 +4083,10 @@ async function joinTrip(code){
   const snap = await fbDb.collection('trips').doc(code).get();
   if(!snap.exists){ noteCard('Codice non trovato', 'Nessun viaggio condiviso risponde a questo codice. Controlla di averlo copiato per intero.'); return; }
   const data = snap.data();
+  /* un collegamento di tappe (#p=) usato dove va il codice di un viaggio: i due
+     id si somigliano. Non si adotta niente — si aprono le tappe, che è quello
+     che chi l'ha mandato voleva. */
+  if(data && data.kind === 'pack'){ return openPack(code); }
   const serverAt = data.updatedAt && data.updatedAt.toMillis ? data.updatedAt.toMillis() : null;
   delete data.updatedAt; delete data.deviceId;
   data.id = uid();
@@ -4085,6 +4362,144 @@ function closeAddVeil(){
 }
 document.getElementById('addDest').onclick = destAsk;
 
+/* ============ area del viaggio ============ */
+/* Un viaggio sa dove si svolge, ma finora l'app lo deduceva dalle tappe già
+   messe: prima tappa nessuna deduzione, quindi la ricerca partiva alla cieca
+   proprio quando serviva di più. L'area è un campo del viaggio: una o più
+   nazioni, una o più città, oppure «ovunque» per chi usa un viaggio come
+   raccolta di posti sparsi. La sceglie chi crea il viaggio (o dopo, dalla
+   pastiglia in testata) e da lì la leggono ricerca tappe e Ispirami. */
+function areaOf(){
+  const a = state && state.area;
+  if(!a) return {world:false, items:[]};
+  return {world: !!a.world, items: Array.isArray(a.items) ? a.items : []};
+}
+function areaSet(a){
+  state.area = {world: !!a.world, items: a.items || []};
+  save(); areaPaint(); scopePaint();
+}
+function areaNames(){ return areaOf().items.map(x => x.name); }
+function areaLabel(){
+  const a = areaOf();
+  if(a.world) return 'Ovunque nel mondo';
+  if(!a.items.length) return '';
+  if(a.items.length <= 2) return a.items.map(x => x.name).join(' e ');
+  return a.items[0].name + ' e altri ' + (a.items.length - 1);
+}
+function areaCodes(){
+  const a = areaOf();
+  if(a.world) return [];
+  const out = [];
+  a.items.forEach(x => { if(x.cc && !out.includes(x.cc)) out.push(x.cc); });
+  return out;
+}
+/* rettangolo dell'area: se le aree portano il loro (Nominatim lo dà per paesi e
+   città) si uniscono, altrimenti si ripiega sul punto con un margine */
+function areaBox(){
+  const a = areaOf();
+  if(a.world || !a.items.length) return null;
+  let S = 90, N = -90, W = 180, E = -180;
+  a.items.forEach(x => {
+    const b = x.box;
+    const s = b ? b[0] : x.lat - .5, n = b ? b[1] : x.lat + .5,
+          w = b ? b[2] : x.lng - .5, e = b ? b[3] : x.lng + .5;
+    S = Math.min(S, s); N = Math.max(N, n); W = Math.min(W, w); E = Math.max(E, e);
+  });
+  if(!(N > S && E > W)) return null;
+  return {S, N, W, E};
+}
+function areaPaint(){
+  const pill = document.getElementById('areaPill');
+  if(!pill) return;
+  const lab = areaLabel();
+  pill.querySelector('b').textContent = lab || 'Dove si va?';
+  pill.classList.toggle('unset', !lab);
+}
+let areaDraft = null;
+function openArea(opts){
+  opts = opts || {};
+  const a = areaOf();
+  areaDraft = {world:a.world, items:a.items.slice()};
+  const v = document.getElementById('areaVeil');
+  v.hidden = false;
+  document.getElementById('areaQ').value = '';
+  document.getElementById('areaRes').hidden = true;
+  document.getElementById('areaSkip').textContent = opts.fresh ? 'Lo decido dopo' : 'Annulla';
+  areaDraw();
+  autoFocus(document.getElementById('areaQ'));
+}
+function closeArea(){
+  document.getElementById('areaVeil').hidden = true;
+  document.getElementById('areaQ').value = '';
+  document.getElementById('areaRes').hidden = true;
+}
+function areaDraw(){
+  const box = document.getElementById('areaPicked');
+  const d = areaDraft;
+  const wb = document.getElementById('areaWorld');
+  wb.classList.toggle('on', d.world);
+  if(d.world){
+    box.innerHTML = '<p class="area-none">Nessun filtro: la ricerca guarda in tutto il mondo. È il modo giusto per usare un viaggio come raccolta di posti sparsi.</p>';
+    return;
+  }
+  if(!d.items.length){
+    box.innerHTML = '<p class="area-none">Ancora nessuna area. Cerca qui sopra una nazione o una città: puoi metterne più di una.</p>';
+    return;
+  }
+  box.innerHTML = d.items.map((x, i) =>
+    '<span class="area-tag"><i>' + (x.kind === 'country' ? '⚑' : '◉') + '</i>' + esc(x.name) +
+    '<button type="button" class="area-x" data-i="' + i + '" aria-label="Togli">✕</button></span>').join('');
+  box.querySelectorAll('.area-x').forEach(b => b.onclick = () => {
+    areaDraft.items.splice(+b.dataset.i, 1); areaDraw();
+  });
+}
+let areaTimer = null;
+async function areaFind(v){
+  const res = document.getElementById('areaRes');
+  v = (v || '').trim();
+  clearTimeout(areaTimer);
+  if(v.length < 2){ res.hidden = true; return; }
+  areaTimer = setTimeout(async () => {
+    res.hidden = false;
+    res.innerHTML = '<div class="res-note">Cerco…</div>';
+    let hits = [];
+    try{
+      const u = 'https://nominatim.openstreetmap.org/search?format=json&limit=8&addressdetails=1' +
+        '&accept-language=it&q=' + encodeURIComponent(v);
+      const raw = await (await fetch(u)).json();
+      hits = (raw || []).filter(h => ['country','state','region','province','city','town','county','administrative','island','archipelago'].includes(h.type) ||
+        h.class === 'boundary' || h.class === 'place').slice(0, 7).map(h => {
+        const ad = h.address || {};
+        const cc = (ad.country_code || '').toLowerCase();
+        const isC = h.type === 'country';
+        const bb = h.boundingbox ? h.boundingbox.map(Number) : null;
+        return {
+          name: (h.name || h.display_name.split(',')[0]).trim(),
+          kind: isC ? 'country' : 'place',
+          cc, ccn: ad.country || '',
+          lat: +h.lat, lng: +h.lon,
+          box: bb && bb.length === 4 ? [bb[0], bb[1], bb[2], bb[3]] : null,
+          sub: h.display_name.split(',').slice(1, 3).join(',').trim()
+        };
+      });
+    }catch(e){}
+    if(!hits.length){ res.innerHTML = '<div class="res-note">Nessun risultato.</div>'; return; }
+    res.innerHTML = hits.map((h, i) =>
+      '<button type="button" class="res" data-i="' + i + '"><b>' + esc(h.name) + '</b>' +
+      '<span>' + esc(h.sub || (h.kind === 'country' ? 'nazione' : '')) + '</span></button>').join('');
+    res.querySelectorAll('.res').forEach(b => b.onclick = () => {
+      const h = hits[+b.dataset.i];
+      if(h.cc) ccLearn(h.cc, h.ccn || h.name);
+      areaDraft.world = false;
+      if(!areaDraft.items.some(x => x.name === h.name)) areaDraft.items.push(h);
+      document.getElementById('areaQ').value = '';
+      res.hidden = true;
+      areaDraw();
+      autoFocus(document.getElementById('areaQ'));
+    });
+  }, 320);
+}
+
 /* ============ dove si cerca ============ */
 /* La ricerca era orientata dal rettangolo inquadrato dalla mappa. È un
    riferimento che l'utente non sta guardando: in Tappe la mappa sta sotto il
@@ -4175,11 +4590,18 @@ async function ensureCC(){
   }
 }
 function scopeCodes(){
-  if(!searchScope || searchScope.mode === 'world') return [];
-  if(searchScope.mode === 'one') return searchScope.code ? [searchScope.code] : [];
+  if(searchScope && searchScope.mode === 'world') return [];
+  if(searchScope && searchScope.mode === 'one') return searchScope.code ? [searchScope.code] : [];
+  /* l'area del viaggio comanda: è quello che l'utente ha dichiarato, non quello
+     che l'app ha dedotto dalle tappe già messe */
+  const a = areaOf();
+  if(a.world) return [];
+  if(a.items.length) return areaCodes();
   return tripCountries();
 }
 function scopeLabel(){
+  const a = areaOf();
+  if((!searchScope || searchScope.mode === 'trip') && !a.world && a.items.length) return 'in ' + areaLabel();
   const c = scopeCodes();
   if(!c.length) return 'in tutto il mondo';
   if(c.length === 1) return 'in ' + ccName(c[0]);
@@ -4192,20 +4614,26 @@ function scopePaint(){
 }
 function scopeAsk(){
   const codes = tripCountries();
+  const a = areaOf();
   const items = [];
-  if(codes.length > 1) items.push({
+  if(a.items.length && !a.world) items.push({
+    label:'Nell’area del viaggio', sub: areaLabel(), ic:'◉', value:{mode:'trip'}
+  });
+  else if(codes.length > 1) items.push({
     label:'Nei paesi del viaggio', sub: codes.map(ccName).join(' · '),
     ic:'◉', value:{mode:'trip'}
   });
   codes.forEach(c => items.push({label: ccName(c), sub:'solo qui', ic:'▪', value:{mode:'one', code:c}}));
-  items.push({label:'In tutto il mondo', sub:'nessun filtro', ic:'○', value:{mode:'world'}});
+    items.push({label:'In tutto il mondo', sub:'nessun filtro', ic:'○', value:{mode:'world'}});
   items.push({label:'Un altro paese…', sub:'scrivi il nome', ic:'+', value:'ask'});
+  items.push({label:'Cambia l’area del viaggio…', sub:'vale anche per Ispirami', ic:'✎', value:'area'});
   pickCard({
     ic:'map', t:'Dove cerco?',
     p:['La ricerca dei luoghi si limita a quello che scegli qui. Se il viaggio tocca più paesi vanno bene tutti insieme.'],
     items, no:'Annulla',
     onPick: v => {
       if(v === 'ask'){ scopeAskCountry(); return; }
+      if(v === 'area'){ openArea(); return; }
       searchScope = v; scopeSave(); scopePaint(); autoFocus(qEl);
     }
   });
@@ -4274,6 +4702,14 @@ function normPhoton(f){
    Ispirami). I link accorciati non si possono seguire da qui: lo si dice. */
 function searchOpts(){
   const codes = scopeCodes();
+  /* il rettangolo viene dall'area dichiarata; senza area, dalle tappe salvate */
+  const ab = areaBox();
+  if(ab && (!searchScope || searchScope.mode === 'trip')){
+    const near = {lat:(ab.S + ab.N) / 2, lng:(ab.W + ab.E) / 2};
+    const inBox = h => h.lat > ab.S && h.lat < ab.N && h.lng > ab.W && h.lng < ab.E;
+    const wide = (ab.N - ab.S) > 25 || (ab.E - ab.W) > 25;
+    return {codes, box: wide ? '' : [ab.W, ab.N, ab.E, ab.S].join(','), near, inBox: wide ? null : inBox};
+  }
   const pts = geoPoints();
   let box = '', inBox = null, near = null;
   if(pts.length){
@@ -5252,8 +5688,13 @@ function inspRender(){
   });
   document.getElementById('inspMore').hidden = insp.shown >= insp.pool.length;
   /* la scorciatoia per chi non vuole spuntare trenta righe a mano: le prime 24
-     in un elenco da cui si togliono quelle che non interessano */
-  document.getElementById('inspTakeAll').hidden = insp.pool.length < 6;
+     in un elenco da cui si togliono quelle che non interessano. L'etichetta dice
+     quante ce ne sono davvero: «le prime 24» con undici trovate era una bugia. */
+  const takeB = document.getElementById('inspTakeAll');
+  takeB.hidden = insp.pool.length < 6;
+  takeB.textContent = insp.pool.length > 24
+    ? 'Prendi le prime 24…'
+    : 'Prendile tutte (' + insp.pool.length + ')…';
   inspCount();
 }
 function inspCount(){
@@ -5325,6 +5766,9 @@ async function inspSearch(mode){
    per la stessa cosa, e la migliore era la più nascosta. Resta questa, e il
    campo «dove» arriva precompilato: il posto del viaggio l'app lo sa già. */
 function inspSeed(){
+  /* l'area dichiarata batte tutto: è la risposta esatta alla domanda «dove» */
+  const a = areaOf();
+  if(!a.world && a.items.length) return areaNames().slice(0, 2).join(', ');
   const t = (state.title || '').replace(/\b(19|20)\d\d\b/g, '').replace(/[–—-]\s*$/, '').trim();
   if(t && !/^(nuovo viaggio|viaggio|senza nome|il mio viaggio)$/i.test(t)) return t;
   const p = state.places.find(x => x.name && x.name !== 'Nuova tappa');
@@ -5544,6 +5988,7 @@ function holdRender(on){
 }
 function render(){
   if(renderHeld){ renderPending = true; return; }
+  document.body.classList.toggle('mine', isMine());
   drawMap();
   drawList();
   paintSel();
@@ -6441,6 +6886,7 @@ function dayBlock(d, list){
             : thumbPlaceholderHTML(p)) +
           '<div class="stop-body">' +
             '<p class="stop-name">'+esc(p.name)+(p.visited?' <i class="done-tag" title="Visitata">✓</i>':'')+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+ohClosedTag(p)+'</p>' +
+            (isMine() && p.srcTitle ? '<p class="stop-from">da '+esc(p.srcTitle)+'</p>' : '') +
             (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
             (links ? '<div class="links">'+links+'</div>' : '') +
           '</div>' +
@@ -6496,6 +6942,7 @@ function dayBlock(d, list){
           '<div class="alt-body">' +
             '<button class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag">☂</i>':'')+(p.kid?' <i class="kid-tag">👶</i>':'')+ohClosedTag(p)+'</button>' +
             (p.img ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '') +
+            (isMine() && p.srcTitle ? '<p class="stop-from">da '+esc(p.srcTitle)+'</p>' : '') +
             (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
             (links ? '<div class="links">'+links+'</div>' : '') +
           '</div>' +
@@ -6804,6 +7251,17 @@ function dayAllWalk(d, on){
 let selMode = false;
 const selIds = new Set();
 
+/* Le quattro azioni della selezione, disegnate a linea come le altre icone
+   dell'app: giorno con la freccia (sposta), valigia con la freccia (copia in un
+   altro viaggio), aeroplanino di carta (manda a qualcuno), cestino. Stesso peso
+   visivo: qui non c'è un'azione più importante delle altre. */
+const SEL_IC = {
+  move:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15h6m0 0-2.2-2.2M15 15l-2.2 2.2"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.2A1.2 1.2 0 0 1 10.2 4h3.6A1.2 1.2 0 0 1 15 5.2V7"/><path d="M8.5 13.5h6m0 0-2.3-2.3M14.5 13.5l-2.3 2.3"/></svg>',
+  send:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11.2l6.3 2.1L21 4Z"/><path d="M21 4l-7.4 16-2.3-6.3L21 4Z"/><path d="M9.3 13.3 11.3 20"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2M6.5 7l.9 12.1A1.9 1.9 0 0 0 9.3 21h5.4a1.9 1.9 0 0 0 1.9-1.9L17.5 7"/><path d="M10.5 11v6M13.5 11v6"/></svg>',
+  close:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+};
 function selBar(){
   let b = document.getElementById('selBar');
   if(b) return b;
@@ -6813,13 +7271,19 @@ function selBar(){
   b.hidden = true;
   b.innerHTML =
     '<div class="selbar-in">' +
-      '<span class="selbar-n" id="selCount">1 tappa selezionata</span>' +
-      '<button type="button" id="selMove">Sposta<span class="selbar-long"> in un giorno</span></button>' +
-      '<button type="button" class="ghost trash" id="selDel" title="Elimina le tappe selezionate" aria-label="Elimina le tappe selezionate">🗑</button>' +
-      '<button type="button" class="ghost" id="selDone" title="Esci dalla selezione" aria-label="Esci dalla selezione">✕</button>' +
+      '<span class="selbar-n" id="selCount">1 tappa</span>' +
+      '<span class="selbar-acts">' +
+        '<button type="button" id="selMove" title="Sposta in un giorno" aria-label="Sposta in un giorno">' + SEL_IC.move + '</button>' +
+        '<button type="button" id="selCopy" title="Copia in un altro viaggio" aria-label="Copia in un altro viaggio">' + SEL_IC.copy + '</button>' +
+        '<button type="button" id="selShare" title="Condividi con qualcuno" aria-label="Condividi con qualcuno">' + SEL_IC.send + '</button>' +
+        '<button type="button" class="trash" id="selDel" title="Elimina le tappe selezionate" aria-label="Elimina le tappe selezionate">' + SEL_IC.trash + '</button>' +
+      '</span>' +
+      '<button type="button" class="selbar-x" id="selDone" title="Esci dalla selezione" aria-label="Esci dalla selezione">' + SEL_IC.close + '</button>' +
     '</div>';
   document.body.appendChild(b);
   b.querySelector('#selMove').onclick = selMoveAsk;
+  b.querySelector('#selCopy').onclick = () => copyToTrip([...selIds]);
+  b.querySelector('#selShare').onclick = () => sharePack([...selIds]);
   b.querySelector('#selDel').onclick = selDelAsk;
   b.querySelector('#selDone').onclick = () => selExit();
   return b;
@@ -6858,7 +7322,7 @@ function paintSel(){
     if(!on) r.style.removeProperty('--seli');
   });
   const c = document.getElementById('selCount');
-  if(c) c.textContent = selIds.size + (selIds.size === 1 ? ' tappa selezionata' : ' tappe selezionate');
+  if(c) c.textContent = selIds.size + (selIds.size === 1 ? ' tappa' : ' tappe');
 }
 /* in quale giorno finiscono: un giorno per riga, col suo colore e quante tappe
    ha già, più Brainstorming per tirarle fuori dal percorso */
@@ -9753,6 +10217,21 @@ document.getElementById('btnAddPlace').onclick = openAddVeil;
    ricerca della mappa: vedi mapSearch, che naviga senza creare niente */
 document.getElementById('addVeilClose').onclick = closeAddVeil;
 document.getElementById('btnPasteList').onclick = openPasteList;
+document.getElementById('btnMineHub').onclick = openMine;
+document.getElementById('areaPill').onclick = () => openArea();
+document.getElementById('areaQ').oninput = e => areaFind(e.target.value);
+document.getElementById('areaWorld').onclick = () => {
+  areaDraft.world = !areaDraft.world;
+  if(areaDraft.world) areaDraft.items = [];
+  areaDraw();
+};
+document.getElementById('areaSkip').onclick = closeArea;
+document.getElementById('areaSave').onclick = () => {
+  areaSet(areaDraft);
+  closeArea();
+  const lab = areaLabel();
+  if(lab) toast('Viaggio ' + (areaDraft.world ? 'senza area: cerco ovunque' : 'in ' + lab));
+};
 addVeil.onclick = e => { if(e.target === addVeil) closeAddVeil(); };
 
 document.getElementById('btnPickInline').onclick = () => {
