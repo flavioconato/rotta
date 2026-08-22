@@ -299,12 +299,17 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
   background:var(--paper);border:1px solid var(--ink-3);border-radius:16px;
   padding:7px 7px 7px 14px;box-shadow:0 16px 34px -14px rgba(34,48,58,.5)
 }
-.selbar-n{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+.selbar-n{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .selbar-in button{
   flex:none;border:0;border-radius:11px;padding:9px 13px;font:inherit;
   font-size:12.5px;font-weight:600;cursor:pointer;background:var(--route);color:#fff
 }
 .selbar-in button.ghost{background:var(--ink-2);color:var(--fog);padding:9px 12px}
+.selbar-in button.trash{font-size:14px;padding:8px 12px}
+.selbar-in button.trash:hover,.selbar-in button.trash:active{background:var(--route);color:#fff}
+/* col cestino in più la barra sfondava lo schermo a 360 px e la ✕ per uscire
+   finiva fuori: sotto questa larghezza l'etichetta si accorcia */
+@media (max-width:430px){ .selbar-long{display:none} }
 body.selmode .fabs{opacity:0;pointer-events:none}
 /* in selezione il tocco scegli, non apre: niente sollevamento al passaggio */
 body.selmode .stop-card:hover{transform:none;box-shadow:none;border-color:var(--ink-3)}
@@ -455,6 +460,18 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
 .insp-bd{flex:1;min-width:0}
 .insp-name{display:block;font-size:13.5px;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .insp-sub{display:block;font-size:11px;color:var(--fog);margin-top:1px}
+.insp-foot{display:flex;gap:8px;margin-top:10px}
+.insp-foot .chip{flex:1 1 0;justify-content:center;min-width:0}
+/* riga di servizio sopra un elenco a spunte (checkCard): quante sono scelte e
+   il passa-tutte, che nel caso di venti voci fa risparmiare venti tocchi */
+.check-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 6px;font-size:11.5px;color:var(--fog)}
+.check-all{
+  border:1px solid var(--ink-3);background:var(--ink-2);color:var(--ink);
+  border-radius:999px;padding:5px 11px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer
+}
+.check-all:hover{border-color:var(--ink-4)}
+.tour-card .insp-item{width:100%;box-sizing:border-box;cursor:pointer}
+.tour-card .insp-item:not(.on){opacity:.5}
 .tg-row{display:flex;gap:8px}
 .tg-row .toggle{flex:1;min-width:0}
 /* sullo schermo del telefono due pastiglie affiancate spezzavano l'etichetta
@@ -468,6 +485,45 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
   border:1px solid var(--ochre);border-radius:999px;padding:4px 11px;
 }
 .base-hint button:hover{background:rgba(94,178,194,.18)}
+/* dove atterrano le tappe che aggiungi adesso: prima era una regola invisibile
+   (l'ultimo giorno toccato), e quando sbagliava la tappa andava spostata a mano */
+.dest-pill{
+  display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;
+  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:999px;
+  padding:8px 14px;font:inherit;font-size:12.5px;color:var(--fog);cursor:pointer;
+  transition:border-color .15s,background .15s
+}
+.dest-pill:hover{border-color:var(--ink-4);background:var(--ink-3)}
+.dest-dot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--ink-4);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.dest-tx{flex:1 1 auto;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dest-tx b{color:var(--ink);font-weight:700}
+.dest-caret{flex:none;font-size:11px;font-weight:600;color:var(--fog);opacity:.75}
+/* quello che è appena atterrato, senza chiudere la ricerca: nessuno aggiunge
+   una tappa sola, e il riscontro serve lì dove si sta lavorando */
+/* dove cerca la ricerca: una riga di servizio, non una pastiglia — è
+   un'informazione che serve solo quando sbaglia */
+.q-scope{
+  display:flex;align-items:center;gap:8px;width:100%;margin:7px 0 0;
+  background:none;border:0;padding:2px 2px;font:inherit;font-size:11.5px;
+  color:var(--fog);cursor:pointer;text-align:left
+}
+.q-scope span:first-child{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q-scope b{color:var(--ink);font-weight:600}
+.q-scope:hover b{text-decoration:underline}
+.hint-a{background:none;border:0;padding:0;font:inherit;color:var(--route);font-weight:600;cursor:pointer;text-decoration:underline}
+.added-box{margin-top:10px;border-top:1px solid var(--ink-3);padding-top:9px;display:flex;flex-direction:column;gap:5px;max-height:190px;overflow-y:auto}
+.added-head{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);font-family:"JetBrains Mono",monospace}
+.added-row{display:flex;align-items:center;gap:9px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r-sm);padding:7px 9px}
+.added-row .dest-dot{width:10px;height:10px}
+.added-nm{flex:1 1 auto;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.added-nm span{display:block;font-size:11px;color:var(--fog)}
+.added-row button{
+  flex:none;position:relative;border:1px solid var(--ink-3);background:var(--paper);
+  border-radius:999px;width:28px;height:28px;font-size:12px;color:var(--fog);cursor:pointer
+}
+.added-row button::after{content:"";position:absolute;inset:-8px}
+.added-row button:hover{border-color:var(--ink-4);color:var(--ink)}
+.added-row button.rm:hover{border-color:var(--route);color:var(--route)}
 .results{
   position:absolute;left:0;right:0;top:52px;z-index:20;
   background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r);overflow:hidden;
@@ -485,8 +541,11 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
 .day-head{display:flex;flex-direction:column;gap:8px;padding:15px 19px 12px;cursor:pointer}
 /* la testata del giorno è tutta un interruttore: si apre e si chiude toccando
    il nome o lo spazio attorno, non un triangolino da centrare col pollice */
-.day-edit{opacity:.55}
+.day-edit{opacity:.55;position:relative}
 .day-edit:hover{opacity:1}
+/* la matita disegna 24 px ma il pollice ne cerca 44: l'alone è invisibile e
+   non sposta niente nel flusso (stesso trucco di .swatch.sw-btn) */
+.day-edit::after{content:'';position:absolute;inset:-9px}
 span.day-name{cursor:pointer}
 .day-head-top{display:flex;align-items:center;gap:9px}
 .day-head-meta{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding-left:20px}
@@ -604,6 +663,9 @@ span.day-name{cursor:pointer}
 .join-link{display:block;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;line-height:1.45;
   word-break:break-all;background:var(--ink-2);border:1px solid var(--ink-3);
   border-radius:10px;padding:8px 10px}
+/* il codice a dettare resta, ma un passo indietro: è il ripiego, non la via maestra */
+.share-code{display:block;font-size:11.5px;line-height:1.5;color:var(--fog);opacity:.85}
+.share-code b{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;word-break:break-all;color:var(--ink)}
 .tour-foot{display:flex;align-items:center;gap:10px;margin-top:15px}
 .tour-dots{display:flex;gap:5px;flex:1}
 .tour-dots i{width:6px;height:6px;border-radius:50%;background:var(--ink-3);transition:.2s}
@@ -648,8 +710,11 @@ span.day-name{cursor:pointer}
   padding:5px 9px 5px 8px;
 }
 .day-date-wrap .swatch{box-shadow:none}
+/* il campo data misura 16 px: gli si dà un corpo di 44 px e si riprende lo
+   spazio con margini negativi, così il bersaglio cresce e la pillola no */
 .day-date{
   flex:none;width:92px;background:none;border:0;padding:0;
+  height:44px;margin:-14px 0;position:relative;z-index:1;
   font-size:11px;color:var(--ink);color-scheme:dark;
 }
 .day-name{
@@ -658,6 +723,25 @@ span.day-name{cursor:pointer}
   font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em
 }
 .day-stat{color:var(--fog);flex:none}
+/* la riga dei numeri \u00e8 un interruttore: pochi numeri in vista, tutti gli altri
+   al tocco. Sembra testo, non un pulsante: il divario \u00e8 il triangolino. */
+.day-stat-btn{
+  background:none;border:0;padding:2px 0;margin:0;font:inherit;color:var(--fog);
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;position:relative
+}
+.day-stat-btn::after{content:'';position:absolute;inset:-11px -8px}
+.day-stat-btn i{font-style:normal;font-size:10px;opacity:.7;transition:transform .16s}
+.day-stat-btn:hover{color:var(--ink)}
+.day-stat-btn.on{color:var(--ink)}
+.day-stat-btn.on i{transform:rotate(180deg)}
+.day-info{
+  flex:1 0 100%;margin:6px 0 0;padding:8px 10px;border-radius:10px;
+  background:var(--ink-2);border:1px solid var(--ink-3)
+}
+.day-info .di-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:3px 0}
+.day-info .di-row + .di-row{border-top:1px solid var(--ink-3)}
+.day-info .di-k{font-size:12px;color:var(--fog)}
+.day-info .di-v{font-size:12px;color:var(--ink);text-align:right}
 /* ---------- pillole "Parte da" / "Arriva a" nel nastro ---------- */
 .node.base-node svg{fill:none;stroke:var(--ink);stroke-width:1.7}
 .base-pill-hit{
@@ -715,15 +799,18 @@ span.day-name{cursor:pointer}
 .icon-btn.danger:hover{color:#C4272C;background:rgba(229,72,77,.1)}
 /* i comandi del giorno (meteo, info, altre azioni): stessa
    forma e stessa distanza tra loro, qualunque sia il glifo che portano */
-.day-head-actions{flex:none;margin-left:auto;display:flex;align-items:center;gap:2px}
+.day-head-actions{flex:none;margin-left:auto;display:flex;align-items:center;gap:16px}
 .day-head-actions > *{
-  box-sizing:border-box;flex:none;width:24px;height:24px;margin:0;padding:0;
+  box-sizing:border-box;flex:none;position:relative;width:28px;height:28px;margin:0;padding:0;
   display:grid;place-items:center;border-radius:8px;
   background:transparent;border:1px solid transparent;color:var(--fog);
   font-size:13px;font-weight:400;font-style:normal;font-family:inherit;line-height:1;
   transition:.15s;
 }
 .day-head-actions > *:hover{background:var(--ink-3);border-color:var(--ink-3);color:var(--ink)}
+/* alone di tocco: 44 px pieni per lato, metà del divario ciascuno, così due
+   comandi vicini non si rubano il dito a vicenda */
+.day-head-actions > *::after{content:'';position:absolute;inset:-8px}
 .day-head-actions .wx-icon-btn.rain-ready{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));color:var(--ink)}
 .day-head-actions .wx-icon-btn:disabled{opacity:.5;cursor:default}
 .day-head-actions .day-del svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
@@ -740,11 +827,12 @@ span.day-name{cursor:pointer}
    le due etichette lunghe passano alla forma corta. */
 .day-foot{display:flex;flex-wrap:nowrap;gap:7px;padding:0 19px 16px}
 .day-cmd{
-  flex:0 1 auto;min-width:0;display:inline-flex;align-items:center;gap:6px;justify-content:center;
+  flex:0 1 auto;min-width:0;position:relative;display:inline-flex;align-items:center;gap:6px;justify-content:center;
   padding:7px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;
   background:var(--ink-2);border:1px solid var(--ink-3);color:var(--fog);transition:.15s
 }
 .day-cmd:hover{border-color:var(--sage);color:var(--ink);transform:translateY(-1px)}
+.day-cmd::after{content:'';position:absolute;inset:-7px 0}
 .day-cmd i{font-style:normal;font-size:13px;line-height:1;opacity:.85;flex:none}
 .day-cmd b{font-weight:600;overflow:hidden;text-overflow:ellipsis}
 .day-cmd .sm{display:none}
@@ -810,7 +898,10 @@ span.day-name{cursor:pointer}
 }
 .stop-card .links{margin-top:3px;flex-wrap:nowrap;overflow:hidden}
 .stop-card .links a{flex:none}
-.stop-menu{flex:none;align-self:center;margin-right:6px}
+.stop-menu{flex:none;align-self:center;margin-right:6px;position:relative}
+/* il ⋯ della tappa: alone asimmetrico, largo verso il bordo e stretto verso la
+   scheda, che resta toccabile per aprire il dettaglio */
+.stop-menu::after{content:'';position:absolute;inset:-11px -12px -11px -5px}
 .stop-name{font-weight:600;font-size:14px;line-height:1.25;text-align:left}
 .stop-note{color:var(--fog);font-size:12.5px;line-height:1.4;margin:5px 0 0;white-space:pre-wrap}
 .links{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
@@ -836,18 +927,62 @@ span.day-name{cursor:pointer}
   min-height:min(58vh,420px);margin:14px 19px 18px;padding:30px 24px;
   max-width:44ch;margin-left:auto;margin-right:auto
 }
+/* il disco tinto da solo sembrava una foto non caricata: dentro ci va il glifo
+   della sezione, che dice di cosa è vuoto questo riquadro */
 .empty::before{
-  content:"";display:block;flex:0 0 auto;width:34px;height:34px;margin:0 0 12px;border-radius:50%;
-  background:var(--ink-2);border:1px solid var(--ink-3)
+  content:"◦";display:grid;place-items:center;flex:0 0 auto;width:34px;height:34px;margin:0 0 12px;border-radius:50%;
+  font-size:15px;line-height:1;background:var(--ink-2);border:1px solid var(--ink-3)
 }
-.empty.fill::before{width:44px;height:44px;margin-bottom:16px}
+.empty.fill::before{width:44px;height:44px;margin-bottom:16px;font-size:19px}
+body[data-view="cost"] .empty::before{content:"€"}
+body[data-view="book"] .empty::before{content:"✈"}
+body[data-view="diary"] .empty::before{content:"✎"}
+body[data-view="list"] .empty::before{content:"💡"}
 body[data-view="cost"] .empty::before{background:rgba(231,169,60,.14);border-color:rgba(231,169,60,.35)}
 body[data-view="book"] .empty::before{background:rgba(30,127,166,.12);border-color:rgba(30,127,166,.3)}
 body[data-view="diary"] .empty::before{background:rgba(27,122,94,.12);border-color:rgba(27,122,94,.3)}
 body[data-view="list"] .empty::before{background:rgba(229,72,77,.12);border-color:rgba(229,72,77,.32)}
 /* segnaposto di Brainstorming a viaggio del tutto vuoto: invita a Ispirami,
    quindi si comporta come un pulsante (non il generico "nessuna tappa" muto) */
+/* ---------- vista in sola lettura (#v=CODICE) ---------- */
+.ro-wrap{position:fixed;inset:0;z-index:12000;overflow:auto;background:var(--paper);-webkit-overflow-scrolling:touch}
+.ro-in{max-width:640px;margin:0 auto;padding:26px 20px 40px}
+.ro-load{color:var(--fog);font-size:14px;padding:40px 0;text-align:center}
+.ro-head{border-bottom:1px solid var(--ink-3);padding-bottom:18px;margin-bottom:22px}
+.ro-kicker{margin:0 0 6px;font-family:var(--mono,monospace);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--fog)}
+.ro-head h1{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-size:30px;line-height:1.1;letter-spacing:-.02em;color:var(--ink)}
+.ro-sum{margin:8px 0 0;font-size:13px;color:var(--fog)}
+.ro-head .ro-note{margin:4px 0 0;font-size:12px;color:var(--fog)}
+.ro-day{margin-bottom:26px}
+.ro-dh{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:10px}
+.ro-dot{width:10px;height:10px;border-radius:3px;background:var(--c);flex:none;align-self:center}
+.ro-dh h2{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-size:18px;color:var(--ink)}
+.ro-date{font-size:12px;color:var(--fog)}
+.ro-base{margin:0 0 10px;font-size:12.5px;color:var(--fog)}
+.ro-base b{color:var(--ink);font-weight:600}
+.ro-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.ro-stop{display:flex;gap:11px;align-items:flex-start;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:12px;padding:11px 12px}
+.ro-n{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--ink-3);color:var(--ink);font-size:11.5px;font-weight:700}
+.ro-bd{flex:1;min-width:0}
+.ro-name{margin:0;font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.ro-kind{margin:2px 0 0;font-size:11px;color:var(--fog)}
+.ro-stop .ro-note{margin:6px 0 0;font-size:12.5px;line-height:1.45;color:var(--fog);white-space:pre-wrap}
+.ro-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.ro-links a{font-size:11.5px;color:var(--sage-2)}
+.ro-thumb{flex:none;width:62px;height:62px;object-fit:cover;border-radius:9px}
+.ro-empty{margin:0;font-size:12.5px;color:var(--fog);border:1px dashed var(--ink-4);border-radius:10px;padding:12px}
+.ro-sign{margin-top:30px;padding-top:16px;border-top:1px solid var(--ink-3);display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--fog)}
+.ro-sign b{color:var(--ink)}
+.ro-sign a{font-size:12px}
 .empty-cta{cursor:pointer;transition:border-color .18s,background .18s}
+/* i due modi alternativi alla ricerca, uno accanto all'altro: toccare la mappa
+   o incollare quello che si ha già scritto altrove */
+.add-ways{display:flex;gap:8px;margin-top:10px}
+.add-ways .chip{flex:1 1 0;min-width:0;justify-content:center;white-space:nowrap}
+.imp-ta{
+  width:100%;box-sizing:border-box;min-height:104px;resize:vertical;
+  font-size:13px;line-height:1.45;font-family:inherit
+}
 .empty-cta:hover,.empty-cta:focus-visible{border-color:var(--route);background:rgba(229,72,77,.06)}
 
 .pin-lab{
@@ -1173,6 +1308,11 @@ textarea.field{min-height:84px;resize:vertical;line-height:1.45}
 }
 body.hide-legs .leg-lab{display:none}
 .rain-tag{font-style:normal;color:#1E8A6C;margin-left:3px}
+/* tappa già visitata: il contrassegno si accende strisciando la riga, senza
+   passare dal Diario */
+.done-tag{font-style:normal;color:var(--moss);margin-left:3px;font-weight:700}
+.stop-card{transition:transform .18s ease}
+.stop.sw-armed .stop-card{box-shadow:0 0 0 2px var(--moss) inset}
 .alt-box{margin:0 19px 16px;border:1px dashed var(--ink-4);border-radius:var(--r);padding:11px 12px;background:rgba(255,255,255,.02)}
 .alt-head{color:var(--ochre-2);letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;margin-bottom:9px}
 .alt-item{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-top:1px solid var(--ink-3)}
@@ -1957,12 +2097,23 @@ body.hide-legs .leg-lab{display:none}
       <button id="baseHintCancel" type="button">Annulla</button>
       <span class="base-hint-note">La base è l'alloggio della giornata. «Parte da» è quello dove ti sei svegliato, «Arriva a» quello dove dormirai: se sono lo stesso, la giornata è un giro; se sono diversi, è un trasferimento — e l'app conta chilometri e tempo da un capo all'altro.</span>
     </div>
+    <button class="dest-pill" id="addDest" type="button" title="Scegli in quale giorno finiscono le tappe che aggiungi adesso">
+      <span class="dest-dot" id="addDestDot"></span>
+      <span class="dest-tx">in <b id="addDestName">—</b></span>
+      <span class="dest-caret">cambia ▾</span>
+    </button>
     <div style="position:relative">
       <input class="field" id="q" placeholder="Cerca un luogo…" autocomplete="off">
       <div class="results" id="results" hidden></div>
     </div>
-    <button class="chip" id="btnPickInline" style="margin-top:10px;width:100%;justify-content:center" title="Tocca un punto sulla mappa">✛ Oppure tocca la mappa</button>
-    <button class="chip" id="btnInspire" style="margin-top:8px;width:100%;justify-content:center" title="Ti propongo luoghi da vedere e li aggiungo come tappe sulla mappa">✨ Ispirami: idee per una zona</button>
+    <button class="q-scope" id="qScope" type="button" title="Scegli in quale paese cercare">
+      <span>cerco <b>in tutto il mondo</b></span><span class="dest-caret">cambia ▾</span>
+    </button>
+    <div class="added-box" id="addedList" hidden></div>
+    <div class="add-ways">
+      <button class="chip" id="btnPickInline" title="Tocca un punto sulla mappa">✛ Tocca la mappa</button>
+      <button class="chip" id="btnPasteList" title="Incolla un elenco di nomi o un collegamento di Google Maps">≡ Incolla un elenco</button>
+    </div>
     <div class="sheet-actions">
       <button class="btn ghost" id="addVeilClose" style="flex:1">Chiudi</button>
     </div>
@@ -1985,26 +2136,13 @@ body.hide-legs .leg-lab{display:none}
       </div>
     </div>
     <div class="insp-list" id="inspList"></div>
-    <button class="chip" id="inspMore" type="button" hidden style="width:100%;justify-content:center;margin-top:10px">Carica altri 30</button>
+    <div class="insp-foot">
+      <button class="chip" id="inspMore" type="button" hidden>Carica altri 30</button>
+      <button class="chip" id="inspTakeAll" type="button" hidden title="Te le mostro in elenco: togli la spunta a quelle che non vuoi">Prendi le prime 24…</button>
+    </div>
     <div class="sheet-actions">
       <button class="btn ghost" id="inspClose" type="button" style="flex:1">Chiudi</button>
       <button class="btn" id="inspAdd" type="button" style="flex:1" disabled>Aggiungi</button>
-    </div>
-  </div>
-</div>
-
-<div class="veil" id="emptyInspVeil" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="eiTitle">
-    <h2 id="eiTitle">✨ Per quale posto vuoi delle idee?</h2>
-    <p class="hint" style="padding:0 0 10px">Scrivi una nazione o una città e cerco per te i luoghi più interessanti: li aggiungo automaticamente come tappe, con il loro pin sulla mappa, dentro <b>Brainstorming</b>. Da lì li sposti nei giorni, o cancelli quelli che non ti convincono.</p>
-    <div class="insp-bar">
-      <input class="field" id="eiQ" placeholder="Italia, Roma, Giappone…" autocomplete="off">
-      <button class="btn" id="eiGo" type="button" style="flex:0 0 auto;padding:12px 18px">Cerca</button>
-    </div>
-    <p class="hint" id="eiStatus" style="padding-top:10px"></p>
-    <div class="insp-list" id="eiCandList" hidden></div>
-    <div class="sheet-actions">
-      <button class="btn ghost" id="eiClose" type="button" style="flex:1">Magari dopo</button>
     </div>
   </div>
 </div>
@@ -2343,7 +2481,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v86';
+const APP_VERSION = 'v91';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2414,6 +2552,34 @@ const routeCache = new Map();
 /* giorni (per id, o null per "Brainstorming") ripiegati nell'Itinerario:
    preferenza di sola sessione, non salvata nel viaggio */
 const collapsedDays = new Set();
+/* Durante il viaggio l'unico giorno che interessa \u00e8 oggi. Se una data cade
+   oggi, all'avvio resta aperto solo quel giorno e ci si arriva gi\u00e0 in vista:
+   niente pi\u00f9 scorrere dodici giorni per trovare quello di stamattina.
+   Vale una volta sola, all'avvio: dopo comanda quello che apre l'utente. */
+let todayDayId = null;
+function isoToday(){
+  const n = new Date();
+  return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0');
+}
+function openTodayOnce(){
+  const t = isoToday();
+  const d = (state.days || []).find(x => x.date === t);
+  if(!d || state.days.length < 2) return;
+  todayDayId = d.id;
+  state.days.forEach(x => { if(x.id !== d.id) collapsedDays.add(x.id); });
+  collapsedDays.add(null);
+  collapsedDays.delete(d.id);
+}
+function scrollToTodayOnce(){
+  if(!todayDayId) return;
+  const id = todayDayId; todayDayId = null;
+  requestAnimationFrame(() => {
+    const box = document.getElementById('list');
+    const sec = box && box.querySelector('.day[data-day="' + id + '"]');
+    if(!sec) return;
+    box.scrollTop += sec.getBoundingClientRect().top - box.getBoundingClientRect().top - 6;
+  });
+}
 /* stesso meccanismo per le singole voci di Spese e Prenotazioni: lì non ci sono
    giorni da chiudere, si ritira il dettaglio di una voce alla volta */
 const collapsedExp = new Set();
@@ -2556,7 +2722,7 @@ function badge(mode){
    viaggio e scade ogni sei ore, quindi bastava aprire l'app perché ogni
    giorno del viaggio risultasse "modificato da me" e l'altro dispositivo si
    ritrovasse modifiche da approvare che nessuno aveva fatto. */
-const NON_CONTENT = ['mAt','mBy','imgUrl','imgUrlSrc','fileUrl','fileUrlSrc','diaryPhotoCache','oh','ohNone','wx','wxDetail'];
+const NON_CONTENT = ['mAt','mBy','imgUrl','imgUrlSrc','fileUrl','fileUrlSrc','diaryPhotoCache','oh','ohNone','wx','wxDetail','cc','ccn'];
 function stripStamp(e){
   const rest = {...e};
   NON_CONTENT.forEach(k => delete rest[k]);
@@ -2669,6 +2835,10 @@ async function write(){
 
 async function boot(){
   await initSync();
+  /* collegamento di sola lettura: non si carica niente di locale, non parte
+     nessun popup — c'è solo l'itinerario di quel codice */
+  const roCode = pendingViewCode();
+  if(roCode){ await openReadOnly(roCode); return; }
   try{
     db = await openDB();
     tripIndex = (await dbGet(INDEX_KEY)) || [];
@@ -2706,7 +2876,9 @@ async function boot(){
   document.getElementById('tripTitle').value = state.title || '';
   if(state.view) map.setView([state.view.lat, state.view.lng], state.view.z);
   badge(storageOK ? 'saved' : 'unsaved');
+  openTodayOnce();
   render();
+  scrollToTodayOnce();
   startupView();
   /* al primo avvio non si chiama: ci pensa la fine del tutorial (o il rifiuto
      dell'invito), altrimenti i due popup partono insieme */
@@ -3462,10 +3634,47 @@ async function shareTrip(){
     await write();
   }
   subscribeShared(state.shareId);
-  noteCard('Condividi questo viaggio', [
-    'Comunica questo codice a chi viaggia con te (a voce, in chat…): lo inserirà con "Unisciti con un codice".',
-    '<b>' + esc(state.shareId) + '</b>'
-  ]);
+  const link = joinLink(state.shareId);
+  const canShare = !!navigator.share;
+  askCard({
+    ic:'map',
+    t:'Condividi questo viaggio',
+    p:[
+      'Manda questo collegamento a chi viaggia con te: aprendolo, Waynder si apre già su «' +
+        esc(state.title || 'questo viaggio') + '» e chiede solo di confermare.',
+      '<span class="join-link">' + esc(link) + '</span>',
+      '<span class="share-code">Se il collegamento non passa (certe chat li mangiano), c’è sempre il codice da dettare: <b>' +
+        esc(state.shareId) + '</b></span>',
+      '<span class="share-code">Per farlo solo vedere a chi non ha l’app, senza che possa cambiare niente, c’è il collegamento di sola lettura: ' +
+        '<button class="hint-a" id="roCopy" type="button">⧉ copia quello</button></span>'
+    ],
+    extra:'⧉ Copia il collegamento',
+    no:'Chiudi',
+    yes: canShare ? 'Invia…' : 'Ho capito',
+    onExtra: async btn => {
+      const ok = await copyText(link);
+      btn.textContent = ok ? 'Copiato ✓' : 'Copia non riuscita';
+      setTimeout(() => { btn.textContent = '⧉ Copia il collegamento'; }, 2200);
+    },
+    onYes: async () => {
+      if(!canShare) return;
+      try{
+        await navigator.share({
+          title: state.title || 'Waynder',
+          text: 'Il nostro viaggio su Waynder: ' + (state.title || ''),
+          url: link
+        });
+      }catch(e){ /* annullata: niente da dire */ }
+    }
+  });
+  /* il collegamento di sola lettura vive nella stessa scheda: è la stessa
+     domanda («come lo faccio vedere?») con due risposte diverse */
+  const roB = document.getElementById('roCopy');
+  if(roB) roB.onclick = async () => {
+    const ok = await copyText(viewLink(state.shareId));
+    roB.textContent = ok ? 'copiato ✓' : 'copia non riuscita';
+    setTimeout(() => { roB.textContent = '⧉ copia quello'; }, 2200);
+  };
 }
 
 /* Il codice da dettare era il punto in cui la condivisione si arenava: nessuno
@@ -3495,6 +3704,103 @@ function pendingJoinCode(){
   if(!m) return null;
   history.replaceState(null, '', location.pathname + location.search);
   try{ return decodeURIComponent(m[1]); }catch(e){ return m[1]; }
+}
+
+/* ============ vista in sola lettura (#v=CODICE) ============ */
+/* L'altra met\u00e0 della condivisione: un collegamento che mostra l'itinerario a chi
+   non ha l'app e non vuole installarla. Nessun comando, nessuna modifica, e
+   niente di privato: giorni, tappe, note e collegamenti \u2014 non le prenotazioni,
+   che portano codici e ricevute. */
+function pendingViewCode(){
+  const m = /[#&]v=([^&]+)/.exec(location.hash || '');
+  if(!m) return null;
+  try{ return decodeURIComponent(m[1]); }catch(e){ return m[1]; }
+}
+function viewLink(code){
+  return location.origin + location.pathname + '#v=' + encodeURIComponent(code);
+}
+function roDate(iso){
+  if(!iso) return '';
+  try{ return new Date(iso + 'T00:00:00').toLocaleDateString('it-IT', {weekday:'long', day:'numeric', month:'long'}); }
+  catch(e){ return iso; }
+}
+function roSign(){
+  return '<div class="ro-sign">Fatto con <b>Waynder</b>' +
+    '<a href="' + esc(location.pathname) + '">Apri Waynder</a></div>';
+}
+function roHTML(t){
+  const days = Array.isArray(t.days) ? t.days : [];
+  const places = Array.isArray(t.places) ? t.places : [];
+  const bases = Array.isArray(t.bases) ? t.bases : [];
+  const baseName = id => { const b = bases.find(x => x.id === id); return b ? b.name : ''; };
+  const stopHTML = (p, n) => {
+    const ty = TYPES[p.type] || TYPES.place;
+    const links = (p.links || []).filter(l => l && l.url).map(l =>
+      '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label || 'Collegamento') + ' \u2197</a>').join('');
+    return '<li class="ro-stop">' +
+      '<span class="ro-n">' + (n || '\u00b7') + '</span>' +
+      '<div class="ro-bd">' +
+        '<p class="ro-name">' + esc(p.name) + '</p>' +
+        '<p class="ro-kind">' + esc(ty.label) + '</p>' +
+        (p.notes ? '<p class="ro-note">' + esc(p.notes) + '</p>' : '') +
+        (links ? '<div class="ro-links">' + links + '</div>' : '') +
+      '</div>' +
+      (p.img ? '<img class="ro-thumb" src="' + esc(p.img) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+    '</li>';
+  };
+  let h = '<header class="ro-head">' +
+    '<p class="ro-kicker">Itinerario condiviso</p>' +
+    '<h1>' + esc(t.title || 'Viaggio') + '</h1>' +
+    '<p class="ro-sum">' + days.length + (days.length === 1 ? ' giorno' : ' giorni') + ' \u00b7 ' +
+      places.length + (places.length === 1 ? ' tappa' : ' tappe') + '</p>' +
+    '<p class="ro-note">Sola lettura: qui si guarda, non si modifica.</p></header>';
+  days.forEach((d, i) => {
+    const list = places.filter(p => p.dayId === d.id);
+    const bf = baseName(d.baseFromId), bt = baseName(d.baseToId);
+    let n = 0;
+    h += '<section class="ro-day">' +
+      '<div class="ro-dh" style="--c:' + esc(d.color || '#54636D') + '">' +
+        '<span class="ro-dot"></span>' +
+        '<h2>' + esc(d.name || ('Giorno ' + (i + 1))) + '</h2>' +
+        (d.date ? '<span class="ro-date">' + esc(roDate(d.date)) + '</span>' : '') +
+      '</div>' +
+      (bf || bt ? '<p class="ro-base">' + (bf ? 'Parte da <b>' + esc(bf) + '</b>' : '') +
+        (bf && bt ? ' \u00b7 ' : '') + (bt ? 'Arriva a <b>' + esc(bt) + '</b>' : '') + '</p>' : '') +
+      (list.length
+        ? '<ol class="ro-list">' + list.map(p => stopHTML(p, (POI[p.type || 'place'] || p.chain === false) ? 0 : ++n)).join('') + '</ol>'
+        : '<p class="ro-empty">Giorno ancora libero.</p>') +
+    '</section>';
+  });
+  const ideas = places.filter(p => !p.dayId || !days.some(d => d.id === p.dayId));
+  if(ideas.length){
+    h += '<section class="ro-day"><div class="ro-dh" style="--c:#7A6BA8"><span class="ro-dot"></span>' +
+      '<h2>Idee da sistemare</h2></div><ol class="ro-list">' +
+      ideas.map(p => stopHTML(p, 0)).join('') + '</ol></section>';
+  }
+  return h + roSign();
+}
+async function openReadOnly(code){
+  document.body.classList.add('ro-on');
+  const wrap = document.createElement('div');
+  wrap.className = 'ro-wrap';
+  wrap.innerHTML = '<div class="ro-in"><p class="ro-load">Apro l\u2019itinerario\u2026</p></div>';
+  document.body.appendChild(wrap);
+  const inn = wrap.querySelector('.ro-in');
+  if(!fbReady){
+    inn.innerHTML = '<p class="ro-load">Per aprire un itinerario condiviso serve la rete.</p>' + roSign();
+    return;
+  }
+  let data = null;
+  try{
+    const snap = await fbDb.collection('trips').doc(code).get();
+    if(snap.exists) data = snap.data();
+  }catch(e){}
+  if(!data){
+    inn.innerHTML = '<p class="ro-load">Non trovo questo itinerario: il collegamento pu\u00f2 essere incompleto, oppure il viaggio non \u00e8 pi\u00f9 condiviso.</p>' + roSign();
+    return;
+  }
+  inn.innerHTML = roHTML(data);
+  document.title = (data.title ? data.title + ' \u00b7 ' : '') + 'Waynder';
 }
 
 async function joinTrip(code){
@@ -3617,8 +3923,13 @@ function routeList(d){
 let lastUsedDayId = null;
 
 function addPlace(o, open){
-  const dayId = o.dayId ?? lastUsedDayId ?? state.days[0]?.id ?? null;
+  /* dayId esplicito (anche null: Brainstorming, scelto a mano) comanda; senza,
+     decide addTargetDay() — la stessa cosa che dice la pastiglia in cima alla
+     ricerca, così ogni strada di ingresso finisce dove l'utente si aspetta */
+  const dayId = o.dayId !== undefined ? o.dayId : addTargetDay();
   const p = {id:uid(), name:o.name, lat:o.lat, lng:o.lng, dayId, notes:'', links:[], type:o.type || 'place', rain:false, city:false, chain:true};
+  if(o.cc) p.cc = o.cc;   // paese, per circoscrivere le ricerche successive
+  if(o.ccn) p.ccn = o.ccn; // e il suo nome: il codice da solo, su un altro telefono, si legge «IT»
   coach(dayId ? 'stop' : 'brainstorm');
   state.places.push(p); save(); render();
   if(open){ freshPlaceId = p.id; edit(p.id); }
@@ -3636,6 +3947,8 @@ function baseOf(id){ return (state.bases||[]).find(b => b.id === id); }
 function addBase(o){
   ensureBooks();
   const b = {id:uid(), name:o.name, lat:o.lat, lng:o.lng, notes:'', bookingId:null};
+  if(o.cc) b.cc = o.cc;
+  if(o.ccn) b.ccn = o.ccn;
   const booking = {
     id:uid(), type:'stay', title:b.name, who:'',
     aWhen:'', aPlace:b.name, bWhen:'', bPlace:'',
@@ -3661,6 +3974,7 @@ function startAddBase(dayId, which){
   const d = dayOf(dayId);
   document.getElementById('baseHintDay').textContent = (d ? d.name : '') + (which === 'baseToId' ? ' · ritorno' : ' · partenza');
   document.getElementById('addVeil').hidden = false;
+  document.getElementById('addDest').hidden = true;
   hint.hidden = false;
   autoFocus(document.getElementById('q'));
 }
@@ -3684,7 +3998,444 @@ function finishAddBase(o){
 document.getElementById('baseHintCancel').onclick = cancelAddBase;
 
 /* ============ ricerca ============ */
+/* Dove finiscono le tappe che si aggiungono adesso. Regola invariata come
+   ripiego (l'ultimo giorno toccato, altrimenti il primo), ma se l'utente l'ha
+   detto vale quello che ha detto — e comunque è scritto in cima alla ricerca
+   invece di essere indovinato in silenzio. */
+let addDayId = undefined;                       // undefined = non ancora scelto
+function addTargetDay(){
+  if(addDayId !== undefined && (addDayId === null || dayOf(addDayId))) return addDayId;
+  return lastUsedDayId ?? state.days[0]?.id ?? null;
+}
+function destName(id){
+  return id ? (dayOf(id)?.name || 'un giorno') : 'Brainstorming';
+}
+function destPaint(){
+  const id = addTargetDay(), d = id ? dayOf(id) : null;
+  document.getElementById('addDestName').textContent = destName(id);
+  document.getElementById('addDestDot').style.background = d ? (d.grad || d.color) : 'var(--ink-4)';
+}
+function destAsk(){
+  const items = state.days.map(d => {
+    const n = all(d.id).length;
+    return {
+      label: d.name,
+      sub: n ? n + (n === 1 ? ' tappa' : ' tappe') : 'ancora vuoto',
+      ic: '<span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:'+(d.grad||d.color)+'"></span>',
+      value: d.id
+    };
+  });
+  items.push({label:'Brainstorming', sub:'fuori dai giorni', ic:'○', value:null});
+  pickCard({
+    ic:'list',
+    t:'Dove finiscono le tappe?',
+    p:['Vale per quelle che aggiungi da adesso, finché non lo cambi.'],
+    items, no:'Annulla',
+    onPick: id => { addDayId = id; destPaint(); autoFocus(qEl); }
+  });
+}
+
+/* Le tappe appena atterrate restano elencate nella scheda: la ricerca non si
+   chiude più dopo ognuna (nessuno aggiunge una tappa sola) e il riscontro sta
+   dove si sta lavorando, con la matita per entrare nei dettagli e la ✕ per
+   rimediare subito a un tocco sbagliato. */
+let addedNow = [];
+function addedPaint(){
+  const box = document.getElementById('addedList');
+  const rows = addedNow.map(id => state.places.find(p => p.id === id)).filter(Boolean);
+  addedNow = rows.map(p => p.id);
+  document.getElementById('addVeilClose').textContent = rows.length ? 'Fatto' : 'Chiudi';
+  box.hidden = !rows.length;
+  if(!rows.length){ box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="added-head">' + rows.length +
+      (rows.length === 1 ? ' aggiunta' : ' aggiunte') + '</div>' +
+    rows.map(p => {
+      const d = p.dayId ? dayOf(p.dayId) : null;
+      return '<div class="added-row" data-id="' + p.id + '">' +
+        '<span class="dest-dot" style="background:' + (d ? (d.grad || d.color) : 'var(--ink-4)') + '"></span>' +
+        '<span class="added-nm">' + esc(p.name) + '<span>' + esc(destName(p.dayId)) + '</span></span>' +
+        '<button type="button" class="ed" title="Apri i dettagli" aria-label="Apri i dettagli">✎</button>' +
+        '<button type="button" class="rm" title="Togli questa tappa" aria-label="Togli questa tappa">✕</button>' +
+      '</div>';
+    }).join('');
+  box.querySelectorAll('.added-row').forEach(r => {
+    const id = r.dataset.id;
+    r.querySelector('.ed').onclick = () => { closeAddVeil(); edit(id); };
+    r.querySelector('.rm').onclick = () => {
+      state.places = state.places.filter(p => p.id !== id);
+      addedNow = addedNow.filter(x => x !== id);
+      save(); render(); addedPaint();
+    };
+  });
+}
+function openAddVeil(){
+  addedNow = [];
+  document.getElementById('addDest').hidden = !!addingBase;
+  destPaint(); addedPaint();
+  scopeLoad(); scopePaint(); ensureCC();
+  document.getElementById('addVeil').hidden = false;
+  autoFocus(document.getElementById('q'));
+}
+function closeAddVeil(){
+  document.getElementById('addVeil').hidden = true;
+  document.getElementById('results').hidden = true;
+  document.getElementById('q').value = '';
+  addedNow = [];
+  cancelAddBase();
+}
+document.getElementById('addDest').onclick = destAsk;
+
+/* ============ dove si cerca ============ */
+/* La ricerca era orientata dal rettangolo inquadrato dalla mappa. È un
+   riferimento che l'utente non sta guardando: in Tappe la mappa sta sotto il
+   pannello e può mostrare qualunque cosa, quindi il suggerimento era orientato
+   a caso. Il viaggio invece sa dov'è: si filtra per PAESE — uno, o tutti quelli
+   del viaggio, così «Cile e Perù» funziona — e lo si scrive sotto il campo,
+   dove si può cambiare. Il rettangolo resta come semplice orientamento, ma è
+   quello delle tappe del viaggio, non della mappa. */
+const CC_KEY = 'rotta:ccnames';
+let ccNames = {};
+try{ ccNames = JSON.parse(localStorage.getItem(CC_KEY) || '{}'); }catch(e){ ccNames = {}; }
+/* Il codice del paese viaggia con lo stato condiviso, il nome no: la cache
+   locale è vuota su chi si unisce da un altro telefono, e la riga diventava
+   «cerco in IT» per sempre — `ensureCC()` non lo riparava, perché guarda solo le
+   tappe senza codice. Quindi il nome si scrive accanto al codice, sulla tappa. */
+function ccName(c){
+  if(!c) return '';
+  if(ccNames[c]) return ccNames[c];
+  const p = geoPoints().find(x => x.cc === c && x.ccn);
+  if(p){ ccLearn(c, p.ccn); return p.ccn; }
+  return c.toUpperCase();
+}
+function ccLearn(c, name){
+  if(!c || !name || ccNames[c] === name) return;
+  ccNames[c] = name;
+  try{ localStorage.setItem(CC_KEY, JSON.stringify(ccNames)); }catch(e){}
+}
+/* la scelta è una preferenza del dispositivo, non contenuto del viaggio: sta
+   in locale e non passa dalla sincronizzazione (niente modifiche fantasma) */
+let searchScope = null;
+function scopeKey(){ return 'rotta:scope:' + (state?.id || 'x'); }
+function scopeLoad(){
+  try{ searchScope = JSON.parse(localStorage.getItem(scopeKey()) || 'null'); }catch(e){ searchScope = null; }
+  if(!searchScope) searchScope = {mode:'trip'};
+}
+function scopeSave(){ try{ localStorage.setItem(scopeKey(), JSON.stringify(searchScope)); }catch(e){} }
+function geoPoints(){
+  return [...(state.places || []), ...(state.bases || [])].filter(x => x.lat != null);
+}
+function tripCountries(){
+  const out = [];
+  geoPoints().forEach(x => { if(x.cc && !out.includes(x.cc)) out.push(x.cc); });
+  return out;
+}
+/* Le tappe salvate dalla ricerca portano già il paese; quelle vecchie e quelle
+   nate da un tocco sulla mappa no. Si chiede una volta per zona, non una per
+   tappa: due tappe a dieci chilometri stanno nello stesso paese. */
+let ccFilled = false;
+async function ensureCC(){
+  if(ccFilled) return;
+  ccFilled = true;
+  const pts = geoPoints().filter(x => !x.cc);
+  /* i codici arrivati da un altro dispositivo senza nome: una chiamata a testa
+     per non lasciare la sigla in vista */
+  const nameless = tripCountries().filter(c => !ccNames[c] && !geoPoints().some(x => x.cc === c && x.ccn));
+  for(const c of nameless.slice(0, 4)){
+    const at = geoPoints().find(x => x.cc === c);
+    if(!at) continue;
+    try{
+      const u = 'https://nominatim.openstreetmap.org/reverse?format=json&zoom=5&addressdetails=1' +
+        '&accept-language=it&lat=' + at.lat + '&lon=' + at.lng;
+      const a = (await (await fetch(u)).json()).address || {};
+      if(a.country){
+        ccLearn(c, a.country);
+        geoPoints().forEach(y => { if(y.cc === c && !y.ccn) y.ccn = a.country; });
+        save(); scopePaint();
+      }
+    }catch(e){ /* resta la sigla, ma il filtro funziona comunque */ }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  if(!pts.length) return;
+  const probes = [];
+  pts.forEach(x => { if(!probes.some(y => km(x, y) < 60)) probes.push(x); });
+  for(const x of probes.slice(0, 5)){
+    try{
+      const u = 'https://nominatim.openstreetmap.org/reverse?format=json&zoom=5&addressdetails=1' +
+        '&accept-language=it&lat=' + x.lat + '&lon=' + x.lng;
+      const a = (await (await fetch(u)).json()).address || {};
+      const code = (a.country_code || '').toLowerCase();
+      if(!code) continue;
+      ccLearn(code, a.country);
+      geoPoints().forEach(y => {
+        if(!y.cc && km(x, y) < 60){ y.cc = code; if(a.country) y.ccn = a.country; }
+      });
+      save(); scopePaint();
+    }catch(e){ /* senza rete si cerca in tutto il mondo */ }
+    await new Promise(r => setTimeout(r, 400));
+  }
+}
+function scopeCodes(){
+  if(!searchScope || searchScope.mode === 'world') return [];
+  if(searchScope.mode === 'one') return searchScope.code ? [searchScope.code] : [];
+  return tripCountries();
+}
+function scopeLabel(){
+  const c = scopeCodes();
+  if(!c.length) return 'in tutto il mondo';
+  if(c.length === 1) return 'in ' + ccName(c[0]);
+  if(c.length === 2) return 'in ' + ccName(c[0]) + ' e ' + ccName(c[1]);
+  return 'in ' + c.slice(0, 2).map(ccName).join(', ') + ' e altri ' + (c.length - 2);
+}
+function scopePaint(){
+  const b = document.querySelector('#qScope b');
+  if(b) b.textContent = scopeLabel();
+}
+function scopeAsk(){
+  const codes = tripCountries();
+  const items = [];
+  if(codes.length > 1) items.push({
+    label:'Nei paesi del viaggio', sub: codes.map(ccName).join(' · '),
+    ic:'◉', value:{mode:'trip'}
+  });
+  codes.forEach(c => items.push({label: ccName(c), sub:'solo qui', ic:'▪', value:{mode:'one', code:c}}));
+  items.push({label:'In tutto il mondo', sub:'nessun filtro', ic:'○', value:{mode:'world'}});
+  items.push({label:'Un altro paese…', sub:'scrivi il nome', ic:'+', value:'ask'});
+  pickCard({
+    ic:'map', t:'Dove cerco?',
+    p:['La ricerca dei luoghi si limita a quello che scegli qui. Se il viaggio tocca più paesi vanno bene tutti insieme.'],
+    items, no:'Annulla',
+    onPick: v => {
+      if(v === 'ask'){ scopeAskCountry(); return; }
+      searchScope = v; scopeSave(); scopePaint(); autoFocus(qEl);
+    }
+  });
+}
+function scopeAskCountry(){
+  promptCard({
+    t:'In quale paese?',
+    p:['Scrivi il nome di un paese: la ricerca si limiterà a quello.'],
+    placeholder:'Cile, Perù, Giappone…',
+    yes:'Cerca qui',
+    onYes: async q => {
+      if(!q || !q.trim()) return;
+      try{
+        const u = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1' +
+          '&accept-language=it&featuretype=country&q=' + encodeURIComponent(q.trim());
+        const h = (await (await fetch(u)).json())[0];
+        const code = (h?.address?.country_code || '').toLowerCase();
+        if(!code){ toast('Non trovo questo paese'); return; }
+        ccLearn(code, h.address.country || q.trim());
+        searchScope = {mode:'one', code}; scopeSave(); scopePaint();
+        toast('Cerco in ' + ccName(code));
+        autoFocus(qEl);
+      }catch(e){ toast('Ricerca non riuscita: serve la rete'); }
+    }
+  });
+}
+
+/* ============ ricerca dei luoghi: due sorgenti ============ */
+/* Nominatim è un geocodificatore: sa gli indirizzi e i comuni, ma sui NOMI dei
+   posti («Zodiaco», «Lo Scoglio») è quasi cieco, e sopra un certo ritmo di
+   richieste risponde vuoto invece di rispondere male — l'app diceva «non trovo
+   niente» per posti che esistono. Photon indicizza gli stessi dati di
+   OpenStreetMap con una ricerca a testo pieno, che i nomi li trova. Si chiedono
+   entrambi insieme e si fondono i risultati: nessuna delle due da sola bastava. */
+function normNom(h){
+  const a = h.address || {};
+  return {
+    name: h.display_name.split(',')[0],
+    sub: h.display_name.split(',').slice(1, 4).join(',').trim(),
+    display_name: h.display_name,
+    lat: +h.lat, lon: +h.lon, lng: +h.lon,
+    boundingbox: h.boundingbox, type: h.type, addresstype: h.addresstype, class: h.class,
+    cc: (a.country_code || '').toLowerCase(), ccn: a.country || ''
+  };
+}
+function normPhoton(f){
+  const p = f.properties || {}, c = (f.geometry || {}).coordinates || [];
+  const parts = [p.street, p.city || p.county, p.state, p.country]
+    .filter(x => x && x !== p.name);
+  const uniq = parts.filter((x, i) => parts.indexOf(x) === i).slice(0, 3);
+  const e = p.extent;   // [ovest, nord, est, sud] → ordine di Nominatim
+  return {
+    name: p.name || p.street || '',
+    sub: uniq.join(', '),
+    display_name: [p.name, ...uniq].filter(Boolean).join(', '),
+    lat: +c[1], lon: +c[0], lng: +c[0],
+    boundingbox: e ? [e[3], e[1], e[0], e[2]] : null,
+    type: p.osm_value, addresstype: p.osm_key, class: p.osm_key,
+    cc: (p.countrycode || '').toLowerCase(), ccn: p.country || ''
+  };
+}
+/* ============ incolla un elenco o un collegamento ============ */
+/* Nessuno digita dodici tappe una alla volta: si arriva con una lista in chat o
+   con un link di Google Maps. Ogni riga diventa una ricerca, e prima di
+   aggiungere si vede cosa è stato trovato (lo stesso riquadro a spunte di
+   Ispirami). I link accorciati non si possono seguire da qui: lo si dice. */
+function searchOpts(){
+  const codes = scopeCodes();
+  const pts = geoPoints();
+  let box = '', inBox = null, near = null;
+  if(pts.length){
+    const la = pts.map(p => p.lat), ln = pts.map(p => p.lng), m = .4;
+    const S = Math.min(...la) - m, N = Math.max(...la) + m,
+          W = Math.min(...ln) - m, E = Math.max(...ln) + m;
+    near = {lat:(S + N) / 2, lng:(W + E) / 2};
+    inBox = h => h.lat > S && h.lat < N && h.lng > W && h.lng < E;
+    if(N - S < 25 && E - W < 25) box = [W, N, E, S].join(',');
+    else inBox = null;
+  }
+  return {codes, box, near, inBox};
+}
+const IMP_MAX = 30;
+function impCoord(n){ return n.toFixed(4); }
+function parseImportLines(txt){
+  const out = [];
+  (txt || '').split(/[\n\r;]+/).forEach(raw => {
+    let s = raw.trim();
+    if(!s || out.length >= IMP_MAX) return;
+    s = s.replace(/^\s*(?:\d{1,2}[.)]\s+|[-•*·–]\s*)/, '').trim();
+    if(/^https?:\/\//i.test(s)){
+      const dm = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(s);
+      const qm = /[?&](?:q|query|destination)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/.exec(s);
+      const am = /@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(s);
+      const hit = dm || qm || am;
+      let name = '';
+      const pm = /\/place\/([^\/@?#]+)/.exec(s);
+      const un = /[?&](?:q|query|destination)=([^&]+)/.exec(s);
+      const dec = x => { try{ return decodeURIComponent(x.replace(/\+/g, ' ')); }catch(e){ return x; } };
+      if(pm) name = dec(pm[1]);
+      else if(un && !/^-?\d+\.\d+\s*,/.test(un[1])) name = dec(un[1]);
+      name = name.replace(/\s*\(.*?\)\s*$/, '').trim();
+      if(hit) out.push({kind:'coord', name: name, lat:+hit[1], lng:+hit[2]});
+      else if(name) out.push({kind:'name', name});
+      else out.push({kind:'bad', name:s});
+      return;
+    }
+    const cm = /^(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/.exec(s);
+    if(cm){ out.push({kind:'coord', name:'', lat:+cm[1], lng:+cm[2]}); return; }
+    out.push({kind:'name', name:s});
+  });
+  return out;
+}
+let impText = '';
+function openPasteList(){
+  impText = '';
+  askCard({
+    ic:'list',
+    t:'Incolla le tappe',
+    p:[
+      'Un posto per riga, oppure un collegamento di Google Maps. Cerco riga per riga e ti mostro cosa ho trovato prima di aggiungere niente.',
+      '<textarea class="field imp-ta" id="impTa" rows="6" placeholder="Pantheon&#10;Trastevere&#10;https://www.google.com/maps/place/…"></textarea>',
+      '<span class="share-code">I collegamenti accorciati (maps.app.goo.gl) non si possono seguire da qui: aprilo una volta nel browser e copia l’indirizzo lungo.</span>'
+    ],
+    no:'Lascia stare', yes:'Cerca',
+    onYes: () => importFromText(impText)
+  });
+  const ta = document.getElementById('impTa');
+  if(ta){
+    ta.oninput = () => { impText = ta.value; };
+    setTimeout(() => { try{ ta.focus(); }catch(e){} }, 60);
+  }
+}
+async function importFromText(txt){
+  const rows = parseImportLines(txt);
+  if(!rows.length){ noteCard('Niente da aggiungere', 'Non ho trovato né nomi né coordinate in quel testo.'); return; }
+  toast('Cerco ' + rows.length + (rows.length === 1 ? ' riga…' : ' righe…'));
+  const opts = searchOpts();
+  const found = [], missed = [];
+  for(const r of rows){
+    if(r.kind === 'coord'){
+      found.push({name: r.name || (impCoord(r.lat) + ', ' + impCoord(r.lng)), lat:r.lat, lng:r.lng,
+        sub: r.name ? 'da collegamento' : 'coordinate'});
+      continue;
+    }
+    if(r.kind === 'bad'){ missed.push(r.name.slice(0, 40)); continue; }
+    let hits = [];
+    try{ hits = await geoSearch(r.name, opts); }catch(e){}
+    if(!hits.length && opts.codes.length){
+      try{ hits = await geoSearch(r.name, {near: opts.near, inBox: opts.inBox}); }catch(e){}
+    }
+    if(hits.length) found.push({name: hits[0].name, lat: hits[0].lat, lng: hits[0].lng,
+      sub: hits[0].sub || '', cc: hits[0].cc, ccn: hits[0].ccn});
+    else missed.push(r.name.slice(0, 40));
+  }
+  if(!found.length){
+    noteCard('Non ho trovato niente', 'Nessuna di quelle righe corrisponde a un posto. Se sono nomi di locali, prova ad aggiungere la città.');
+    return;
+  }
+  const dest = dayOf(addTargetDay());
+  checkCard({
+    ic:'list',
+    t: found.length + (found.length === 1 ? ' tappa trovata' : ' tappe trovate'),
+    p: ['Finiscono in <b>' + esc(dest ? dest.name : 'Brainstorming') + '</b>. Togli la spunta a quelle che non ti servono.']
+      .concat(missed.length ? ['<span class="share-code">Fuori: ' + esc(missed.slice(0, 6).join(' · ')) +
+        (missed.length > 6 ? ' e altre ' + (missed.length - 6) : '') + '</span>'] : []),
+    items: found.map(f => ({label: f.name, sub: f.sub,
+      ic:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + TYPES.place.d + '"/></svg>'})),
+    no:'Lascia stare', yes:'Aggiungi',
+    onYes: idx => {
+      const dayId = addTargetDay();
+      let n = 0;
+      idx.map(i => found[i]).forEach(f => {
+        if(state.places.some(p => km(p, f) < .12)) return;
+        const p = {id:uid(), name:f.name, lat:f.lat, lng:f.lng, dayId, notes:'', links:[],
+          type:'place', rain:false, city:false, chain:true};
+        if(f.cc) p.cc = f.cc;
+        if(f.ccn) p.ccn = f.ccn;
+        state.places.push(p);
+        addedNow.push(p.id);
+        n++;
+      });
+      coach(dayId ? 'stop' : 'brainstorm');
+      save(); render(); addedPaint();
+      toast(n ? n + (n === 1 ? ' tappa aggiunta' : ' tappe aggiunte') : 'Erano già tutte nell’itinerario');
+    }
+  });
+}
+
+async function geoSearch(v, o){
+  o = o || {};
+  const codes = o.codes || [];
+  const nomU = 'https://nominatim.openstreetmap.org/search?format=json&limit=7&accept-language=it&addressdetails=1&q='
+    + encodeURIComponent(v) + (o.box ? '&viewbox=' + o.box : '')
+    + (codes.length ? '&countrycodes=' + codes.join(',') : '');
+  const phoU = 'https://photon.komoot.io/api/?limit=7&q=' + encodeURIComponent(v)
+    + (o.near ? '&lat=' + o.near.lat + '&lon=' + o.near.lng : '');
+  const [nj, pj] = await Promise.all([
+    fetch(nomU).then(r => r.json()).catch(() => []),
+    fetch(phoU).then(r => r.json()).catch(() => ({}))
+  ]);
+  let hits = (Array.isArray(nj) ? nj : []).map(normNom)
+    .concat((((pj || {}).features) || []).map(normPhoton));
+  hits = hits.filter(h => h.name && !isNaN(h.lat) && !isNaN(h.lng));
+  if(codes.length) hits = hits.filter(h => !h.cc || codes.includes(h.cc));
+  /* lo stesso posto arriva da entrambe: stesso nome a quattrocento metri */
+  const out = [];
+  hits.forEach(h => {
+    if(!out.some(x => imgNorm(x.name) === imgNorm(h.name) && km(x, h) < .4)) out.push(h);
+  });
+  /* chi porta quel nome prima di chi lo contiene, e dentro la zona prima che
+     fuori: «Zodiaco roma» è quello di Roma, non quello di Anzio */
+  const w = imgNorm(v), w1 = w.split(' ')[0];
+  /* l'articolo in testa non è il nome: «Lo Zodiaco» è lo Zodiaco, e non deve
+     scendere sotto un omonimo in un'altra provincia */
+  const bare = s => s.replace(/^(lo|la|il|l|gli|le|i|the|el|los|las|les|der|die|das)\s+/, '');
+  out.forEach(h => {
+    const n = bare(imgNorm(h.name));
+    h._s = (n === w ? 3 : n.indexOf(w1) === 0 ? 2 : n.includes(w1) ? 1 : 0)
+      + (o.inBox && o.inBox(h) ? 1.5 : 0);
+    /* dentro lo stesso punteggio decide la distanza vera da dove si sta
+       lavorando: un bonus binario su quaranta chilometri fa pari fra mezzo
+       Lazio, e il posto cercato finiva sotto un omonimo in un'altra provincia */
+    h._km = o.near ? km(o.near, h) : 0;
+  });
+  out.sort((a, b) => (b._s - a._s) || (a._km - b._km));
+  return out.slice(0, 7);
+}
+
 const qEl = document.getElementById('q'), resEl = document.getElementById('results');
+document.getElementById('qScope').onclick = scopeAsk;
 let qt = null;
 qEl.addEventListener('input', () => {
   clearTimeout(qt);
@@ -3698,26 +4449,37 @@ async function find(v){
   resEl.hidden = false;
   resEl.innerHTML = '<div class="hint">Cerco…</div>';
   try{
-    const b = map.getBounds();
-    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=6&accept-language=it&q='
-      + encodeURIComponent(v) + '&viewbox=' + [b.getWest(),b.getNorth(),b.getEast(),b.getSouth()].join(',');
-    const r = await fetch(url);
-    const j = await r.json();
-    if(!j.length){ resEl.innerHTML = '<div class="hint">Nessun risultato. Prova con il nome della città accanto, oppure tocca la mappa qui sotto.</div>'; return; }
+    const {codes, box, near, inBox} = searchOpts();
+    const j = await geoSearch(v, {codes, box, near, inBox});
+    if(!j.length){
+      resEl.innerHTML = '<div class="hint">Nessun risultato ' + esc(scopeLabel()) + '. ' +
+        (codes.length
+          ? '<button class="hint-a" id="qWiden" type="button">Cerca in tutto il mondo</button>'
+          : 'Prova con il nome della città accanto, oppure tocca la mappa qui sotto.') + '</div>';
+      const w = document.getElementById('qWiden');
+      if(w) w.onclick = () => { searchScope = {mode:'world'}; scopeSave(); scopePaint(); find(v); };
+      return;
+    }
     resEl.innerHTML = '';
     j.forEach(h => {
-      const short = h.display_name.split(',')[0];
+      const short = h.name;
       const b2 = document.createElement('button');
-      b2.innerHTML = esc(short) + '<span class="muted">' + esc(h.display_name.split(',').slice(1,4).join(',').trim()) + '</span>';
+      b2.innerHTML = esc(short) + '<span class="muted">' + esc(h.sub) + '</span>';
       b2.onclick = () => {
         resEl.hidden = true; qEl.value = '';
+        const cc = h.cc, ccn = h.ccn;
+        ccLearn(cc, ccn);
         if(pickMode) setPick(false); // cercare un luogo vale come rinunciare al tocco sulla mappa in sospeso
-        if(addingBase){ finishAddBase({name:short, lat:+h.lat, lng:+h.lon}); return; }
-        document.getElementById('addVeil').hidden = true;
-        const p = addPlace({name:short, lat:+h.lat, lng:+h.lon});
-        freshPlaceId = p.id;
+        if(addingBase){ finishAddBase({name:short, lat:h.lat, lng:h.lng, cc, ccn}); return; }
+        /* La tappa atterra e basta: la scheda intera si apriva per ogni tappa,
+           quando in quel momento interessa solo il nome. I dettagli si
+           aggiungono dopo, dalla matita qui sotto o dall'elenco. */
+        const p = addPlace({name:short, lat:h.lat, lng:h.lng, cc, ccn, dayId: addTargetDay()});
+        addedNow.push(p.id);
+        addedPaint(); scopePaint();
+        toast('“' + p.name + '” in ' + destName(p.dayId));
         map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),13));
-        edit(p.id);
+        autoFocus(qEl);   // la ricerca resta aperta, pronta per la prossima
       };
       resEl.appendChild(b2);
     });
@@ -3894,15 +4656,25 @@ const INSP_SUB = {city:'Città', castle:'Castello', museum:'Museo', church:'Luog
    si chiede a Wikipedia "cosa c'è a due passi da queste coordinate" — stesso
    principio di wikiNearby, ma una sola pagina (la più vicina) e già con
    l'anteprima dentro la stessa risposta, invece di due chiamate separate. */
-async function wikiThumbNear(lat, lng, radius){
+async function wikiThumbNear(lat, lng, radius, name){
+  const words = imgWords(name || '');
   for(const lang of ['it', 'en']){
     try{
       const u = 'https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*' +
-        '&generator=geosearch&ggscoord=' + lat + '%7C' + lng + '&ggsradius=' + radius + '&ggslimit=1' +
-        '&prop=pageimages&piprop=thumbnail&pithumbsize=480';
+        '&generator=geosearch&ggscoord=' + lat + '%7C' + lng + '&ggsradius=' + radius + '&ggslimit=8' +
+        '&prop=pageimages%7Ccoordinates&piprop=thumbnail%7Cname&pithumbsize=480&colimit=50';
       const j = await (await fetch(u)).json();
-      const page = Object.values(j.query?.pages || {})[0];
-      if(page?.thumbnail?.source) return page.thumbnail.source;
+      const pages = Object.values(j.query?.pages || {}).filter(p => p.thumbnail?.source && !imgLooksJunk(p.pageimage || ''));
+      if(!pages.length) continue;
+      /* non la pagina più vicina, ma quella che parla di questo posto: a
+         cinquanta metri dal Ponte Vecchio c'è anche la voce di una via */
+      pages.forEach(p => {
+        const c = p.coordinates?.[0];
+        p._km = c ? km({lat, lng}, {lat: c.lat, lng: c.lon}) : 9;
+        p._hits = imgNameHits(p.title, words);
+      });
+      pages.sort((a, b) => (b._hits - a._hits) || (a._km - b._km));
+      return pages[0].thumbnail.source;
     }catch(e){ /* si passa alla lingua successiva, o si rinuncia */ }
   }
   return null;
@@ -3912,7 +4684,7 @@ async function wikiThumbNear(lat, lng, radius){
 async function fillMissingThumbs(items, radius){
   const misses = items.filter(i => !i.thumb);
   if(!misses.length) return items;
-  await Promise.all(misses.map(async i => { i.thumb = await wikiThumbNear(i.lat, i.lng, radius || 400); }));
+  await Promise.all(misses.map(async i => { i.thumb = await wikiThumbNear(i.lat, i.lng, radius || 400, i.name); }));
   return items;
 }
 
@@ -4290,6 +5062,56 @@ function loadInspiraIndex(){
     .catch(() => ({}));
   return inspiraIndexPromise;
 }
+/* Una «Fonte» serve solo se porta a quella cosa. Il database curato a volte
+   cita la home del portale turistico del paese (sessantadue schede cilene con
+   lo stesso chile.travel) e a volte la voce enciclopedica della città attaccata
+   a ogni monumento che ci sta dentro (dieci luoghi di Lecce con la stessa
+   pagina «lecce»): in entrambi i casi è un rimando a caso. Si marca qui, e chi
+   la mostra scrive solo «Fonte: treccani.it», senza link. Restano cliccabili
+   solo le fonti usate da una scheda sola — quelle parlano davvero di lei. */
+/* Domini le cui pagine, in questo database, sono indirizzi COSTRUITI dal nome
+   della voce e non verificati: «treccani.it/enciclopedia/pantheon» sembra
+   giusto ma non esiste (la voce vera è «pantheon_(Enciclopedia-Italiana)») e
+   apre la Treccani generica. Il nome combacia, quindi nessun controllo di
+   pertinenza può accorgersene: si citano per nome e basta. */
+const SRC_GUESSED = /(^|\.)treccani\.[a-z]{2,}$/i;
+function srcHost(u){
+  const m = (u || '').match(/^https?:\/\/([^\/]+)/);
+  return m ? m[1].replace(/^www\./, '') : (u || '');
+}
+function markThinSources(db){
+  const count = new Map();
+  const walk = (o, fn) => {
+    if(!o || typeof o !== 'object') return;
+    if(Array.isArray(o)) return o.forEach(x => walk(x, fn));
+    fn(o);
+    Object.values(o).forEach(x => walk(x, fn));
+  };
+  walk(db, o => { if(typeof o.source === 'string') count.set(o.source, (count.get(o.source) || 0) + 1); });
+  walk(db, o => {
+    if(typeof o.source !== 'string') return;
+    /* condivisa da più schede: qualunque sia il percorso, non è la fonte di
+       questa — è il portale del paese o la voce della città */
+    if(count.get(o.source) > 1){ o._srcThin = true; return; }
+    if(SRC_GUESSED.test(srcHost(o.source))){ o._srcThin = true; return; }
+    const m = o.source.match(/^https?:\/\/([^\/]+)(\/[^?#]*)?/);
+    const segs = m ? (m[2] || '').split('/').filter(Boolean) : [];
+    if(!m){ o._srcThin = true; return; }
+    /* una home usata da una scheda sola \u00e8 il sito di quel posto (toureiffel.paris
+       per la Torre Eiffel): vale, ed \u00e8 anzi il collegamento migliore che ci sia */
+    if(!segs.length){ o._srcThin = false; return; }
+    /* l'ultimo pezzo dell'indirizzo deve avere a che fare col nome della voce:
+       «treccani.it/enciclopedia/pantheon» per il Pantheon è buono in teoria, ma
+       se non c'è nemmeno una parola in comune il collegamento non parla di
+       questo posto */
+    const tail = imgNorm(decodeURIComponent(segs[segs.length - 1]).replace(/[_\-+]/g, ' ').replace(/\.(html?|php|aspx?)$/i, ''));
+    const words = imgWords(o.name || '');
+    const hit = !words.length || words.some(w => tail.includes(w)) ||
+                (o.name && imgNorm(o.name).includes(tail) && tail.length > 3);
+    o._srcThin = !hit;
+  });
+  return db;
+}
 const inspiraCountryCache = {};
 async function loadInspiraCountry(cc){
   if(inspiraCountryCache[cc]) return inspiraCountryCache[cc];
@@ -4297,6 +5119,7 @@ async function loadInspiraCountry(cc){
   if(!idx[cc]) return null;
   const p = fetch('./ispira/' + cc + '.json')
     .then(r => r.ok ? r.json() : null)
+    .then(j => j ? markThinSources(j) : null)
     .catch(() => null);
   inspiraCountryCache[cc] = p;
   return p;
@@ -4307,7 +5130,8 @@ function inspiraPlaceToItem(p){
     name: p.name, lat: p.lat, lng: p.lng,
     desc: p.short_description, why: p.why_unmissable,
     type: inspTypeFromDesc(p.short_description, p.name),
-    langs: 0, len: 0, thumb: p.photo_url || null, wiki: null, source: p.source || null
+    langs: 0, len: 0, thumb: p.photo_url || null, wiki: null, source: p.source || null,
+    srcThin: !!p._srcThin
   };
 }
 /* la città del db (con le sue attrazioni proprie) più vicina al punto
@@ -4392,6 +5216,15 @@ const inspFetch = async (t, mode) => {
   return mode === 'cities' ? inspCities(t) : inspSights(t);
 };
 
+/* la riga di dettaglio di un suggerimento: tipo, fama, due parole di
+   descrizione. Condivisa fra la scheda Ispirami e il riquadro a spunte. */
+function inspItemSub(it){
+  return (INSP_SUB[it.type] || 'Da vedere') +
+    (it.pop ? ' · ' + it.pop.toLocaleString('it-IT') + ' abitanti' : '') +
+    (it.langs > 3 ? ' · su Wikipedia in ' + it.langs + ' lingue' : '') +
+    (it.desc ? ' · ' + it.desc.slice(0, 40) : '');
+}
+
 function inspRender(){
   const box = document.getElementById('inspList');
   const slice = insp.pool.slice(0, insp.shown);
@@ -4409,10 +5242,7 @@ function inspRender(){
         ? '<img class="insp-ph" src="' + esc(it.thumb) + '" alt="" loading="lazy" onerror="this.remove()">'
         : '<span class="insp-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"/></svg></span>') +
       '<span class="insp-bd"><span class="insp-name">' + esc(it.name) + '</span>' +
-      '<span class="insp-sub">' + (INSP_SUB[it.type] || 'Da vedere') +
-        (it.pop ? ' · ' + it.pop.toLocaleString('it-IT') + ' abitanti' : '') +
-        (it.langs > 3 ? ' · su Wikipedia in ' + it.langs + ' lingue' : '') +
-        (it.desc ? ' · ' + esc(it.desc.slice(0, 40)) : '') + '</span></span>';
+      '<span class="insp-sub">' + esc(inspItemSub(it)) + '</span></span>';
     b.onclick = () => {
       if(insp.sel.has(i)) insp.sel.delete(i); else insp.sel.add(i);
       b.classList.toggle('on');
@@ -4421,6 +5251,9 @@ function inspRender(){
     box.appendChild(b);
   });
   document.getElementById('inspMore').hidden = insp.shown >= insp.pool.length;
+  /* la scorciatoia per chi non vuole spuntare trenta righe a mano: le prime 24
+     in un elenco da cui si togliono quelle che non interessano */
+  document.getElementById('inspTakeAll').hidden = insp.pool.length < 6;
   inspCount();
 }
 function inspCount(){
@@ -4443,6 +5276,9 @@ async function inspLoadPool(mode){
     : 'Cerco le cose da vedere, con foto e voce su Wikipedia…');
   try{
     insp.pool = await inspFetch(insp.target, insp.mode);
+    /* i posti già nel viaggio non si propongono nemmeno: prima comparivano in
+       elenco, si spuntavano e all'aggiunta venivano scartati in silenzio */
+    insp.pool = insp.pool.filter(it => !alreadyInTrip(it));
     insp.sel.clear();
     insp.shown = Math.min(INSP_PAGE, insp.pool.length);
     inspRender();
@@ -4483,11 +5319,26 @@ async function inspSearch(mode){
   })));
 }
 
-document.getElementById('btnInspire').onclick = () => {
+/* Una sola porta per Ispirami. Prima erano due: questa scheda — quella buona,
+   con le spunte e i due modi — sepolta dentro "Aggiungi una tappa", e un popup
+   più povero che chiedeva il posto e riempiva il Brainstorming. Due interfacce
+   per la stessa cosa, e la migliore era la più nascosta. Resta questa, e il
+   campo «dove» arriva precompilato: il posto del viaggio l'app lo sa già. */
+function inspSeed(){
+  const t = (state.title || '').replace(/\b(19|20)\d\d\b/g, '').replace(/[–—-]\s*$/, '').trim();
+  if(t && !/^(nuovo viaggio|viaggio|senza nome|il mio viaggio)$/i.test(t)) return t;
+  const p = state.places.find(x => x.name && x.name !== 'Nuova tappa');
+  if(p) return p.name;
+  return (state.bases || [])[0]?.name || '';
+}
+function openInspire(auto){
   document.getElementById('addVeil').hidden = true;
+  const q = document.getElementById('inspQ');
+  if(!q.value.trim()) q.value = inspSeed();
   document.getElementById('inspVeil').hidden = false;
-  autoFocus(document.getElementById('inspQ'));
-};
+  autoFocus(q);
+  if(auto && q.value.trim().length > 2 && !insp.pool.length) inspSearch(null);
+}
 document.getElementById('inspClose').onclick = () => { document.getElementById('inspVeil').hidden = true; };
 document.getElementById('inspGo').onclick = () => inspSearch(null);
 document.getElementById('inspQ').addEventListener('keydown', e => { if(e.key === 'Enter') inspSearch(null); });
@@ -4500,12 +5351,30 @@ document.getElementById('inspMore').onclick = () => {
 /* il testo della descrizione finisce nelle note: è già un piccolo appunto.
    Condivisa fra la scheda Ispirami (dove si spuntano i singoli luoghi) e il
    popup "non sai dove andare" (dove si butta dentro tutto in un colpo). */
+/* Un posto già nel viaggio non va riproposto. Prima il controllo era solo sul
+   nome identico a meno di 300 m, quindi "Il Pantheon" passava accanto a
+   "Pantheon" e la stessa piazza con due grafie diverse tornava due volte.
+   Ora: nome normalizzato uguale entro 3 km (lo stesso nome in un'altra città
+   è un altro posto), oppure coordinate praticamente sovrapposte. */
+function inspNorm(s){
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/^(il|lo|la|i|gli|le|l'|the|el|los|las)\s+/, '')
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function alreadyInTrip(it){
+  if(!it) return false;
+  const n = inspNorm(it.name);
+  return (state.places || []).some(p => {
+    const d = km(p, it);
+    return d < .15 || (n && inspNorm(p.name) === n && d < 3);
+  }) || (state.bases || []).some(b => km(b, it) < .15);
+}
 function addInspItems(items){
   let n = 0;
   items.forEach(it => {
     if(!it) return;
-    /* niente doppioni: se c'è già una tappa con quel nome a due passi, salto */
-    if(state.places.some(p => p.name.toLowerCase() === it.name.toLowerCase() && km(p, it) < .3)) return;
+    if(alreadyInTrip(it)) return;
     const links = [];
     if(it.wiki){
       const lang = it.wiki.slice(0, it.wiki.indexOf(':')), title = it.wiki.slice(it.wiki.indexOf(':') + 1);
@@ -4513,8 +5382,10 @@ function addInspItems(items){
 
     }
     /* voci dal database curato locale: niente pagina Wikipedia, ma spesso una
-       fonte (di solito Wikivoyage) e il "perché non perderselo" editoriale */
-    if(it.source) links.push({url: it.source, label:'Fonte'});
+       fonte (di solito Wikivoyage) e il "perché non perderselo" editoriale.
+       La fonte diventa un collegamento solo se porta a quel posto: le home dei
+       portali turistici si citano per nome e basta (vedi markThinSources). */
+    if(it.source && !it.srcThin) links.push({url: it.source, label:'Fonte'});
     /* la miniatura arriva già pronta dall'anteprima chiesta all'API: niente
        trucchi per ingrandirla cambiando la misura scritta nell'indirizzo.
        Wikimedia la rifiuta con un 400 per molte foto ad alta risoluzione
@@ -4522,10 +5393,12 @@ function addInspItems(items){
        del file) — risultato, una card su tre finiva col segnaposto invece
        della foto vera. Quella richiesta all'API è già valida per certo. */
     const big = it.thumb || '';
-    const note = [it.desc, it.why].filter(Boolean).join(' — ');
+    let note = [it.desc, it.why].filter(Boolean).join(' — ');
+    if(note) note = note.charAt(0).toUpperCase() + note.slice(1);
+    if(it.source && it.srcThin) note += (note ? '\n\n' : '') + 'Fonte: ' + srcHost(it.source);
     state.places.push({
       id:uid(), name:it.name, lat:it.lat, lng:it.lng, dayId:null, img: big,
-      notes: note ? note.charAt(0).toUpperCase() + note.slice(1) : '', links, type:it.type, chain:true,
+      notes: note, links, type:it.type, chain:true,
       /* al coperto: restano una buona idea anche se piove */
       rain: it.type === 'museum' || it.type === 'church' || it.type === 'market', city:false
     });
@@ -4542,19 +5415,9 @@ document.getElementById('inspAdd').onclick = () => {
   if(n) coach('brainstorm');
 };
 
-/* ============ popup "non sai ancora dove andare?" ============ */
-/* Compare una volta sola per viaggio, solo se è ancora completamente vuoto:
-   chiede un posto e — senza passare dalla scheda con le spunte — butta
-   dentro in Brainstorming tutto quello che trova, con lo stesso identico
-   meccanismo di Ispirami (stessa distinzione automatica paese/città). */
-function openEmptyInspire(){
-  document.getElementById('eiQ').value = '';
-  document.getElementById('eiStatus').textContent = '';
-  const candBox = document.getElementById('eiCandList');
-  candBox.hidden = true; candBox.innerHTML = '';
-  document.getElementById('emptyInspVeil').hidden = false;
-  autoFocus(document.getElementById('eiQ'));
-}
+/* ============ «non sai ancora dove andare?» ============ */
+/* Non è più una scheda a sé: l'invito del primo avvio, la voce del Menù e il
+   Brainstorming vuoto aprono la stessa Ispirami, già compilata. */
 /* Vero se c'è qualcosa in scena: la copertina, il tutorial, un riquadro di
    domanda o una scheda aperta. Un solo cancello per tutti i popup, così non si
    accavallano mai. */
@@ -4576,53 +5439,46 @@ function maybeSuggestInspire(){
      si guarda la mappa, poi — se ancora non c'è niente — arriva la proposta */
   setTimeout(() => {
     if(state.places.length || somethingOnScreen()) return;
-    openEmptyInspire();
+    openInspire(true);
   }, 6000);
 }
-/* cerca il posto scritto e mostra fino a 5 corrispondenze da confermare:
-   "Roma" esiste anche in Georgia (USA), meglio farsi dire quale delle due
-   prima di buttare dentro qualunque cosa (vedi inspSearch per lo stesso
-   principio nella scheda Ispirami completa) */
-async function emptyInspireSearch(){
-  const q = document.getElementById('eiQ').value.trim();
-  const status = document.getElementById('eiStatus');
-  const candBox = document.getElementById('eiCandList');
-  if(q.length < 3) return;
-  status.textContent = 'Cerco…';
-  candBox.hidden = true; candBox.innerHTML = '';
-  let cands = [];
-  try{ cands = await inspGeocode(q, 5); }
-  catch(e){ status.textContent = 'Ricerca non riuscita: serve la rete. Riprova fra poco.'; return; }
-  if(!cands.length){ status.textContent = 'Non trovo questo posto. Prova a scriverlo diversamente.'; return; }
-  status.textContent = 'Quale intendevi?';
-  candBox.hidden = false;
-  cands.forEach(c => candBox.appendChild(inspCandidateRow(c, emptyInspireLoad)));
+/* La scorciatoia: invece di spuntare a mano trenta righe, le prime 24 in un
+   elenco già tutto spuntato da cui si toglie quello che non interessa. Era il
+   vecchio popup «non sai dove andare», che però aggiungeva senza chiedere e
+   viveva in una scheda tutta sua. */
+function inspTakeAll(){
+  const EI_MAX = 24;
+  const show = insp.pool.slice(0, EI_MAX);
+  if(!show.length) return;
+  const dove = insp.target?.name || 'questo posto';
+  checkCard({
+    ic:'list',
+    t:'Cosa metto in Brainstorming?',
+    p:[
+      'Ecco cosa ho trovato per <b>' + esc(dove) + '</b>. Sono tutte spuntate: togli quelle che non ti dicono niente.' +
+        (insp.pool.length > EI_MAX ? ' Ne ho trovate ' + insp.pool.length + ', qui ci stanno le prime ' + EI_MAX + ' — le altre restano nell’elenco.' : ''),
+      'Vanno in Brainstorming, fuori dai giorni: le sposti in un giorno quando vuoi.'
+    ],
+    items: show.map(it => ({
+      label: it.name,
+      sub: inspItemSub(it),
+      thumb: it.thumb,
+      ic: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + (TYPES[it.type] || TYPES.place).d + '"/></svg>'
+    })),
+    yes:'Aggiungi', no:'Lascia stare',
+    onYes: idx => {
+      const n = addInspItems(idx.map(i => show[i]));
+      insp.sel.clear();
+      document.getElementById('inspVeil').hidden = true;
+      save(); render();
+      toast(n ? n + (n === 1 ? ' tappa aggiunta' : ' tappe aggiunte') + ' in Brainstorming' : 'Erano già tutte nell\'itinerario');
+      if(n) coach('brainstorm');
+    }
+  });
 }
-async function emptyInspireLoad(t){
-  const status = document.getElementById('eiStatus');
-  const candBox = document.getElementById('eiCandList');
-  candBox.hidden = true; candBox.innerHTML = '';
-  status.textContent = 'Carico ' + t.name + '…';
-  try{
-    const pool = await inspFetch(t, t.cityish ? 'sights' : 'cities');
-    if(!pool || !pool.length){ status.textContent = 'Nessun suggerimento per questo posto.'; return; }
-    const n = addInspItems(pool);
-    document.getElementById('emptyInspVeil').hidden = true;
-    save(); render();
-    toast(n ? n + (n === 1 ? ' tappa aggiunta' : ' tappe aggiunte') + ' in Brainstorming' : 'Erano già tutte nell\'itinerario');
-    if(n) coach('brainstorm');
-  }catch(e){
-    status.textContent = 'Ricerca non riuscita: serve la rete. Riprova fra poco.';
-  }
-}
-document.getElementById('btnEmptyInspire').onclick = openEmptyInspire;
-document.getElementById('btnInsp').onclick = openEmptyInspire;
-document.getElementById('eiGo').onclick = emptyInspireSearch;
-document.getElementById('eiQ').addEventListener('keydown', e => { if(e.key === 'Enter') emptyInspireSearch(); });
-document.getElementById('eiClose').onclick = () => { document.getElementById('emptyInspVeil').hidden = true; };
-document.getElementById('emptyInspVeil').addEventListener('click', e => {
-  if(e.target === document.getElementById('emptyInspVeil')) document.getElementById('emptyInspVeil').hidden = true;
-});
+document.getElementById('inspTakeAll').onclick = inspTakeAll;
+document.getElementById('btnEmptyInspire').onclick = () => openInspire(true);
+document.getElementById('btnInsp').onclick = () => openInspire(true);
 
 /* ============ percorsi su strada ============ */
 /* Il server demo OSRM ha solo il profilo auto. Per i tratti a piedi uso Valhalla
@@ -5255,13 +6111,31 @@ function sweepDragMark(){
 const ICON_HOUSE_OUT = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 9 6 15 11"/><path d="M4.3 10.3V18H13.7V10.3"/><path d="M7.5 18V13.5H10.5V18"/><path d="M14.5 13H21"/><path d="M18 10 21 13 18 16"/></svg>';
 const ICON_HOUSE_IN  = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 9 6 15 11"/><path d="M4.3 10.3V18H13.7V10.3"/><path d="M7.5 18V13.5H10.5V18"/><path d="M21 13H14.5"/><path d="M18 10 14.5 13 18 16"/></svg>';
 
-/* testo del popover ⓘ nell'intestazione del giorno: tutto ciò che prima stava
-   sempre in vista (conteggio, km, durata, a piedi, meteo) ora a richiesta */
+/* La riga sotto il nome del giorno portava conteggio, chilometri, durata e a
+   piedi tutti insieme: quattro numeri di cui, scorrendo, se ne legge uno.
+   Qui resta l'essenziale; il resto si apre toccando la riga (dayInfoRows). */
 function dayInfoText(d, list, tot, totMin, onFoot){
-  const lines = [ list.length + (list.length === 1 ? ' tappa' : ' tappe')
-    + (tot ? ' · ' + fmt(tot) + ' · ' + dur(totMin) : '') ];
-  if(onFoot) lines.push('🚶 '+fmt(onFoot)+' a piedi');
-  return lines.join(' · ');
+  return list.length + (list.length === 1 ? ' tappa' : ' tappe') + (tot ? ' · ' + fmt(tot) : '');
+}
+/* tutti i dettagli del giorno, uno per riga: si aprono al tocco sulla riga */
+function dayInfoRows(d, list, tot, totMin, onFoot){
+  const rows = [];
+  const add = (k, v) => rows.push('<div class="di-row"><span class="di-k">' + k + '</span><span class="di-v mono">' + v + '</span></div>');
+  const pois = all(d.id).filter(p => isPoi(p)).length;
+  add('Tappe', list.length + (pois ? ' · ' + pois + ' segnaposto' : ''));
+  if(tot) add('Spostamenti', fmt(tot) + ' · ' + dur(totMin));
+  if(onFoot) add('A piedi', fmt(onFoot) + ' su ' + fmt(tot));
+  const done = list.filter(p => p.visited).length;
+  if(done) add('Visitate', done + ' su ' + list.length);
+  const rain = list.filter(p => p.rain).length, kid = list.filter(p => p.kid).length;
+  const adatte = n => n + (n === 1 ? ' adatta' : ' adatte');
+  if(rain) add('Con meteo avverso', adatte(rain));
+  if(kid) add('Con bimbo', adatte(kid));
+  const bf = baseOf(d.baseFromId), bt = baseOf(d.baseToId);
+  if(bf) add('Parte da', esc(bf.name));
+  if(bt) add('Arriva a', esc(bt.name));
+  if(d.date) add('Data', new Date(d.date + 'T00:00:00').toLocaleDateString('it-IT', {weekday:'long', day:'numeric', month:'long'}));
+  return rows.join('');
 }
 
 function drawList(){
@@ -5401,10 +6275,27 @@ function dayBlock(d, list){
         '</div>'
         : '') +
     '</div>' +
-    '<div class="day-head-meta"><span class="day-stat mono">'+metaLine+'</span></div>';
+    '<div class="day-head-meta">' +
+      (d.id
+        ? '<button type="button" class="day-stat mono day-stat-btn" aria-expanded="false" title="Tutti i dettagli del giorno">' + metaLine + '<i>▾</i></button>' +
+          '<div class="day-info" hidden></div>'
+        : '<span class="day-stat mono">' + metaLine + '</span>') +
+    '</div>';
   sec.appendChild(head);
 
   if(d.id){
+    const statB = head.querySelector('.day-stat-btn'), info = head.querySelector('.day-info');
+    if(statB) statB.onclick = e => {
+      e.stopPropagation();
+      const opening = info.hidden;
+      if(opening && !info.dataset.filled){
+        info.innerHTML = dayInfoRows(d, list, tot, totMin, onFoot);
+        info.dataset.filled = '1';
+      }
+      info.hidden = !opening;
+      statB.classList.toggle('on', opening);
+      statB.setAttribute('aria-expanded', String(opening));
+    };
     const sw = head.querySelector('.sw-btn');
     if(sw) sw.onclick = e => { e.stopPropagation(); openColorPop(sw, d.color, c => { d.color = c; save(); render(); }); };
     /* il nome si modifica solo dalla matita: così un tocco sulla testata
@@ -5511,10 +6402,18 @@ function dayBlock(d, list){
       e.setAttribute('role','button');
       e.tabIndex = 0;
       e.innerHTML = '<span class="ei-spark">✨</span>Ancora nessuna tappa inserita.<br><b>Lasciati ispirare</b><br>Dimmi una nazione o una città: cerco i luoghi migliori e li aggiungo qui come tappe, con il loro pin sulla mappa.<br><span class="ei-go">✨ Proponimi delle idee</span>';
-      e.onclick = openEmptyInspire;
-      e.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openEmptyInspire(); } };
+      e.onclick = () => openInspire(true);
+      e.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openInspire(true); } };
     } else {
-      e.textContent = 'Nessuna idea in Brainstorming al momento.';
+      /* Brainstorming vuoto a viaggio avviato: prima diceva soltanto "nessuna
+         idea", muto, con Ispirami a due centimetri di distanza. Stesso invito,
+         testo più breve: qui non si spiega l'app, si offre la strada. */
+      e.classList.add('empty-cta');
+      e.setAttribute('role','button');
+      e.tabIndex = 0;
+      e.innerHTML = '<span class="ei-spark">✨</span>Nessuna idea in Brainstorming al momento.<br>Qui tengo i posti che non hanno ancora un giorno.<br><span class="ei-go">✨ Proponimi delle idee</span>';
+      e.onclick = () => openInspire(true);
+      e.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openInspire(true); } };
     }
     body.appendChild(e);
     return sec;
@@ -5541,7 +6440,7 @@ function dayBlock(d, list){
             ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="">'
             : thumbPlaceholderHTML(p)) +
           '<div class="stop-body">' +
-            '<p class="stop-name">'+esc(p.name)+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+ohClosedTag(p)+'</p>' +
+            '<p class="stop-name">'+esc(p.name)+(p.visited?' <i class="done-tag" title="Visitata">✓</i>':'')+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+ohClosedTag(p)+'</p>' +
             (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
             (links ? '<div class="links">'+links+'</div>' : '') +
           '</div>' +
@@ -5669,6 +6568,10 @@ function dayAllWalk(d, on){
   const scroller = listBox.closest('.scroll');
   let src = null, place = null, ghost = null, line = null;
   let timer = null, dragging = false, x0 = 0, y0 = 0, justDragged = false, af = null;
+  /* strisciamento laterale sulla riga: segna la tappa visitata (e la rimette da
+     fare). SWIPE_GO è la corsa oltre la quale il gesto vale. */
+  let swipeRow = null, swipeCard = null, swiping = false;
+  const SWIPE_GO = 64;
   /* se il dito non si sposta dopo la presa il gesto non va perso: al rilascio
      apre la selezione multipla invece di rimettere la tappa dov'era */
   let movedFar = false;
@@ -5818,15 +6721,50 @@ function dayAllWalk(d, on){
     if(!row || e.target.closest('button,a,input,textarea')) return;
     x0 = e.clientX; y0 = e.clientY;
     clear();
+    swipeRow = row.classList.contains('stop') ? row : null;
+    swiping = false;
     timer = setTimeout(() => { timer = null; lift(row, x0, y0); }, 420);
   });
   /* se il dito si muove prima dei 420 ms sta scorrendo l'elenco, non prendendo
      la tappa: la pressione lunga decade */
   listBox.addEventListener('pointermove', e => {
     if(timer && (Math.abs(e.clientX - x0) > 9 || Math.abs(e.clientY - y0) > 9)) clear();
+    if(dragging || !swipeRow) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    /* strisciata orizzontale: segna la tappa come visitata senza aprire il
+       Diario. Parte solo se il movimento è chiaramente laterale, altrimenti
+       è l'elenco che scorre. */
+    if(!swiping && Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.6){
+      swiping = true; clear();
+      swipeCard = swipeRow.querySelector('.stop-card');
+      if(swipeCard) swipeCard.style.transition = 'none';
+    }
+    if(swiping && swipeCard){
+      const t = Math.max(-110, Math.min(110, dx));
+      swipeCard.style.transform = 'translateX(' + t + 'px)';
+      swipeRow.classList.toggle('sw-armed', Math.abs(dx) > SWIPE_GO);
+    }
   });
+  function swipeEnd(e){
+    if(!swipeRow){ return; }
+    const row = swipeRow, card = swipeCard, was = swiping;
+    const dx = e && e.clientX != null ? e.clientX - x0 : 0;
+    swipeRow = swipeCard = null; swiping = false;
+    if(card){ card.style.transition = ''; card.style.transform = ''; }
+    row.classList.remove('sw-armed');
+    if(!was) return;
+    justDragged = true;                       // il click di rilascio non apre la tappa
+    setTimeout(() => { justDragged = false; }, 160);
+    if(Math.abs(dx) <= SWIPE_GO) return;
+    const p = state.places.find(x => x.id === row.dataset.place);
+    if(!p) return;
+    p.visited = !p.visited;
+    if(p.visited && !p.visitedAt) p.visitedAt = Date.now();
+    save(); render();
+    toast('“' + p.name + '” ' + (p.visited ? 'segnata come visitata' : 'di nuovo da fare'));
+  }
   ['pointerup','pointercancel','pointerleave'].forEach(ev =>
-    listBox.addEventListener(ev, () => { if(!dragging) clear(); }));
+    listBox.addEventListener(ev, e => { if(!dragging){ swipeEnd(e); clear(); } }));
 
   document.addEventListener('pointermove', e => {
     if(!dragging) return;
@@ -5845,7 +6783,7 @@ function dayAllWalk(d, on){
   });
   document.addEventListener('pointercancel', () => { if(dragging) end(); });
   /* blocca lo scorrimento della pagina mentre si trascina col dito */
-  document.addEventListener('touchmove', e => { if(dragging) e.preventDefault(); }, {passive:false});
+  document.addEventListener('touchmove', e => { if(dragging || swiping) e.preventDefault(); }, {passive:false});
   /* il tocco che chiude un trascinamento non deve anche aprire la tappa */
   listBox.addEventListener('click', e => {
     if(justDragged){ e.stopPropagation(); e.preventDefault(); return; }
@@ -5876,11 +6814,13 @@ function selBar(){
   b.innerHTML =
     '<div class="selbar-in">' +
       '<span class="selbar-n" id="selCount">1 tappa selezionata</span>' +
-      '<button type="button" id="selMove">Sposta in un giorno</button>' +
+      '<button type="button" id="selMove">Sposta<span class="selbar-long"> in un giorno</span></button>' +
+      '<button type="button" class="ghost trash" id="selDel" title="Elimina le tappe selezionate" aria-label="Elimina le tappe selezionate">🗑</button>' +
       '<button type="button" class="ghost" id="selDone" title="Esci dalla selezione" aria-label="Esci dalla selezione">✕</button>' +
     '</div>';
   document.body.appendChild(b);
   b.querySelector('#selMove').onclick = selMoveAsk;
+  b.querySelector('#selDel').onclick = selDelAsk;
   b.querySelector('#selDone').onclick = () => selExit();
   return b;
 }
@@ -5941,6 +6881,37 @@ function selMoveAsk(){
     p:['Vanno in fondo al giorno che scegli, nell’ordine in cui sono adesso.'],
     items, no:'Annulla',
     onPick: dayId => selMoveTo(dayId, picked)
+  });
+}
+/* Eliminare in blocco: chi incolla dodici tappe per errore le deve poter
+   togliere in un colpo, non una conferma alla volta. Il riquadro dice quali,
+   perché una cancellazione multipla senza elenco è un salto nel buio. */
+function selDelAsk(){
+  const picked = [...selIds];
+  if(!picked.length) return;
+  const moving = state.places.filter(p => picked.includes(p.id));
+  if(!moving.length) return;
+  const nomi = moving.slice(0, 6).map(p => esc(p.name));
+  const resto = moving.length - nomi.length;
+  confirmCard({
+    ic:'list',
+    t: moving.length === 1 ? 'Elimino questa tappa?' : 'Elimino ' + moving.length + ' tappe?',
+    p: [
+      nomi.join(' · ') + (resto ? ' · e altre ' + resto : ''),
+      'Escono dall’itinerario con note, link e foto, e i pin spariscono dalla mappa.'
+    ],
+    no:'Lascia stare',
+    yes: moving.length === 1 ? 'Elimina la tappa' : 'Elimina tutte',
+    onYes: () => {
+      const ids = new Set(picked);
+      if(freshPlaceId && ids.has(freshPlaceId)) freshPlaceId = null;
+      if(editing && ids.has(editing.id)){ veil.hidden = true; editing = null; }
+      state.places = state.places.filter(p => !ids.has(p.id));
+      const n = moving.length, nome = moving[0].name;
+      selExit();
+      save(); render();
+      toast(n === 1 ? '“' + nome + '” eliminata' : n + ' tappe eliminate');
+    }
   });
 }
 function selMoveTo(dayId, ids){
@@ -7456,8 +8427,124 @@ function imgPreview(src, credit){
    sparire dietro foto di soggetti a caso taggate (per errore) sullo stesso
    punto. Per questo la scelta finale resta comunque all'utente, non è
    automatica alla cieca: qui vicino può capitare di tutto. */
-async function findPlaceImages(lat, lng, radius, limit){
+/* Confronto di nomi per capire se una foto (o una voce) parla davvero del
+   posto: via accenti, punteggiatura e paroline. «Basilica di San Petronio» e
+   «San Petronio, Bologna» devono somigliarsi, «stemma di Bologna» no. */
+function imgNorm(s){
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[_\-\.,;:()\[\]"'«»]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+const IMG_STOP = /^(di|de|del|della|dello|dei|degli|delle|da|dal|il|lo|la|le|gli|un|una|the|of|at|in|on|and|e|a|al|alla|st|san|santa|santo|saint|sant)$/;
+function imgWords(s){
+  return imgNorm(s).split(' ').filter(w => w.length > 3 && !IMG_STOP.test(w));
+}
+/* quante parole significative del nome compaiono nel titolo */
+function imgNameHits(title, words){
+  if(!words.length) return 0;
+  const t = imgNorm(title);
+  return words.filter(w => t.includes(w)).length;
+}
+/* Roba che su Commons è geolocalizzata sul posto ma non è una foto del posto:
+   mappe, stemmi, bandiere, targhe, insegne, scansioni, grafici. È la metà delle
+   immagini fuori tema che arrivavano dalla ricerca per coordinate. */
+/* Ogni termine ha il suo confine di parola: senza, «scan» scartava mezza
+   To-scana e Scan-dicci, «graph» ogni «Photograph of…», «osm» i co-smos. */
+const IMG_JUNK = /(\bmap\b|\bmappa\b|\bkarte\b|\bcarte\b|\bplan\b|\bplano\b|coat of arms|\bstemma\b|\bwappen\b|\bblason\b|\bescudo\b|\bflag\b|\bbandiera\b|\bdrapeau\b|\blogo\b|\bseal\b|\bsigillo\b|\bdiagram\b|\bschema\b|\bgrafico\b|\bchart\b|\bgraph\b|\bscan\b|\bscansione\b|\btarga\b|\bplaque\b|\bplakette\b|\bsign\b|\binsegna\b|\bsegnale\b|street sign|timetable|\borario\b|\bmanifesto\b|\bposter\b|\blocandina\b|\blibro\b|\bbook\b|\bpagina\b|\bpage\b|\bportrait\b|\britratto\b|\bgrave\b|\btomba\b|\blapide\b|panorama sferico|\bgpx\b)/i;
+const IMG_BADEXT = /\.(svg|pdf|tiff?|djvu|xcf|gif|webm|ogv|ogg|mid|stl)$/i;
+function imgLooksJunk(title){
+  const t = title.replace(/^File:/i, '');
+  return IMG_BADEXT.test(t) || IMG_JUNK.test(imgNorm(t));
+}
+
+/* Autore e licenza di file di Commons in una sola chiamata: serve per dare il
+   credito alle foto pescate dalla voce di Wikipedia, che dall'API delle pagine
+   arrivano senza. */
+/* Wikipedia dà il nome del file con gli underscore, Commons lo restituisce con
+   gli spazi: senza questa normalizzazione la chiave non combacia mai e le foto
+   trovate per nome restavano senza autore né licenza. */
+function credKey(f){
+  return (f || '').replace(/^File:/i, '').replace(/_/g, ' ').trim();
+}
+async function commonsCredits(files){
+  const out = {};
+  if(!files.length) return out;
   try{
+    const u = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo' +
+      '&iiprop=url%7Cextmetadata&iiurlwidth=400&titles=' +
+      files.map(f => encodeURIComponent('File:' + f.replace(/^File:/i, ''))).join('%7C');
+    const pages = (await (await fetch(u)).json()).query?.pages || {};
+    const strip = s => (s || '').replace(/<[^>]+>/g, '').trim();
+    Object.values(pages).forEach(p => {
+      const info = p.imageinfo?.[0];
+      if(!info) return;
+      const meta = info.extmetadata || {};
+      out[credKey(p.title)] = {
+        author: strip(meta.Artist?.value) || 'autore sconosciuto',
+        license: strip(meta.LicenseShortName?.value),
+        source: info.descriptionurl
+      };
+    });
+  }catch(e){ /* senza credito la foto resta usabile */ }
+  return out;
+}
+
+/* La foto più pertinente non è quella scattata più vicino: è quella della voce
+   di Wikipedia che porta quel nome. Si cerca il nome della tappa, si tengono
+   solo le voci con le coordinate a ridosso del punto (Duomo di Milano sì,
+   omonimi in un altro paese no) e si prende l'immagine di apertura. */
+async function wikiNamedImages(name, lat, lng){
+  const words = imgWords(name);
+  if(!name || !name.trim()) return [];
+  const want = imgNorm(name);
+  const out = [];
+  for(const lang of ['it', 'en']){
+    if(out.length >= 3) break;
+    try{
+      const u = 'https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*' +
+        '&generator=search&gsrsearch=' + encodeURIComponent(name) + '&gsrlimit=8' +
+        '&prop=pageimages%7Ccoordinates&piprop=thumbnail%7Cname&pithumbsize=480&colimit=50';
+      const pages = Object.values((await (await fetch(u)).json()).query?.pages || {});
+      pages.forEach(p => {
+        if(!p.thumbnail?.source || !p.pageimage) return;
+        if(imgLooksJunk(p.pageimage)) return;
+        const t = imgNorm(p.title);
+        /* il titolo comincia col nome della tappa (o viceversa): è la voce di
+           questo posto, non una voce che lo cita. «Antica basilica di San
+           Pietro» non passa, «Basilica di San Pietro in Vaticano» sì. */
+        const strong = want.length > 3 && (t.indexOf(want) === 0 || want.indexOf(t) === 0);
+        const c = p.coordinates?.[0];
+        const d = c ? km({lat, lng}, {lat: c.lat, lng: c.lon}) : null;
+        /* Le coordinate non sono un requisito: su it.wikipedia molte voci di
+           monumenti non le hanno, e pretenderle buttava via proprio la voce
+           esatta. Dove ci sono, servono a escludere gli omonimi: due chilometri
+           e mezzo, non quattro — dentro una città a quattro km c'è un'altra
+           chiesa con quasi lo stesso nome. */
+        if(d != null ? d > 2.5 : !strong) return;
+        if(out.some(x => x.file === p.pageimage)) return;
+        out.push({
+          thumb: p.thumbnail.source, file: p.pageimage, title: p.title,
+          strong: strong ? 1 : 0, idx: p.index ?? 99,
+          km: d == null ? 0 : d, hits: imgNameHits(p.title, words), fromWiki: true
+        });
+      });
+    }catch(e){ /* si prova l'altra lingua */ }
+  }
+  /* prima chi porta quel nome, poi quante parole del nome ha in comune, poi
+     l'ordine di pertinenza della ricerca di Wikipedia */
+  out.sort((a, b) => (b.strong - a.strong) || (b.hits - a.hits) || (a.idx - b.idx));
+  const top = out.slice(0, 4);
+  if(!top.length) return [];
+  const cred = await commonsCredits(top.map(c => c.file));
+  return top.map(c => Object.assign({
+    author: 'da Wikipedia · ' + c.title, license: '', source: ''
+  }, cred[credKey(c.file)] || {}, {thumb: c.thumb, title: c.title}));
+}
+
+async function findPlaceImages(lat, lng, radius, limit, name){
+  try{
+    const words = imgWords(name);
     const gsUrl = 'https://commons.wikimedia.org/w/api.php?action=query&list=geosearch'
       + '&gscoord='+lat+'%7C'+lng+'&gsradius='+(radius||700)+'&gslimit='+(limit||8)+'&gsnamespace=6&format=json&origin=*';
     const hits = (await (await fetch(gsUrl)).json()).query?.geosearch || [];
@@ -7469,14 +8556,23 @@ async function findPlaceImages(lat, lng, radius, limit){
     return hits.map(h => {
       const info = pages[h.pageid]?.imageinfo?.[0];
       if(!info) return null;
+      const title = pages[h.pageid]?.title || '';
+      /* mappe, stemmi e insegne fuori: sono geolocalizzate sul posto ma non
+         mostrano il posto */
+      if(imgLooksJunk(title)) return null;
       const meta = info.extmetadata || {};
       return {
         thumb: info.thumburl || info.url,
+        title: title.replace(/^File:/i, ''),
+        /* il nome del file che cita la tappa vale più di trenta metri in meno */
+        hits: imgNameHits(title + ' ' + strip(meta.ObjectName?.value), words),
+        km: (h.dist || 0) / 1000,
         author: strip(meta.Artist?.value) || 'autore sconosciuto',
         license: strip(meta.LicenseShortName?.value),
         source: info.descriptionurl
       };
-    }).filter(Boolean);
+    }).filter(Boolean)
+      .sort((a, b) => (b.hits - a.hits) || (a.km - b.km));
   }catch(e){ return []; }
 }
 
@@ -7486,17 +8582,33 @@ async function findPlaceImages(lat, lng, radius, limit){
 let imgHunt = null;
 const IMG_RADII = [700, 2500, 8000];   // stesso punto, poi la zona, poi i dintorni
 const IMG_BATCH = 10;                  // provini per giro
+/* lo stesso file arriva da Wikipedia a 480px e da Commons a 400px: l'indirizzo
+   è diverso, la foto è la stessa. Si confronta il nome del file. */
+function imgKey(c){
+  const last = (c.thumb || '').split('?')[0].split('/').pop() || '';
+  return decodeURIComponent(last.replace(/^\d+px-/, '')).toLowerCase();
+}
 async function nextImageBatch(p){
   if(!imgHunt || imgHunt.id !== p.id) imgHunt = {id:p.id, pool:[], step:-1, seen:new Set(), done:false};
   const h = imgHunt;
   const fresh = () => h.pool.filter(c => !h.seen.has(c.thumb));
+  /* Primo giro: la foto di apertura della voce di Wikipedia che porta il nome
+     della tappa. È la sola sorgente che sa di cosa si parla — la ricerca per
+     coordinate sa solo dove si sta, e a dieci metri da un monumento c'è anche
+     il cartello del parcheggio. */
+  if(!h.named){
+    h.named = true;
+    const named = await wikiNamedImages(p.name, p.lat, p.lng);
+    const known = new Set(h.pool.map(imgKey));
+    h.pool = named.filter(c => !known.has(imgKey(c))).concat(h.pool);
+  }
   /* finché il bacino corrente è esaurito allargo il raggio: prima le foto
      scattate sul posto, poi quelle della zona */
   while(fresh().length < IMG_BATCH && h.step < IMG_RADII.length - 1){
     h.step++;
-    const found = await findPlaceImages(p.lat, p.lng, IMG_RADII[h.step], 50);
-    const known = new Set(h.pool.map(c => c.thumb));
-    h.pool = h.pool.concat(found.filter(c => !known.has(c.thumb)));
+    const found = await findPlaceImages(p.lat, p.lng, IMG_RADII[h.step], 50, p.name);
+    const known = new Set(h.pool.map(imgKey));
+    h.pool = h.pool.concat(found.filter(c => !known.has(imgKey(c))));
   }
   let batch = fresh().slice(0, IMG_BATCH);
   /* niente di nuovo da nessuna parte: si ricomincia dalle prime, meglio che
@@ -7535,7 +8647,7 @@ function drawImgCands(found){
       (cur ? 'Scegline un’altra qui sotto, oppure caricala tu con 📁. ' : 'Tocca una foto per usarla. ') + nota +
     '</p>' +
     '<div class="img-cand-row">' + found.map((c,i) =>
-      '<button type="button" class="img-cand'+(c.thumb === cur ? ' on' : '')+'" data-i="'+i+'" title="Foto: '+esc(c.author)+(c.license?' · '+esc(c.license):'')+'"><img src="'+esc(c.thumb)+'" alt="" loading="lazy"></button>'
+      '<button type="button" class="img-cand'+(c.thumb === cur ? ' on' : '')+'" data-i="'+i+'" title="'+esc((c.title ? c.title + ' — ' : '') + 'Foto: ' + c.author)+(c.license?' · '+esc(c.license):'')+'"><img src="'+esc(c.thumb)+'" alt="" loading="lazy"></button>'
     ).join('') + '</div>';
   box.querySelectorAll('.img-cand').forEach(b => b.onclick = () => {
     applyImgCand(found[+b.dataset.i]);
@@ -8282,8 +9394,13 @@ document.getElementById('save').onclick = () => {
   editing.name = document.getElementById('fName').value.trim() || 'Tappa';
   editing.notes = document.getElementById('fNote').value;
   editing.img = document.getElementById('fImg').value.trim();
-  /* il credito segue l'immagine solo se è ancora quella trovata su Commons */
-  editing.imgCredit = (pendingImgCredit && pendingImgCredit.thumb === editing.img) ? pendingImgCredit : null;
+  /* il credito segue l'immagine solo se è ancora quella trovata su Commons.
+     Si conserva solo quello che serve a scrivere la riga di credito: punteggi e
+     distanze della ricerca non hanno niente da fare dentro il viaggio. */
+  editing.imgCredit = (pendingImgCredit && pendingImgCredit.thumb === editing.img)
+    ? {thumb: pendingImgCredit.thumb, author: pendingImgCredit.author,
+       license: pendingImgCredit.license || '', source: pendingImgCredit.source || ''}
+    : null;
   editing.dayId = document.getElementById('fDay').value || null;
   editing.type = (document.querySelector('#fType .type-opt.on') || {dataset:{type:'place'}}).dataset.type;
   editing.rain = document.getElementById('fRain').classList.contains('on');
@@ -8437,7 +9554,7 @@ function closeTopOverlay(){
   if(open.length){
     const top = open[open.length-1];
     if(top === veil){ closeEditor(); return true; }
-    if(top.id === 'addVeil'){ top.hidden = true; cancelAddBase(); return true; }
+    if(top.id === 'addVeil'){ closeAddVeil(); return true; }
     top.hidden = true;
     return true;
   }
@@ -8567,9 +9684,14 @@ function setPick(v){
     res.innerHTML = '<div class="msg">Cerco\u2026</div>';
     try{
       const b = map.getBounds();
-      const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=7&addressdetails=0&accept-language=it&q='
-        + encodeURIComponent(v) + '&viewbox=' + [b.getWest(),b.getNorth(),b.getEast(),b.getSouth()].join(',');
-      const j = await (await fetch(url)).json();
+      /* qui il rettangolo della mappa \u00e8 legittimo: si sta guardando la mappa.
+         Nessun filtro per paese \u2014 questa ricerca serve anche a spostarsi
+         altrove, non ad aggiungere tappe al viaggio. */
+      const j = await geoSearch(v, {
+        box: [b.getWest(), b.getNorth(), b.getEast(), b.getSouth()].join(','),
+        near: {lat: map.getCenter().lat, lng: map.getCenter().lng},
+        inBox: h => b.contains([h.lat, h.lng])
+      });
       if(q.value.trim() !== v) return;   // l'utente ha continuato a scrivere
       if(!j.length){
         res.innerHTML = '<div class="msg">Non trovo niente con questo nome. Prova a scriverlo in un altro modo, o aggiungi la nazione.</div>';
@@ -8579,8 +9701,8 @@ function setPick(v){
       j.forEach(h => {
         const b2 = document.createElement('button');
         b2.type = 'button';
-        b2.innerHTML = KIND_IC + '<span style="min-width:0"><b>' + esc(h.display_name.split(',')[0]) +
-          '</b><i>' + esc(h.display_name.split(',').slice(1, 4).join(',').trim()) + '</i></span>';
+        b2.innerHTML = KIND_IC + '<span style="min-width:0"><b>' + esc(h.name) +
+          '</b><i>' + esc(h.sub) + '</i></span>';
         b2.onclick = () => goTo(h);
         res.appendChild(b2);
       });
@@ -8626,14 +9748,12 @@ function setPick(v){
 
 /* ============ aggiungi un luogo (ricerca o tocco sulla mappa) ============ */
 const addVeil = document.getElementById('addVeil');
-document.getElementById('btnAddPlace').onclick = () => {
-  addVeil.hidden = false;
-  autoFocus(document.getElementById('q'));
-};
+document.getElementById('btnAddPlace').onclick = openAddVeil;
 /* la lente rossa che portava in Itinerario è stata sostituita dalla riga di
    ricerca della mappa: vedi mapSearch, che naviga senza creare niente */
-document.getElementById('addVeilClose').onclick = () => { addVeil.hidden = true; cancelAddBase(); };
-addVeil.onclick = e => { if(e.target === addVeil){ addVeil.hidden = true; cancelAddBase(); } };
+document.getElementById('addVeilClose').onclick = closeAddVeil;
+document.getElementById('btnPasteList').onclick = openPasteList;
+addVeil.onclick = e => { if(e.target === addVeil) closeAddVeil(); };
 
 document.getElementById('btnPickInline').onclick = () => {
   addVeil.hidden = true; // la mappa sotto va lasciata scoperta per poterla toccare
@@ -9324,6 +10444,86 @@ function pickCard(o){
   card.querySelector('.tour-no').onclick = no;
   card.querySelectorAll('.pick-item').forEach(b =>
     b.onclick = () => { close(); const i = +b.dataset.i; setTimeout(() => o.onPick(o.items[i].value), 240); });
+  veil.addEventListener('click', ev => { if(ev.target === veil) no(); });
+}
+
+/* Riquadro con un elenco a spunte, tutte accese: «ecco cosa sto per
+   aggiungere». Serve dove l'app inseriva in blocco senza chiedere (Ispirami
+   dallo stato vuoto): dodici tappe che arrivano insieme sono una sorpresa, non
+   una scelta. Le righe sono quelle della scheda Ispirami, così la spunta è lo
+   stesso gesto in entrambi i posti. */
+function checkCard(o){
+  if(tourRunning) return;
+  const sel = new Set(o.items.map((_, i) => i));
+  const veil = document.createElement('div');
+  veil.className = 'tour-veil';
+  const card = document.createElement('div');
+  card.className = 'tour-card ask';
+  card.innerHTML =
+    '<div class="tour-top"><span class="tour-ic" style="--tc:linear-gradient(135deg,#3D5666,#22303A);--tfg:#fff">' +
+      cloneTabIcon(o.ic || 'list', '') + '</span><h3>' + o.t + '</h3></div>' +
+    (o.p || []).map(x => '<p>' + x + '</p>').join('') +
+    '<div class="check-head"><span id="ckN"></span>' +
+      '<button type="button" class="check-all" id="ckAll">Togli tutte</button></div>' +
+    '<div class="pick-list">' + o.items.map((it, i) =>
+      '<button class="insp-item on" type="button" data-i="' + i + '">' +
+        '<span class="insp-tick">✓</span>' +
+        (it.thumb
+          ? '<img class="insp-ph" src="' + esc(it.thumb) + '" alt="" loading="lazy" onerror="this.remove()">'
+          : '<span class="insp-ic">' + (it.ic || '') + '</span>') +
+        '<span class="insp-bd"><span class="insp-name">' + esc(it.label) + '</span>' +
+          (it.sub ? '<span class="insp-sub">' + esc(it.sub) + '</span>' : '') + '</span>' +
+      '</button>').join('') + '</div>' +
+    '<div class="tour-foot">' +
+      '<button class="tour-no" type="button">' + (o.no || 'Lascia stare') + '</button>' +
+      '<button class="tour-next" type="button"></button>' +
+    '</div>';
+  document.body.append(veil, card);
+  const w = card.offsetWidth, ch = card.offsetHeight;
+  card.style.left = Math.round((window.innerWidth - w) / 2) + 'px';
+  card.style.top = Math.round(Math.max(16, (window.innerHeight - ch) / 2 - 20)) + 'px';
+  veil.classList.add('show');
+  const yesB = card.querySelector('.tour-next');
+  const allB = card.querySelector('#ckAll');
+  const nEl = card.querySelector('#ckN');
+  const paint = () => {
+    const n = sel.size;
+    nEl.textContent = n + (n === 1 ? ' scelta su ' : ' scelte su ') + o.items.length;
+    allB.textContent = n === o.items.length ? 'Togli tutte' : 'Prendi tutte';
+    yesB.textContent = n ? (o.yes || 'Aggiungi') + ' ' + n : (o.yes || 'Aggiungi');
+    yesB.disabled = !n;
+    yesB.style.opacity = n ? '' : '.45';
+  };
+  paint();
+  const close = () => {
+    veil.classList.remove('show');
+    card.style.animation = 'none';
+    card.style.transition = 'opacity .24s ease,transform .24s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(10px) scale(.97)';
+    setTimeout(() => { veil.remove(); card.remove(); }, 320);
+  };
+  const no = () => { close(); if(o.onNo) o.onNo(); };
+  card.querySelectorAll('.insp-item').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i;
+    if(sel.has(i)) sel.delete(i); else sel.add(i);
+    b.classList.toggle('on', sel.has(i));
+    paint();
+  });
+  allB.onclick = () => {
+    const all = sel.size === o.items.length;
+    sel.clear();
+    if(!all) o.items.forEach((_, i) => sel.add(i));
+    card.querySelectorAll('.insp-item').forEach(b => b.classList.toggle('on', sel.has(+b.dataset.i)));
+    paint();
+  };
+  card.querySelector('.tour-no').onclick = no;
+  yesB.onclick = () => {
+    if(!sel.size) return;
+    const picked = [...sel].sort((a, b) => a - b);
+    close();
+    setTimeout(() => o.onYes(picked), 240);
+  };
   veil.addEventListener('click', ev => { if(ev.target === veil) no(); });
 }
 
