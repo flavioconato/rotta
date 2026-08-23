@@ -1005,6 +1005,24 @@ body.mine #tabCost,body.mine #tabBook,body.mine #tabDiary,
 body.mine #btnDay,body.mine .area-pill,body.mine #btnFold{display:none}
 body.mine #tripTitle{pointer-events:none}
 .stop-from{margin:2px 0 0;font-size:11px;color:var(--fog);font-style:italic}
+/* «I miei posti» non è un itinerario: i posti si raccolgono per anni, e l'ordine
+   di inserimento mette una tappa italiana di oggi accanto a una peruviana di tre
+   anni fa. Si raggruppano per paese, con una riga di titolo a ogni cambio. */
+.area-hd{
+  list-style:none;display:flex;align-items:baseline;justify-content:space-between;
+  gap:10px;margin:16px 0 8px;padding:0 0 5px 37px;border-bottom:1px dashed var(--ink-4)
+}
+.area-hd:first-child{margin-top:0}
+.area-hd b{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink)}
+.area-hd i{font-size:11.5px;font-style:normal;color:var(--fog);white-space:nowrap}
+/* arrivo dalla mappa: la riga si accende un attimo e torna com'era, altrimenti
+   in un elenco lungo non si capisce dove si è atterrati */
+@keyframes stopFlash{
+  0%{box-shadow:0 0 0 0 rgba(211,50,58,.5)}
+  35%{box-shadow:0 0 0 4px rgba(211,50,58,.28)}
+  100%{box-shadow:0 0 0 13px rgba(211,50,58,0)}
+}
+.stop.flash > .stop-card{animation:stopFlash 1.6s ease-out}
 .ro-links a{font-size:11.5px;color:var(--sage-2)}
 .ro-thumb{flex:none;width:62px;height:62px;object-fit:cover;border-radius:9px}
 .ro-empty{margin:0;font-size:12.5px;color:var(--fog);border:1px dashed var(--ink-4);border-radius:10px;padding:12px}
@@ -2539,7 +2557,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v94';
+const APP_VERSION = 'v95';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2905,7 +2923,12 @@ const MINE_TITLE = 'I miei posti';
 let mineDoc = null, mineTimer = null;
 function isMine(){ return !!state && state.id === MINE_ID; }
 async function mineLoad(){
-  if(mineDoc) return mineDoc;
+  /* Nessuna copia in memoria che sopravviva al cambio di viaggio: quando «I miei
+     posti» è il viaggio aperto il documento vivo è `state`, e tenerne una
+     seconda versione qui era il modo di far resuscitare le tappe cancellate —
+     si cancellava in `state`, poi il primo salvataggio di un altro viaggio
+     riscriveva la vecchia copia con dentro tutto quello che era stato buttato. */
+  if(isMine()) return (mineDoc = state);
   let d = null;
   if(db){ try{ d = await dbGet(tripKey(MINE_ID)); }catch(e){} }
   if(!d || !Array.isArray(d.places)){
@@ -2934,6 +2957,9 @@ function mirrorSync(){
     (state.places || []).forEach(p => {
       if(!p || p.lat == null) return;
       live.add(p.id);
+      /* cancellata a mano dai Miei posti: non torna. L'originale nel viaggio non
+         c'entra — la copia è stata rifiutata, e il rifiuto è scritto (mineForget). */
+      if((d.noMirror || []).includes(tripId + '/' + p.id)) return;
       let m = d.places.find(x => x.srcTrip === tripId && x.srcId === p.id);
       if(!m){
         m = {id:uid(), dayId:null, srcTrip:tripId, srcId:p.id, chain:true};
@@ -2949,6 +2975,15 @@ function mirrorSync(){
     if(d.places.length !== before) touched = true;
     if(touched) await mineWrite();
   }, 1400);
+}
+/* Cancellare una copia dai Miei posti è una decisione, non un incidente: se
+   l'originale è ancora nel suo viaggio, mirrorSync la ricreerebbe al primo
+   salvataggio di quel viaggio. Si segna il rifiuto nel documento, e resta. */
+function mineForget(places){
+  if(!isMine()) return;
+  const no = new Set(state.noMirror || []);
+  (places || []).forEach(p => { if(p && p.srcTrip && p.srcId) no.add(p.srcTrip + '/' + p.srcId); });
+  state.noMirror = [...no];
 }
 async function openMine(){
   await mineLoad();
@@ -2967,7 +3002,11 @@ function copyToTrip(ids){
   const items = tripIndex.filter(t => t.id !== state.id && t.id !== MINE_ID)
     .map(t => ({label: t.title || 'Senza nome', sub:'viaggio', ic:'🧳', value:t.id}));
   if(!isMine()) items.push({label: MINE_TITLE, sub:'la tua raccolta', ic:'◎', value:MINE_ID});
-  if(!items.length){ noteCard('Nessun altro viaggio', 'Crea prima un altro viaggio: qui compariranno tutti quelli che hai.'); return; }
+  /* il viaggio di destinazione può non esistere ancora: dai Miei posti si parte
+     spesso proprio da lì — si scelgono i posti e POI si decide che diventano un
+     viaggio. Mandare l'utente a crearlo altrove e poi tornare qui era un giro
+     inutile, e nel frattempo la selezione si perdeva. */
+  items.push({label:'Un viaggio nuovo…', sub:'lo creo adesso', ic:'✛', value:'__new'});
   pickCard({
     ic:'map', t:'Copia ' + picked.length + (picked.length === 1 ? ' tappa dove?' : ' tappe dove?'),
     p:['Le tappe arrivano in Brainstorming, senza giorno: le sistemi quando vuoi. L’originale resta dov’è.'],
@@ -2978,6 +3017,7 @@ function copyToTrip(ids){
         MIRROR_KEYS.forEach(k => { if(p[k] !== undefined) c[k] = JSON.parse(JSON.stringify(p[k])); });
         return c;
       });
+      if(id === '__new'){ copyToNewTrip(copies); return; }
       if(id === MINE_ID){
         const d = await mineLoad();
         copies.forEach(c => d.places.push(c));
@@ -2991,6 +3031,27 @@ function copyToTrip(ids){
         await touchIndex(id, t.title, Date.now());
         toast(copies.length + (copies.length === 1 ? ' tappa copiata' : ' tappe copiate') + ' in «' + (t.title || 'quel viaggio') + '»');
       }
+      selExit();
+    }
+  });
+}
+/* Il viaggio nuovo nasce con le tappe già dentro, e resta chiuso: non si porta
+   via lo schermo a chi sta ancora sistemando i suoi posti. Si scrive diretto in
+   IndexedDB come per gli altri viaggi non aperti (vedi copyToTrip). */
+function copyToNewTrip(copies){
+  promptCard({
+    ic:'map', t:'Come si chiama il viaggio?',
+    p:['Le ' + copies.length + ' tappe ci finiscono dentro subito, in Brainstorming. Il viaggio non si apre: lo trovi in <b>I tuoi viaggi</b>.'],
+    placeholder:'Marocco, primavera', yes:'Crea e copia',
+    onYes: async name => {
+      if(!db){ toast('Salvataggio non disponibile'); return; }
+      const t = fresh();
+      t.title = name;
+      t.places = copies;
+      await dbSet(tripKey(t.id), t);
+      await touchIndex(t.id, t.title, Date.now());
+      tripIndex = (await dbGet(INDEX_KEY)) || tripIndex;
+      toast(copies.length + (copies.length === 1 ? ' tappa copiata' : ' tappe copiate') + ' in «' + name + '»');
       selExit();
     }
   });
@@ -5197,6 +5258,11 @@ function inspWorthy(items, target){
 }
 
 async function inspSights(t){
+  /* Su un paese o una regione larga non esiste un "centro" da cui misurare: il
+     centro geometrico del Marocco è deserto, e il raggio tornava vuoto — l'app
+     diceva di guardare entro dieci chilometri da un punto che nessuno ha scelto.
+     Le cose da vedere di un paese si cercano nelle sue città principali. */
+  if(!t.cityish && inspWide(t)) return inspSightsWide(t);
   const radius = t.cityish ? 7 : 20;
   const refs = await wdWikiTitles(await wdNearbyAnything(t.lat, t.lng, radius, 4));
   let items = [];
@@ -5405,6 +5471,30 @@ async function inspInside(items, target){
     return false;
   };
   return items.filter(inside);
+}
+
+/* «zona larga»: un rettangolo di più di un grado e mezzo (~165 km) non ha un
+   centro utile. Vale per i paesi e per le regioni grandi, non per una città. */
+function inspWide(t){
+  const b = t && t.bbox;
+  return (t && (t.kind === 'paese')) ||
+    (!!b && (Math.abs(b[1] - b[0]) > 1.5 || Math.abs(b[3] - b[2]) > 1.5));
+}
+/* le cose da vedere di una zona larga: le sue città principali, poi quello che
+   c'è dentro ciascuna. Quattro città bastano — sono richieste vere alla rete. */
+async function inspSightsWide(t){
+  const cities = (await inspCities(t)).slice(0, 4);
+  if(!cities.length) return [];
+  const packs = await Promise.all(cities.map(c =>
+    inspSights({name:c.name, lat:c.lat, lng:c.lng, cityish:true, bbox:null, kind:'città'})
+      .catch(() => [])));
+  const seen = new Set(), out = [];
+  packs.flat().forEach(i => {
+    const k = (i.name || '').toLowerCase();
+    if(seen.has(k)) return;
+    seen.add(k); out.push(i);
+  });
+  return out;
 }
 
 async function inspCities(t){
@@ -5621,6 +5711,24 @@ async function inspFetchStatic(t, mode){
     return combined.filter(i => i.thumb).sort((x, y) => (y.pop || 0) - (x.pop || 0));
   }
 
+  /* modalità "cose da vedere" su un paese o una zona larga: non c'è una città
+     vicina da cui partire, e non serve — il db curato le ha già tutte. Prima
+     quello che è marcato con la regione cercata, altrimenti tutto il paese. */
+  if(!t.cityish && inspWide(t)){
+    const wide = [t.regionName, (t.name || '').split(',')[0]].filter(Boolean).map(s => s.toLowerCase());
+    const inRegion = attractions.filter(a => wide.includes((a.region || '').toLowerCase()));
+    const pool = inRegion.length ? inRegion
+      : [...attractions, ...allCities.flatMap(c => c.attractions || [])];
+    const seen = new Set();
+    const uniq = pool.filter(a => {
+      const k = (a.name || '').toLowerCase();
+      if(seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+    const items = (await fillMissingThumbs(uniq.map(inspiraPlaceToItem))).filter(i => i.thumb);
+    if(items.length) return items;
+  }
+
   /* modalità "cose da vedere": prima provo una città vera e propria del db,
      poi — se il punto cercato è un parco o un sito isolato, non una città —
      le attrazioni nazionali vicine. Stesso rattoppo delle foto mancanti; se
@@ -5709,7 +5817,9 @@ async function inspLoadPool(mode){
   insp.mode = mode || insp.mode;
   document.getElementById('inspHead').hidden = false;
   document.getElementById('inspWhere').textContent = insp.target.name + ' · ' + insp.target.kind +
-    (insp.mode === 'sights' && !insp.target.cityish ? ' · guardo entro 10 km dal centro' : '');
+    (insp.mode !== 'sights' || insp.target.cityish ? ''
+      : inspWide(insp.target) ? ' · le cose da vedere in tutta la zona'
+      : ' · guardo nei dintorni');
   document.getElementById('inspModeCities').classList.toggle('on', insp.mode === 'cities');
   document.getElementById('inspModeSights').classList.toggle('on', insp.mode === 'sights');
   say(insp.mode === 'cities'
@@ -6478,6 +6588,7 @@ function marker(p, n, color, brain){
         + '<span class="pop-t">'+esc(p.name)+'</span>';
   if(p.notes) h += '<span class="pop-n">'+esc(p.notes)+'</span>';
   (p.links||[]).forEach(l => h += '<a class="pop-l" href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||l.url)+' ↗</a>');
+  h += '<a class="pop-b" href="#" onclick="showInList(\''+p.id+'\');return false">Vedi in elenco</a>';
   h += '<a class="pop-b" href="#" onclick="edit(\''+p.id+'\');return false">Modifica</a>';  m.bindPopup(h);
   return m;
 }
@@ -6592,7 +6703,61 @@ function drawList(){
      subito aprendo l'app, non le tappe ancora da smistare. Sempre presente,
      come Giorno 1, anche a zero idee: da vuoto è il punto in cui si invita
      a Ispirami (vedi dayBlock). */
-  box.appendChild(dayBlock({id:null,name:'Brainstorming',color:BRAIN_SOLID,grad:BRAIN_GRAD}, orphans));
+  const mine = isMine();
+  if(mine) ensureCC();
+  box.appendChild(dayBlock(
+    {id:null, name: mine ? MINE_TITLE : 'Brainstorming', color:BRAIN_SOLID, grad:BRAIN_GRAD},
+    mine ? mineByArea(orphans) : orphans));
+  areaHeads = null;
+}
+
+/* Nei Miei posti l'ordine è geografico, non cronologico: si ordina per paese e
+   dentro per nome, e la prima tappa di ogni paese si porta dietro la riga di
+   titolo (areaHeads, letta da dayBlock). */
+let areaHeads = null;
+const NO_AREA = 'Senza paese';
+function mineAreaLabel(p){
+  return p.ccn || (p.cc ? (ccName(p.cc) || p.cc.toUpperCase()) : NO_AREA);
+}
+function mineByArea(list){
+  const sorted = [...list].sort((a, b) => {
+    const la = mineAreaLabel(a), lb = mineAreaLabel(b);
+    if(la !== lb){
+      if(la === NO_AREA) return 1;      // i posti senza paese in fondo
+      if(lb === NO_AREA) return -1;
+      return la.localeCompare(lb, 'it');
+    }
+    return (a.name || '').localeCompare(b.name || '', 'it');
+  });
+  const n = new Map();
+  sorted.forEach(p => { const l = mineAreaLabel(p); n.set(l, (n.get(l) || 0) + 1); });
+  areaHeads = new Map();
+  let prev = null;
+  sorted.forEach(p => {
+    const l = mineAreaLabel(p);
+    if(l !== prev){ areaHeads.set(p.id, {label:l, n:n.get(l)}); prev = l; }
+  });
+  return sorted;
+}
+
+/* Dal pin all'elenco: sulla mappa si riconosce il posto, ma note, foto e
+   comandi stanno in Tappe — e in una raccolta di duecento posti trovare la
+   riga a mano non è pensabile. */
+function showInList(id){
+  const p = (state.places || []).find(x => x.id === id);
+  if(!p) return;
+  map.closePopup();
+  collapsedDays.delete(p.dayId && dayOf(p.dayId) ? p.dayId : null);
+  document.body.classList.add('panel-open');
+  if(view !== 'list') setView('list'); else { updateTabsState(); drawList(); }
+  requestAnimationFrame(() => {
+    const box = document.getElementById('list');
+    const li = box && box.querySelector('.stop[data-place="' + id + '"]');
+    if(!li) return;
+    box.scrollTop += li.getBoundingClientRect().top - box.getBoundingClientRect().top - 10;
+    li.classList.add('flash');
+    setTimeout(() => li.classList.remove('flash'), 1700);
+  });
 }
 
 /* pillola "Parte da"/"Arriva a" ai due estremi del nastro: stessa base per
@@ -6868,6 +7033,13 @@ function dayBlock(d, list){
   ol.className = 'rail';
   if(d.id) ol.appendChild(baseStopLi(d, 'baseFromId', 'Parte da', ICON_HOUSE_OUT, list[0] || null));
   list.forEach((p,i) => {
+    const head = areaHeads && areaHeads.get(p.id);
+    if(head){
+      const h = document.createElement('li');
+      h.className = 'area-hd';
+      h.innerHTML = '<b>' + esc(head.label) + '</b><i>' + head.n + (head.n === 1 ? ' posto' : ' posti') + '</i>';
+      ol.appendChild(h);
+    }
     const li = document.createElement('li');
     li.className = 'stop' + (d.id ? '' : ' brain');
     li.dataset.place = p.id;
@@ -7370,6 +7542,7 @@ function selDelAsk(){
       const ids = new Set(picked);
       if(freshPlaceId && ids.has(freshPlaceId)) freshPlaceId = null;
       if(editing && ids.has(editing.id)){ veil.hidden = true; editing = null; }
+      mineForget(state.places.filter(p => ids.has(p.id)));
       state.places = state.places.filter(p => !ids.has(p.id));
       const n = moving.length, nome = moving[0].name;
       selExit();
@@ -9922,6 +10095,7 @@ function deletePlace(id){
     no: 'Lascia stare', yes: 'Elimina la tappa',
     onYes: () => {
       if(id === freshPlaceId) freshPlaceId = null;
+      mineForget(state.places.filter(x => x.id === id));
       state.places = state.places.filter(x => x.id !== id);
       if(editing && editing.id === id){ veil.hidden = true; editing = null; }
       save(); render();
