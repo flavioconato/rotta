@@ -5,7 +5,7 @@
    I tile sono a numero chiuso: oltre il limite si buttano i più vecchi,
    altrimenti dopo qualche esplorazione l'app occuperebbe centinaia di MB. */
 
-const VERSION = 'v95';
+const VERSION = 'v104';
 const APP_CACHE = 'rotta-app-' + VERSION;
 /* La cache delle mappe NON porta la versione: le piastrelle scaricate prima di
    partire devono sopravvivere agli aggiornamenti dell'app, altrimenti un
@@ -95,6 +95,8 @@ self.addEventListener('fetch', e => {
   }
 
   // Tile della mappa: prima la cache, poi la rete che aggiorna in silenzio
+  /* cartocdn resta nell'elenco solo per servire le mappe offline scaricate
+     prima della v104, finché l'utente non le riscarica */
   if(/basemaps\.cartocdn\.com|tile\.openstreetmap\.org/.test(url.hostname)){
     e.respondWith((async () => {
       const off = await caches.open(TILE_OFFLINE);

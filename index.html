@@ -31,16 +31,19 @@
   --brain-tex-v:linear-gradient(180deg,#BFC5C8 0%,#AAB2B6 55%,#B7BDC0 100%);
   --brain-flat:#A2AAAE;
   --ink:#22303A;
-  --ink-2:#EDEFEA;
-  --ink-3:#DDE2DB;
-  --ink-4:#BFC7BF;
-  --paper:#F5F2EA;
-  --paper-2:#E4EAE3;
+  /* v98 — fondo neutro quasi bianco: il colore vive negli accenti di sezione
+     (rosso Tappe, miele Spese, azzurro Prenotazioni, verde Diario), non nel
+     fondo. Il crema di prima ingialliva tutto. */
+  --ink-2:#F1F3F5;
+  --ink-3:#E2E6EA;
+  --ink-4:#C3CAD1;
+  --paper:#FBFBFC;
+  --paper-2:#E8ECF0;
   --moss:#2E9E7C;
   --ochre:#E7A93C;
   --ochre-2:#F4CD82;
   --rust:#E5484D;
-  --fog:#5C6863;
+  --fog:#5A6672;
   --sage:#4FB6E0;
   --sage-2:#2E93BE;
   --route:#E5484D;
@@ -65,7 +68,7 @@ body{
     radial-gradient(760px 560px at 98% 8%, rgba(231,169,60,.09), transparent 58%),
     radial-gradient(680px 520px at 82% 96%, rgba(46,158,124,.08), transparent 60%),
     radial-gradient(560px 420px at 18% 104%, rgba(229,72,77,.06), transparent 60%),
-    linear-gradient(165deg,#F2EFE6 0%,#EBE7DB 55%,#F2EFE6 100%);
+    linear-gradient(165deg,var(--paper) 0%,var(--ink-2) 55%,var(--paper) 100%);
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
@@ -88,7 +91,10 @@ button:active{transform:scale(.97)}
   body:not(.panel-open) .panel{overflow:hidden;opacity:0;pointer-events:none;transform:scale(.97)}
 }
 .panel{
-  background:linear-gradient(165deg,#FAF8F2,#F1EDE3 65%);
+  /* v98 — il fondo segue la palette: se un domani cambia --paper, cambia anche
+     questo. Prima era il crema scritto a mano, e la colonna restava giallina
+     mentre tutto il resto era già passato al neutro. */
+  background:linear-gradient(165deg,var(--paper),var(--ink-2) 68%);
   display:flex;flex-direction:column;min-width:0;min-height:0;
   border-right:1px solid var(--ink-3);z-index:1200;
   position:relative;transition:opacity .26s var(--ease),transform .3s var(--ease);
@@ -106,64 +112,43 @@ button:active{transform:scale(.97)}
 }
 
 /* ---------- filtri mappa (vista "solo mappa") ---------- */
-/* stack verticale in alto a destra, sopra i pin ma sotto sheet/veil (z:2000).
-   Bottoni tondi come lo zoom di Leaflet (in basso a destra), non pillole con
-   testo: a 44px il testo diventa illeggibile e compete con i pin. */
+/* v97 — riga in basso, sopra la barra: pastiglie che dicono a parole cosa
+   stanno mostrando. I tondi in alto a destra erano tre icone mute, e lo stato
+   del filtro si scopriva solo dal fumetto che compariva dopo il tocco. */
 .map-filters{
-  position:absolute;z-index:850;
-  top:calc(14px + env(safe-area-inset-top,0px));right:14px;
-  display:flex;flex-direction:column;gap:8px;
+  position:absolute;z-index:850;right:12px;
+  bottom:calc(120px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;align-items:stretch;gap:8px;
+  width:176px;pointer-events:none;
 }
-.mf-wrap{position:relative}
-/* il ⋯ non è un filtro: uno stacco più ampio lo separa dai due sopra */
-.mf-sep{margin-top:6px}
+.mf-wrap{position:relative;pointer-events:auto}
+/* "inquadra" non è un filtro: uno stacco più ampio lo separa dai due sopra.
+   In colonna il margine va sopra: a sinistra restringeva la pastiglia. */
+.mf-sep{margin:6px 0 0}
 .map-fbtn{
-  position:relative;width:44px;height:44px;border-radius:50%;
-  border:1px solid var(--ink-3);background:rgba(255,255,255,.92);
+  position:relative;width:100%;min-height:38px;padding:0 14px;border-radius:999px;
+  border:1px solid var(--ink-3);background:rgba(255,255,255,.94);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
-  display:grid;place-items:center;color:var(--fog);cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;color:var(--ink);cursor:pointer;
+  font-size:13px;font-weight:600;letter-spacing:-.005em;
   box-shadow:0 6px 16px rgba(34,48,58,.18);
   transition:background .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease),transform .15s var(--ease);
 }
+/* 44px di bersaglio senza ingrossare la pastiglia */
+.map-fbtn::after{content:"";position:absolute;inset:-3px 0;border-radius:999px}
 .map-fbtn:active{transform:scale(.94)}
-/* icona del bottone 1: SVG diretto dentro il bottone (nessun wrapper, a
-   differenza del bottone 2 che alterna icona/testo dentro .mf-ic) */
-.map-fbtn > svg:not(.mf-ring){width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.map-fbtn > svg:not(.mf-ring) .trail{opacity:.55}
-.map-fbtn > svg:not(.mf-ring) .dot{fill:currentColor;stroke:none}
-.map-fbtn .mf-ic{display:grid;place-items:center;width:22px;height:22px}
-.map-fbtn .mf-ic svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.map-fbtn .mf-ic svg .trail{opacity:.55}
-.map-fbtn .mf-ic svg .dot{fill:currentColor;stroke:none}
-.map-fbtn .mf-txt{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;width:auto;height:auto}
+.map-fbtn > svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.map-fbtn > svg .trail{opacity:.55}
+.map-fbtn > svg .dot{fill:currentColor;stroke:none}
+.map-fbtn .mf-lab{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
 .map-fbtn.on-days{background:linear-gradient(135deg,#E0454B,#D3323A);border-color:transparent;color:#fff}
 .map-fbtn.on-brain{background:linear-gradient(135deg,var(--sage),var(--sage-2));border-color:transparent;color:#fff}
 .map-fbtn.on-day{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:transparent;color:#3A2707}
-/* anello di progresso del bottone-giorno: pieno = "sei al giorno N su M",
-   invisibile quando il filtro è spento */
-.mf-ring{
-  position:absolute;inset:-4px;pointer-events:none;width:52px;height:52px;
-  transform:rotate(-90deg);
+.map-fbtn:disabled{opacity:.5;cursor:default}
+
+@media (min-width:881px){
+  .map-filters{bottom:88px}
 }
-.mf-ring circle{
-  fill:none;stroke:var(--ochre-2);stroke-width:2.4;stroke-linecap:round;
-  stroke-dasharray:132;stroke-dashoffset:132;opacity:0;
-  transition:stroke-dashoffset .25s var(--ease),opacity .2s var(--ease);
-}
-.map-fbtn.on-day .mf-ring circle{opacity:1}
-/* etichetta a comparsa: dice a parole lo stato appena impostato, poi svanisce.
-   Le icone restano lette una volta capito il significato, ma la prima volta
-   (o coi tanti giorni di un viaggio lungo) il testo toglie ogni dubbio. */
-.mf-flyout{
-  position:absolute;top:50%;right:calc(100% + 10px);
-  transform:translateY(-50%) translateX(6px);
-  background:rgba(34,48,58,.94);color:#fff;font-size:12.5px;font-weight:600;
-  white-space:nowrap;padding:7px 13px;border-radius:999px;
-  box-shadow:0 10px 24px rgba(0,0,0,.28);
-  opacity:0;pointer-events:none;
-  transition:opacity .22s var(--ease),transform .22s var(--ease);
-}
-.mf-flyout.show{opacity:1;transform:translateY(-50%) translateX(0)}
 
 /* La mappa da sola non dice come cominciare: questa lente è l'unico invito
    visibile a chi apre l'app sul mondo intero. Sta a sinistra perché non è un
@@ -294,26 +279,35 @@ body:not(.panel-open) .fabs{opacity:0;pointer-events:none}
 @media (min-width:881px){ .selbar{left:var(--gap);bottom:calc(var(--gap) + 96px)} }
 @media (max-width:880px){ .selbar{width:100%} }
 @media (max-width:600px){ .selbar{bottom:calc(80px + env(safe-area-inset-bottom,0px))} }
+/* v96 — la barra dice prima cosa si sta facendo e poi come: una riga in alto con
+   il conto e la ✕, sotto le azioni con le parole. Quattro icone dello stesso peso
+   non si distinguevano (il giorno e la valigia si riconoscevano solo da vicino, e
+   l'aeroplanino non diceva se mandava un file o un collegamento), e queste azioni
+   si fanno una volta ogni tanto: ogni volta si riparte da zero, e una parola non
+   si deve indovinare. Il rosso resta al cestino, al tocco. */
 .selbar-in{
-  pointer-events:auto;display:flex;align-items:center;gap:8px;max-width:100%;
+  pointer-events:auto;display:flex;flex-direction:column;align-items:stretch;gap:7px;
+  width:100%;max-width:420px;
   background:var(--paper);border:1px solid var(--ink-3);border-radius:16px;
-  padding:7px 7px 7px 14px;box-shadow:0 16px 34px -14px rgba(34,48,58,.5)
+  padding:9px 10px 10px;box-shadow:0 16px 34px -14px rgba(34,48,58,.5)
 }
-.selbar-n{flex:0 0 auto;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
-/* le quattro azioni hanno lo stesso peso: nessuna è più importante, e il rosso
-   resta al cestino — al tocco, dove significa qualcosa */
-.selbar-acts{display:flex;align-items:center;gap:4px;margin-left:auto}
+.selbar-hd{display:flex;align-items:center;gap:8px;padding:0 0 0 4px}
+.selbar-n{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.selbar-n i{font-style:normal;font-weight:500;color:var(--fog)}
+.selbar-acts{display:flex;align-items:stretch;gap:5px}
 .selbar-in button{
-  flex:none;width:40px;height:40px;border:0;border-radius:11px;padding:0;
-  display:grid;place-items:center;cursor:pointer;background:none;color:var(--ink)
+  flex:1 1 0;min-width:0;border:0;border-radius:11px;padding:7px 2px 6px;
+  display:grid;justify-items:center;gap:3px;cursor:pointer;background:var(--ink-2);color:var(--ink)
 }
-.selbar-in button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.selbar-in button:hover{background:var(--ink-2)}
+.selbar-in button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.selbar-in button i{font-style:normal;font-size:10.5px;font-weight:600;line-height:1;white-space:nowrap}
+.selbar-in button:hover{background:var(--ink-3)}
 .selbar-in button.trash:hover,.selbar-in button.trash:active{background:var(--route);color:#fff}
-.selbar-x{color:var(--fog) !important;margin-left:2px;position:relative}
-.selbar-x::before{content:'';position:absolute;left:-3px;top:9px;bottom:9px;width:1px;background:var(--ink-3)}
-/* la barra deve stare in 360 px: l'etichetta è corta e le azioni sono icone */
-@media (max-width:430px){ .selbar-in{padding:6px 6px 6px 12px;gap:6px} }
+.selbar-in button[hidden]{display:none}
+.selbar-x{flex:0 0 auto !important;width:30px;height:30px;padding:0 !important;place-items:center;background:none !important;color:var(--fog) !important}
+.selbar-x svg{width:17px;height:17px}
+.selbar-day-n{font-size:9.5px;font-weight:700;stroke:none;fill:currentColor}
+@media (max-width:430px){ .selbar-in button i{font-size:10px} }
 body.selmode .fabs{opacity:0;pointer-events:none}
 /* in selezione il tocco scegli, non apre: niente sollevamento al passaggio */
 body.selmode .stop-card:hover{transform:none;box-shadow:none;border-color:var(--ink-3)}
@@ -354,6 +348,8 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
   .stop.sel .stop-card,.alt-item.sel,.stop.sel .node-n{animation:none}
 }
 #btnAddPlace{background:linear-gradient(135deg,#E0454B,#D3323A)}
+/* nel Diario lo stesso ＋ prende il colore della sezione */
+body[data-view="diary"] #btnAddPlace{background:linear-gradient(135deg,#289073,#1B7A5E)}
 #btnDay{background:var(--paper);color:#C22E36;border:1px solid rgba(211,50,58,.4)}
 #btnExpense{background:linear-gradient(135deg,#F3C877,var(--ochre));color:#3A2707}
 #btnBooking{background:linear-gradient(135deg,#2A93BE,#1E7FA6)}
@@ -365,12 +361,45 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
 #btnPhotos{background:var(--paper);color:#15654E;border:1px solid rgba(27,122,94,.4)}
 
 /* ---------- header ---------- */
-.head{padding:.7rem 1rem .62rem;flex:none;border-bottom:1px solid var(--ink-3);position:relative}
-.head::after{
-  content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:1px;
-  background:linear-gradient(90deg,var(--route),var(--ochre) 26%,var(--sage) 52%,var(--moss) 74%,transparent 96%);opacity:.5
+/* v98 — la testata non è l'intestazione di un documento: niente titolo grande
+   in mezzo al bianco con il filetto arcobaleno sotto. Sopra, piccolo e nel
+   colore della sezione, dove sei; poi il nome del viaggio e un solo tasto
+   scuro; sotto la riga dei dati. Fondo velato: scorrendo, l'elenco ci passa
+   dietro invece di sparire contro un bordo. */
+.head{
+  padding:0 .7rem;min-height:42px;display:flex;align-items:center;
+  flex:none;position:relative;z-index:3;
+  background:rgba(251,251,252,.88);
+  -webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);
+  box-shadow:0 1px 0 rgba(34,48,58,.07),0 10px 22px -18px rgba(34,48,58,.5)
 }
-.head-row{display:flex;align-items:center;gap:9px}
+body[data-view="list"] .head{--sec:#D3323A}
+body[data-view="cost"] .head{--sec:#8A5E0E}
+body[data-view="book"] .head{--sec:#1B6F91}
+body[data-view="diary"] .head{--sec:#1B7A5E}
+/* la sezione dove sei si legge dal colore di questa barretta (e dal tab acceso
+   in basso, che lo dice a parole): niente occhiello che si prende una riga */
+.head-bar{
+  flex:none;width:3px;height:19px;border-radius:2px;
+  background:var(--sec,var(--fog))
+}
+.head-row{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+/* comprimi/espandi: sul telefono stretto resta il solo segno, dai 420px in su
+   torna la parola. È un'utilità, non l'azione della schermata. */
+.head-row .tool-pill{
+  margin-left:auto;flex:none;min-height:26px;padding:0 6px;font-size:11px;
+  background:none;border:0;color:var(--fog)
+}
+.head-row .tool-pill:hover:not(:disabled){background:var(--ink-2);color:var(--ink)}
+.head-row .tool-pill svg{width:14px;height:14px}
+.head-row .tool-pill span{display:none}
+@media (min-width:420px){
+  .head-row .tool-pill{padding:0 9px}
+  .head-row .tool-pill span{display:inline}
+}
+/* "Salvato" era sempre verde e non diceva niente: si vede solo quando il
+   salvataggio non è andato, o mentre sta andando */
+.save-state.ok{display:none}
 .head-row .head-ico{margin-left:2px}
 /* Cinque icone e il nome del viaggio sulla stessa riga non ci stanno: il
    pannello è largo 400px e il titolo — che è l'intestazione della schermata,
@@ -382,7 +411,7 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
   .head-ico svg{width:17px;height:17px}
 }
 .head-ico{
-  flex:none;width:33px;height:33px;border-radius:11px;display:grid;place-items:center;
+  position:relative;flex:none;width:33px;height:33px;border-radius:11px;display:grid;place-items:center;
   font-size:15px;background:var(--ink-2);border:1px solid var(--ink-3);transition:.16s var(--ease)
 }
 .head-ico:hover{border-color:var(--sage);transform:translateY(-1px)}
@@ -396,6 +425,32 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
    altri, si nota solo quando lo si cerca */
 .head-ico.guide{margin-left:auto;color:var(--fog)}
 .head-ico.guide:hover{color:var(--ink)}
+.head-ico .tab-new{top:2px;right:2px}
+/* v97 — la riga dei comandi che valgono per tutta la sezione: in cima
+   all'elenco e scritti a parole. In testata erano due icone mute in mezzo al
+   nome del viaggio, e comprimi/espandi serve a quattro sezioni, non solo
+   all'itinerario. */
+.list-tools{
+  flex:none;display:flex;align-items:center;justify-content:flex-end;
+  gap:8px;padding:9px 16px 3px
+}
+.tool-pill{
+  position:relative;display:inline-flex;align-items:center;gap:7px;
+  min-height:31px;padding:0 12px;border-radius:999px;white-space:nowrap;
+  border:1px solid var(--ink-3);background:var(--ink-2);color:var(--fog);
+  font-size:12.5px;font-weight:600;cursor:pointer;transition:.16s var(--ease)
+}
+.tool-pill::after{content:"";position:absolute;inset:-7px 0}
+.tool-pill svg{
+  width:16px;height:16px;flex:none;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round
+}
+.tool-pill svg .dot{fill:currentColor;stroke:none}
+.tool-pill:hover:not(:disabled){background:var(--ink-3);color:var(--ink)}
+.tool-pill:disabled{opacity:.42;cursor:default}
+.tool-pill.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.tool-pill .tab-new{top:1px;right:5px}
+.tool-pill[hidden]{display:none}
 .save-state{
   flex:none;font-size:10px;letter-spacing:.06em;color:var(--fog);
   display:inline-flex;align-items:center;gap:5px;white-space:nowrap
@@ -407,10 +462,9 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
 .save-state.warn::before{background:var(--ochre);box-shadow:0 0 8px var(--ochre)}
 #tripTitle{
   flex:1;min-width:0;background:none;border:0;padding:0;
-  font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:19px;line-height:1.2;
-  color:var(--ink);letter-spacing:-.018em;
-  background-image:linear-gradient(100deg,var(--ink) 55%,var(--ochre));
-  -webkit-background-clip:text;background-clip:text;
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:16.5px;line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:var(--ink);letter-spacing:-.02em;
 }
 #tripTitle::placeholder{color:var(--ink-4);-webkit-text-fill-color:var(--ink-4)}
 .chip{
@@ -464,8 +518,11 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
 .insp-bd{flex:1;min-width:0}
 .insp-name{display:block;font-size:13.5px;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .insp-sub{display:block;font-size:11px;color:var(--fog);margin-top:1px}
-.insp-foot{display:flex;gap:8px;margin-top:10px}
-.insp-foot .chip{flex:1 1 0;justify-content:center;min-width:0}
+.insp-foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+/* le pastiglie qui portano frasi intere («Prendi le prime 24…», «Fammi un
+   itinerario…»): su una riga sola il testo usciva dal tasto, quindi qui vanno
+   a capo e, se non ci stanno in due, scendono sotto */
+.insp-foot .chip{flex:1 1 148px;justify-content:center;min-width:0;white-space:normal;line-height:1.25;padding:8px 12px}
 /* riga di servizio sopra un elenco a spunte (checkCard): quante sono scelte e
    il passa-tutte, che nel caso di venti voci fa risparmiare venti tocchi */
 .check-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 6px;font-size:11.5px;color:var(--fog)}
@@ -491,8 +548,10 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
 .base-hint button:hover{background:rgba(94,178,194,.18)}
 /* dove atterrano le tappe che aggiungi adesso: prima era una regola invisibile
    (l'ultimo giorno toccato), e quando sbagliava la tappa andava spostata a mano */
+/* v97 — le due righe di servizio stanno insieme sotto i risultati */
+.q-scopes{display:flex;flex-direction:column;gap:2px;margin:9px 0 2px}
 .dest-pill{
-  display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;
+  display:flex;align-items:center;gap:8px;width:100%;margin:0;
   background:var(--ink-2);border:1px solid var(--ink-3);border-radius:999px;
   padding:8px 14px;font:inherit;font-size:12.5px;color:var(--fog);cursor:pointer;
   transition:border-color .15s,background .15s
@@ -507,7 +566,7 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
 /* dove cerca la ricerca: una riga di servizio, non una pastiglia — è
    un'informazione che serve solo quando sbaglia */
 .q-scope{
-  display:flex;align-items:center;gap:8px;width:100%;margin:7px 0 0;
+  display:flex;align-items:center;gap:8px;width:100%;margin:0;
   background:none;border:0;padding:2px 2px;font:inherit;font-size:11.5px;
   color:var(--fog);cursor:pointer;text-align:left
 }
@@ -519,6 +578,27 @@ body.selmode .alt-item:not(.sel){opacity:.44;filter:saturate(.5)}
 .added-head{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);font-family:"JetBrains Mono",monospace}
 .added-row{display:flex;align-items:center;gap:9px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:var(--r-sm);padding:7px 9px}
 .added-row .dest-dot{width:10px;height:10px}
+/* v98 — una matita da sola non dice cosa aprirà: qui la parola c'è */
+.added-row .ed{
+  flex:none;display:inline-flex;align-items:center;gap:5px;
+  background:none;border:1px solid var(--ink-3);border-radius:999px;
+  padding:4px 9px 4px 7px;font:inherit;font-size:11.5px;font-weight:600;
+  color:var(--fog);cursor:pointer;transition:.15s
+}
+.added-row .ed svg{
+  width:13px;height:13px;flex:none;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round
+}
+.added-row .ed:hover{color:var(--ink);border-color:var(--ink-4);background:#fff}
+.added-row .rm{
+  flex:none;display:inline-flex;align-items:center;background:none;border:0;
+  padding:5px;border-radius:8px;color:var(--fog);cursor:pointer;transition:.15s
+}
+.added-row .rm svg{
+  display:block;width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round
+}
+.added-row .rm:hover{color:#C4272C;background:rgba(196,39,44,.08)}
 .added-nm{flex:1 1 auto;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .added-nm span{display:block;font-size:11px;color:var(--fog)}
 .added-row button{
@@ -559,6 +639,7 @@ span.day-name{cursor:pointer}
    11px di pallino sarebbero un bersaglio impossibile sul telefono. */
 .swatch.sw-btn{cursor:pointer;position:relative;transition:transform .14s}
 .swatch.sw-btn::after{content:'';position:absolute;inset:-9px}
+.day-date-wrap .swatch.sw-btn::after{inset:-9px 0 -9px -9px}
 .swatch.sw-btn:hover{transform:scale(1.4)}
 .color-pop{
   position:fixed;z-index:2400;background:var(--ink-2);border:1px solid var(--ink-3);
@@ -645,11 +726,18 @@ span.day-name{cursor:pointer}
 .tour-card{
   position:fixed;z-index:2600;box-sizing:border-box;
   width:min(420px,calc(100vw - 32px));
+  /* tetto d'altezza + colonna flessibile: così l'elenco interno si stringe e il
+     piede coi pulsanti resta sempre visibile. Senza, un riquadro con molte
+     righe (l'itinerario per città) sfondava il bordo basso dello schermo. */
+  max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);
+  display:flex;flex-direction:column;
   background:var(--paper);border:1px solid var(--ink-3);border-radius:20px;
   padding:18px 19px 15px;box-shadow:0 30px 70px rgba(0,0,0,.5);
   opacity:0;transform:translateY(14px) scale(.96);
   transition:opacity .32s var(--ease),transform .38s var(--ease)
 }
+.tour-card > *{flex:0 0 auto}
+.tour-card .pick-list{flex:1 1 auto;min-height:0;max-height:none}
 .tour-card.show{opacity:1;transform:none}
 .tour-card[hidden]{display:none}
 .tour-top{display:flex;align-items:center;gap:11px;margin-bottom:11px}
@@ -714,6 +802,22 @@ span.day-name{cursor:pointer}
   padding:5px 9px 5px 8px;
 }
 .day-date-wrap .swatch{box-shadow:none}
+.day-date-wrap{position:relative}
+.day-date-wrap.no-date{border-style:dashed;border-color:var(--ink-4);background:none}
+/* il campo senza data mostrerebbe "gg/mm/aaaa": lo si svuota e ci si scrive
+   sopra l'etichetta, che non intercetta il tocco (va al campo, che apre il
+   calendario del telefono) */
+.day-date-wrap.no-date .day-date{color:transparent;width:66px}
+.day-date-wrap.no-date .day-date::-webkit-calendar-picker-indicator{opacity:0}
+.day-date-ph{
+  position:absolute;left:25px;top:50%;transform:translateY(-50%);
+  display:inline-flex;align-items:center;gap:5px;pointer-events:none;
+  font-size:11.5px;font-weight:600;color:var(--fog);white-space:nowrap
+}
+.day-date-ph svg{
+  width:14px;height:14px;flex:none;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round
+}
 /* il campo data misura 16 px: gli si dà un corpo di 44 px e si riprende lo
    spazio con margini negativi, così il bersaglio cresce e la pillola no */
 .day-date{
@@ -727,25 +831,18 @@ span.day-name{cursor:pointer}
   font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em
 }
 .day-stat{color:var(--fog);flex:none}
-/* la riga dei numeri \u00e8 un interruttore: pochi numeri in vista, tutti gli altri
-   al tocco. Sembra testo, non un pulsante: il divario \u00e8 il triangolino. */
-.day-stat-btn{
-  background:none;border:0;padding:2px 0;margin:0;font:inherit;color:var(--fog);
-  display:inline-flex;align-items:center;gap:5px;cursor:pointer;position:relative
+.wx-help{position:relative}
+.wx-help svg{
+  width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.85
 }
-.day-stat-btn::after{content:'';position:absolute;inset:-11px -8px}
-.day-stat-btn i{font-style:normal;font-size:10px;opacity:.7;transition:transform .16s}
-.day-stat-btn:hover{color:var(--ink)}
-.day-stat-btn.on{color:var(--ink)}
-.day-stat-btn.on i{transform:rotate(180deg)}
-.day-info{
-  flex:1 0 100%;margin:6px 0 0;padding:8px 10px;border-radius:10px;
-  background:var(--ink-2);border:1px solid var(--ink-3)
+.wx-help i{
+  position:absolute;right:0;bottom:1px;font-style:normal;font-size:9.5px;
+  font-weight:800;line-height:1;color:var(--fog)
 }
-.day-info .di-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:3px 0}
-.day-info .di-row + .di-row{border-top:1px solid var(--ink-3)}
-.day-info .di-k{font-size:12px;color:var(--fog)}
-.day-info .di-v{font-size:12px;color:var(--ink);text-align:right}
+/* v98 — il riepilogo che si apriva dalla freccetta è sparito: nessuno capiva
+   che quel triangolino andasse toccato, e i numeri che contano (tappe e km)
+   sono già lì in chiaro. */
 /* ---------- pillole "Parte da" / "Arriva a" nel nastro ---------- */
 .node.base-node svg{fill:none;stroke:var(--ink);stroke-width:1.7}
 .base-pill-hit{
@@ -797,8 +894,20 @@ span.day-name{cursor:pointer}
   border-radius:999px;padding:4px 11px;font-size:11px;letter-spacing:.02em;
   box-shadow:0 4px 14px rgba(34,48,58,.10);pointer-events:none
 }
+.danger{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.danger .ic-trash{
+  width:15px;height:15px;flex:none;fill:none;stroke:currentColor;
+  stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round
+}
 .icon-btn{color:var(--fog);padding:5px 6px;border-radius:8px;font-size:13px;line-height:1;transition:.15s}
+/* cestino e matita sono disegni, non glifi: stessa misura in ogni elenco */
+.icon-btn > svg{
+  display:block;width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round
+}
 .icon-btn:hover{color:var(--ink);background:var(--ink-3)}
+/* il cestino si tinge di rosso solo al tocco, come in fondo al giorno */
+.icon-btn[title^="Elimina"]:hover{color:#C4272C;background:rgba(196,39,44,.08)}
 .icon-btn.danger{color:var(--fog);border:0;border-radius:8px;padding:5px 6px;font-size:13px;font-weight:400}
 .icon-btn.danger:hover{color:#C4272C;background:rgba(229,72,77,.1)}
 /* i comandi del giorno (meteo, info, altre azioni): stessa
@@ -903,8 +1012,8 @@ span.day-name{cursor:pointer}
 .stop-card .links{margin-top:3px;flex-wrap:nowrap;overflow:hidden}
 .stop-card .links a{flex:none}
 .stop-menu{flex:none;align-self:center;margin-right:6px;position:relative}
-/* il ⋯ della tappa: alone asimmetrico, largo verso il bordo e stretto verso la
-   scheda, che resta toccabile per aprire il dettaglio */
+/* il ⋯ della tappa non c'è più (le azioni stanno tutte nella scheda), ma la
+   regola resta per le righe che ancora lo usano altrove */
 .stop-menu::after{content:'';position:absolute;inset:-11px -12px -11px -5px}
 .stop-name{font-weight:600;font-size:14px;line-height:1.25;text-align:left}
 .stop-note{color:var(--fog);font-size:12.5px;line-height:1.4;margin:5px 0 0;white-space:pre-wrap}
@@ -975,14 +1084,15 @@ body[data-view="list"] .empty::before{background:rgba(229,72,77,.12);border-colo
 /* la pastiglia dell'area sta in testata accanto al nome: è un dato del viaggio,
    non un comando, quindi non ha l'aria di un pulsante finché non è vuota */
 .area-pill{
-  flex:none;max-width:44%;display:inline-flex;align-items:center;gap:5px;position:relative;
-  background:var(--ink-2);border:1px solid var(--ink-3);border-radius:999px;
-  padding:3px 10px;font-size:11.5px;color:var(--fog);cursor:pointer;line-height:1.5
+  flex:0 1 auto;min-width:52px;max-width:44%;display:inline-flex;align-items:center;gap:5px;position:relative;
+  background:color-mix(in srgb,var(--sec,var(--fog)) 11%,transparent);
+  border:0;border-radius:999px;
+  padding:3px 9px;font-size:11px;color:var(--fog);cursor:pointer;line-height:1.5
 }
 .area-pill b{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .area-pill::after{content:'';position:absolute;inset:-10px -4px}
-.area-pill:hover{border-color:var(--ink-4)}
-.area-pill.unset{border-style:dashed}
+.area-pill:hover{background:color-mix(in srgb,var(--sec,var(--fog)) 18%,transparent)}
+.area-pill.unset{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sec,var(--fog)) 34%,transparent)}
 .area-pill.unset b{color:var(--fog);font-weight:500}
 .area-picked{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
 .area-tag{
@@ -1095,12 +1205,17 @@ body.stopdrag .stop-top,body.stopdrag .alt-item{cursor:grabbing}
 #toast{
   position:fixed;z-index:1900;left:50%;transform:translateX(-50%) translateY(10px);
   bottom:calc(96px + env(safe-area-inset-bottom,0px));
-  background:rgba(34,48,58,.95);color:#fff;font-size:12.5px;font-weight:600;
-  padding:10px 17px;border-radius:999px;box-shadow:0 14px 36px rgba(0,0,0,.45);
+  background:rgba(34,48,58,.82);-webkit-backdrop-filter:blur(8px) saturate(1.3);backdrop-filter:blur(8px) saturate(1.3);
+  color:#fff;font-size:12.5px;font-weight:600;
+  padding:10px 17px;border-radius:999px;box-shadow:0 14px 36px rgba(0,0,0,.35);
   opacity:0;pointer-events:none;transition:opacity .22s var(--ease),transform .22s var(--ease);
-  max-width:calc(100vw - 40px);text-align:center
+  max-width:calc(100vw - 40px);text-align:center;touch-action:pan-x
 }
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* v96 — un messaggio che si può zittire può anche essere più discreto: dura 1,8 s
+   invece di 2,6, il fondo è velato con la sfocatura sotto, e si scaccia con un
+   tocco o strisciandolo via. Prende i tocchi solo mentre è in vista. */
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;cursor:pointer}
+#toast.swipe{transition:opacity .16s var(--ease),transform .16s var(--ease)}
 body.picking #map{cursor:crosshair}
 body.picking::after{
   content:"Tocca la mappa per aggiungere una tappa";
@@ -1291,13 +1406,14 @@ body[data-view="diary"] .sec-tip{--tip-ink:#14614A;--tip-line:#BFE0D3;--tip-bg:#
 /* nella vista solo mappa non c'è pannello che ospiti la card: il tip diventa
    un fumetto ancorato ai due filtri, che se ne va al primo tocco sulla mappa */
 .mf-tip{
-  position:absolute;top:0;right:calc(100% + 11px);width:min(252px,calc(100vw - 92px));
+  position:absolute;right:0;bottom:calc(100% + 11px);
+  width:min(300px,calc(100vw - 40px));
   background:var(--ink);color:var(--paper);border-radius:var(--r-sm);
   padding:11px 13px;box-shadow:0 18px 38px rgba(0,0,0,.34);
   animation:tipIn .28s var(--ease)
 }
 .mf-tip::after{
-  content:"";position:absolute;right:-5px;top:18px;width:10px;height:10px;
+  content:"";position:absolute;right:22px;bottom:-5px;width:10px;height:10px;
   background:var(--ink);transform:rotate(45deg)
 }
 .mf-tip b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:12.5px;margin-bottom:3px}
@@ -1339,6 +1455,19 @@ textarea.field{min-height:84px;resize:vertical;line-height:1.45}
 .type-opt:hover{border-color:var(--sage);color:var(--ink);transform:translateY(-1px)}
 .type-opt.on{background:linear-gradient(135deg,var(--ochre-2),var(--ochre));border-color:var(--ochre);color:#0F2830;font-weight:600;box-shadow:0 6px 16px rgba(79,163,181,.28)}
 .type-opt.on svg{fill:#0F2830}
+/* Nella scheda tappa il tipo non è più una griglia di diciotto icone ma quattro
+   pastiglie scritte, la prima indovinata dal nome, più «Altro…». */
+#fType{display:flex;flex-wrap:wrap;gap:7px;grid-template-columns:none}
+#fType .type-opt{
+  flex-direction:row;gap:7px;padding:9px 13px;border-radius:999px;
+  font-size:12.5px;line-height:1.2;text-align:left;white-space:nowrap
+}
+#fType .type-opt svg{width:17px;height:17px}
+.type-more{
+  padding:9px 13px;border:1px dashed var(--ink-4);border-radius:999px;background:none;
+  font-size:12.5px;color:var(--fog);transition:.16s var(--ease)
+}
+.type-more:hover{border-color:var(--sage);border-style:solid;color:var(--ink)}
 .pin-r{
   position:absolute;bottom:-2px;left:-6px;width:20px;height:20px;border-radius:50%;
   background:#F2FBF4;border:1.5px solid #2F9E44;display:grid;place-items:center;
@@ -1367,6 +1496,15 @@ body.hide-legs .leg-lab{display:none}
    passare dal Diario */
 .done-tag{font-style:normal;color:var(--moss);margin-left:3px;font-weight:700}
 .stop-card{transition:transform .18s ease}
+/* v96 — la riga della tappa è un oggetto da manovrare, non un testo da leggere.
+   Il blocco della selezione si accendeva quando il trascinamento era già
+   cominciato: nei primi 400 ms della pressione lunga il sistema operativo era
+   libero di selezionare il nome o di offrire «Copia / Condividi» sull'immagine,
+   e i due gesti litigavano. Ora è spento sempre sulla riga; note, collegamenti
+   e campi restano copiabili, che è dove copiare ha un senso. */
+.stop-card,.stop-top,.stop-name{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.stop-card img,.stop-card .thumb{-webkit-user-drag:none}
+.stop-card .stop-note,.stop-card .links,.stop-card input,.stop-card textarea{user-select:text;-webkit-user-select:text;-webkit-touch-callout:default}
 .stop.sw-armed .stop-card{box-shadow:0 0 0 2px var(--moss) inset}
 .alt-box{margin:0 19px 16px;border:1px dashed var(--ink-4);border-radius:var(--r);padding:11px 12px;background:rgba(255,255,255,.02)}
 .alt-head{color:var(--ochre-2);letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;margin-bottom:9px}
@@ -1538,9 +1676,55 @@ body.hide-legs .leg-lab{display:none}
 }
 .pick-item:hover{border-color:var(--sage-2);background:#fff}
 .pick-ic{flex:none;font-size:17px;line-height:1}
+.pick-ic svg{
+  display:block;width:19px;height:19px;fill:none;stroke:var(--ink);
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round
+}
+.pick-ic svg .dot{fill:var(--ink);stroke:none}
+/* i glifi dei tipi di tappa sono sagome piene, non tratti: qui non vanno
+   trattati come le icone a linea del resto degli elenchi */
+.pick-ic svg.solid{fill:var(--ink);stroke:none}
+/* titoletto di gruppo dentro un elenco di scelta */
+.pick-head{
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--fog);
+  font-weight:700;padding:8px 2px 1px
+}
+.pick-head:first-child{padding-top:2px}
+/* Le azioni della tappa, in un posto solo: la scheda di dettaglio. Icona a
+   linea sopra la parola, quattro colonne che a schermo stretto diventano due. */
+.sv-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0 2px}
+.sv-act{
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 4px;
+  border:1px solid var(--ink-3);border-radius:var(--r-sm);background:var(--ink-2);
+  font-size:11px;line-height:1.2;text-align:center;color:var(--fog);transition:.16s var(--ease)
+}
+.sv-act svg{
+  width:19px;height:19px;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round
+}
+.sv-act:hover{border-color:var(--sage);color:var(--ink)}
+.sv-act.on{border-color:#1B7A5E;color:#1B7A5E;background:rgba(27,122,94,.08)}
+.sv-act.del:hover{border-color:var(--route);color:var(--route);background:rgba(211,50,58,.07)}
+@media (max-width:420px){.sv-acts{grid-template-columns:repeat(2,1fr)}}
+/* la striscia di oggi, in cima all'elenco delle tappe */
+.today-strip{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;margin:0 0 10px;
+  padding:11px 13px;border:1px solid var(--ink-3);border-left:3px solid var(--c);
+  border-radius:var(--r-sm);background:var(--ink-2);transition:.16s var(--ease)
+}
+.today-strip:hover{background:#fff;border-color:var(--ink-4);border-left-color:var(--c)}
+.ts-dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.ts-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ts-tx b{font-size:13px;font-weight:650;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ts-tx i{font-size:11.5px;font-style:normal;color:var(--fog);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ts-n{font-size:11.5px;color:var(--fog);flex:none}
+.today-strip svg{
+  width:16px;height:16px;flex:none;fill:none;stroke:var(--ink-4);
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round
+}
 .pick-tx{flex:1;min-width:0}
 .pick-tx b{display:block;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pick-tx i{display:block;font-style:normal;font-size:11px;color:var(--fog);margin-top:1px}
+.pick-tx i{display:block;font-style:normal;font-size:11px;color:var(--fog);margin-top:2px;line-height:1.4;text-wrap:pretty}
 /* riquadro dei conflitti veri (mergeTrips): una voce toccata da entrambi i
    dispositivi, o cancellata da uno e modificata dall'altro. Una riga per
    conflitto, le due versioni a confronto come due tasti; scelta la propria
@@ -1628,6 +1812,21 @@ body.hide-legs .leg-lab{display:none}
    rete" da soli non si spiegano. Stessa riga larga del riquadro "Viaggiate
    insieme", che faceva già così. */
 .menu-list{display:flex;flex-direction:column;gap:0}
+/* v96 — il Menù si chiude come gli altri pannelli: ✕ in alto a destra, o un tocco
+   fuori. La riga «Chiudi» in fondo obbligava a scorrere un pannello che sembrava
+   già finito, e è la prima cosa che finiva sotto il bordo dello schermo. */
+#moreVeil .sheet{position:relative}
+/* senza la frase di spiegazione il titolo restava stretto e andava a capo
+   («I miei / posti»): la colonna del testo prende tutto lo spazio che ha */
+.menu-list .hub-row > span:last-child{flex:1;min-width:0}
+.menu-list .hub-row h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet-x{
+  position:absolute;top:9px;right:9px;width:36px;height:36px;
+  display:grid;place-items:center;border:0;border-radius:11px;
+  background:none;color:var(--fog);cursor:pointer
+}
+.sheet-x svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+.sheet-x:hover{background:var(--ink-2);color:var(--ink)}
 .menu-list .hub-row .hub-ic{background:var(--ink-3);color:var(--ink)}
 .menu-list .hub-row[hidden]{display:none}
 .menu-hide{display:none}
@@ -1637,10 +1836,10 @@ body.hide-legs .leg-lab{display:none}
 .bar{
   position:fixed;z-index:1600;bottom:0;left:0;width:min(400px,86vw);
   display:flex;flex-direction:column;gap:8px;padding:11px 18px 16px;
-  background:linear-gradient(to top,var(--paper) 72%,rgba(245,242,234,0));
+  background:linear-gradient(to top,var(--paper) 72%,rgba(251,251,252,0));
   transition:width .34s var(--ease)
 }
-.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;background:var(--ink-2);border:1px solid var(--ink-3);border-radius:18px;padding:6px}
 .tabs button{
   position:relative;min-width:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
@@ -1648,13 +1847,12 @@ body.hide-legs .leg-lab{display:none}
 }
 /* a riposo tutti grigi: il colore è il segno di "sei qui", non decorazione.
    attivo: pastiglia piena del colore della sezione. */
-#tabList.on,#tabBook.on,#tabDiary.on,#tabMap.on,.tabs button.on{color:#fff}
+#tabList.on,#tabBook.on,#tabDiary.on,.tabs button.on{color:#fff}
 #tabList.on{background:linear-gradient(135deg,#E0454B,#D3323A);box-shadow:0 8px 20px rgba(211,50,58,.32)}
 #tabCost.on{background:linear-gradient(135deg,#F3C877,var(--ochre));color:#3A2707;box-shadow:0 8px 20px rgba(231,169,60,.3)}
 #tabBook.on{background:linear-gradient(135deg,#2A93BE,#1E7FA6);box-shadow:0 8px 20px rgba(30,127,166,.3)}
 #tabDiary.on{background:linear-gradient(135deg,#289073,#1B7A5E);box-shadow:0 8px 20px rgba(27,122,94,.3)}
-#tabMap.on{background:linear-gradient(135deg,#4B5B66,#31404A);box-shadow:0 8px 20px rgba(34,48,58,.3)}
-/* Il Menù non è una sesta sezione: apre un cassetto e non resta accesso. Resta
+/* Il Menù non è una quinta sezione: apre un cassetto e non resta acceso. Resta
    grigio anche mentre il cassetto è aperto, così "sei qui" continua a voler
    dire una cosa sola. */
 #tabMenu.open{background:var(--ink-3);color:var(--ink)}
@@ -1663,14 +1861,14 @@ body.hide-legs .leg-lab{display:none}
 .tab-ic .trail{opacity:.55}
 .tab-ic .dot{fill:currentColor;stroke:none}
 .tab-lab{
-  font-size:9.5px;font-weight:700;letter-spacing:.01em;line-height:1.15;text-align:center;
+  font-size:10.5px;font-weight:700;letter-spacing:0;line-height:1.15;text-align:center;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
 }
 /* Schermi molto stretti o con lo zoom di sistema al massimo: le etichette
    sotto le icone non ci starebbero più e finirebbero a capo spingendo la
    barra oltre il bordo. Meglio le sole icone, che restano riconoscibili. */
 @media (max-width:400px){
-  .tab-lab{display:none}
+  /* con quattro voci le parole ci stanno anche sugli schermi stretti */
   .tabs button{padding:11px 2px}
 }
 .act{
@@ -1685,7 +1883,7 @@ body.hide-legs .leg-lab{display:none}
 @media (min-width:881px){
   .bar{background:none;left:var(--gap);bottom:var(--gap);width:400px}
   .tabs{
-    background:rgba(250,248,242,.94);border-radius:18px;
+    background:rgba(252,252,253,.94);border-radius:18px;
     box-shadow:0 14px 40px rgba(0,0,0,.14);backdrop-filter:blur(10px)
   }
 }
@@ -1696,7 +1894,7 @@ body.hide-legs .leg-lab{display:none}
   position:fixed;inset:0;z-index:4000;display:grid;place-items:center;cursor:pointer;
   background:
     radial-gradient(680px 520px at 50% 44%, rgba(255,255,255,.75), transparent 72%),
-    linear-gradient(165deg,#F2EFE6 0%,#EBE7DB 55%,#F2EFE6 100%);
+    linear-gradient(165deg,var(--paper) 0%,var(--ink-2) 55%,var(--paper) 100%);
   /* rete di sicurezza: se nessuno tocca, dopo un po' si apre da sola */
   animation:spOut .5s var(--ease) 9s forwards;
 }
@@ -1868,34 +2066,38 @@ body.hide-legs .leg-lab{display:none}
 
 <div class="app">
   <aside class="panel">
-    <!-- Una riga sola: il nome del viaggio (è l'intestazione della schermata,
-         e si modifica scrivendoci sopra), lo stato del salvataggio e l'unico
-         comando rimasto. Il nome della sezione lo dice già il tab acceso.
-         Comprimi/espandi da solo non vale una seconda riga: sta in fondo alla
-         prima, dove l'occhio arriva comunque leggendo il titolo. -->
+    <!-- v98 — una riga sola, alta 42px: barretta del colore della sezione, nome
+         del viaggio, dove si va e comprimi/espandi. Prima erano tre righe (o
+         due) con un pulsante per riga e tanto bianco in mezzo: sembrava
+         l'intestazione di un documento, non di un'app. Il Menù è tornato nella
+         barra in basso, dov'era la sua casa. -->
     <div class="head">
       <div class="head-row">
+        <span class="head-bar" aria-hidden="true"></span>
         <input id="tripTitle" placeholder="Nome del viaggio" autocomplete="off">
-        <button class="area-pill unset" id="areaPill" type="button" title="L’area del viaggio: nazioni o città dove cercare">◉ <b>Dove si va?</b></button>
+        <button class="area-pill unset" id="areaPill" type="button" title="L’area del viaggio: nazioni o città dove cercare"><svg viewBox="0 0 24 24" aria-hidden="true" style="flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><ellipse cx="12" cy="12" rx="4.2" ry="9"/></svg> <b>Dove si va?</b></button>
         <span id="saveState" class="save-state mono"></span>
-        <button class="head-ico" id="btnFold" type="button" title="Comprimi tutti i giorni" aria-label="Comprimi tutti i giorni">
+        <button class="tool-pill" id="btnFold" type="button" title="Comprimi tutti i giorni">
           <svg class="ic-fold" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4.5 12h15"/><path d="M8.4 7.4 12 3.9l3.6 3.5"/><path d="M8.4 16.6 12 20.1l3.6-3.5"/>
           </svg>
           <svg class="ic-unfold" viewBox="0 0 24 24" aria-hidden="true" hidden>
             <path d="M4.5 12h15"/><path d="M8.4 6.6 12 3.1l3.6 3.5"/><path d="M8.4 17.4 12 20.9l3.6-3.5"/>
           </svg>
+          <span id="foldLab">Comprimi tutto</span>
         </button>
       </div>
     </div>
 
-    <!-- un solo "aggiungi" per sezione, in basso a destra dove arriva il pollice.
-         In Itinerario il tondo piccolo sopra aggiunge un giorno. -->
+    <!-- v97 — un solo "aggiungi" per sezione, in basso a destra dove arriva il
+         pollice. In Tappe i tondi erano tre (uno grande e due piccoli, tutti
+         rossi, tutti da indovinare): ora è un ＋ che apre tre righe scritte.
+         I due tondi piccoli restano nel documento — è a loro che sono attaccati
+         i gestori — ma non si vedono più. -->
     <div class="fabs" id="fabs">
-      <button class="fab" id="btnAddPlace" type="button" title="Aggiungi una tappa" aria-label="Aggiungi una tappa">
+      <button class="fab" id="btnAddPlace" type="button" title="Aggiungi al viaggio" aria-label="Aggiungi al viaggio">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 21s6.5-6.1 6.5-10.6A6.5 6.5 0 0 0 12 3.9a6.5 6.5 0 0 0-6.5 6.5C5.5 14.9 12 21 12 21z"/>
-          <path d="M12 8.2v4.6M9.7 10.5h4.6"/>
+          <path d="M12 5.6v12.8M5.6 12h12.8"/>
         </svg>
       </button>
       <button class="fab fab-sm" id="btnDay" type="button" title="Aggiungi un giorno" aria-label="Aggiungi un giorno">
@@ -1956,8 +2158,8 @@ body.hide-legs .leg-lab{display:none}
   <div class="map-wrap">
     <div id="map"></div>
     <!-- visibili solo in "vista solo mappa" (vedi updateTabsState): due filtri
-         indipendenti e ciclici, non due tab, quindi bottoni tondi come lo zoom
-         sotto di loro, non pillole con testo che a 44px diventerebbe illeggibile. -->
+         indipendenti e ciclici, pastiglie con la parola dello stato in cui si
+         trovano, in basso dove arriva il pollice. -->
     <div class="map-search" id="mapSearch">
       <div class="ms-bar">
         <span class="ms-ic" aria-hidden="true">
@@ -1975,19 +2177,14 @@ body.hide-legs .leg-lab{display:none}
     </div>
     <div class="map-filters" id="mapFilters">
       <div class="mf-wrap" id="fltStopsWrap">
-        <button class="map-fbtn" id="fltStops" type="button" aria-label="Filtro tappe: tutto"></button>
-        <span class="mf-flyout" id="fltStopsFly" aria-live="polite"></span>
+        <button class="map-fbtn" id="fltStops" type="button" aria-label="Filtro tappe: tutte le tappe"></button>
       </div>
       <div class="mf-wrap" id="fltDayWrap">
-        <button class="map-fbtn" id="fltDay" type="button" aria-label="Filtro giorno: tutti">
-          <svg class="mf-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21"/></svg>
-          <span class="mf-ic"></span>
-        </button>
-        <span class="mf-flyout" id="fltDayFly" aria-live="polite"></span>
+        <button class="map-fbtn" id="fltDay" type="button" aria-label="Filtro giorno: tutti"></button>
       </div>
       <div class="mf-tip" id="mfTip" hidden>
         <b>Due filtri, niente menù</b>
-        <i>Il primo mostra tutto, solo le tappe dei giorni o solo il Brainstorming. Il secondo isola un giorno alla volta: con un tocco lungo torni a vederli tutti.</i>
+        <i>Ogni pastiglia dice cosa stai vedendo: toccala per passare allo stato dopo. Sul giorno, un tocco lungo torna a mostrarli tutti.</i>
       </div>
       <!-- non è un filtro: staccato dai due sopra da uno spazio più ampio, così
            lo stack si legge come "due filtri, poi altro". Serve perché qui il ⋯
@@ -2003,14 +2200,17 @@ body.hide-legs .leg-lab{display:none}
             <path d="M20.4 15.4v3.8a1.2 1.2 0 0 1-1.2 1.2h-3.8"/>
             <circle cx="12" cy="12" r="2.4"/>
           </svg>
+          <span class="mf-lab">Inquadra</span>
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- barra fissa: sempre visibile, in tutte le viste. Icone grandi e quadrate
-     con l'etichetta sotto, come nelle app moderne. -->
+<!-- v97 — quattro voci, una per sezione. Mappa era un tab che non cambiava
+     sezione (accendeva e spegneva il pannello): ora è l'interruttore in cima
+     all'elenco. Il Menù è in testata. Con quattro caselle le parole tornano
+     leggibili anche sugli schermi stretti. -->
 <div class="bar">
   <input type="file" id="file" accept="application/json" hidden>
   <div class="tabs">
@@ -2047,21 +2247,8 @@ body.hide-legs .leg-lab{display:none}
       </svg>
       <span class="tab-lab">Diario</span>
     </button>
-    <!-- non cambia vista: mostra/nasconde tutto il pannello lasciando solo la
-         mappa. Vive tra i tab (non più come pulsante separato) così su desktop
-         non finisce mai a sovrapporsi ai comandi di .bar-acts quando il
-         pannello si chiude. Colorato = si vede solo la mappa in questo momento. -->
-    <button id="tabMap" title="Mostra solo la mappa" aria-label="Mostra solo la mappa">
-      <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M9 4.6 3.6 6.9v12.5L9 17.1z"/>
-        <path d="M9 4.6l6 2.3v10.2l-6-2.3z"/>
-        <path d="M15 6.9l5.4-2.3v12.5L15 19.4z"/>
-      </svg>
-      <span class="tab-lab">Mappa</span>
-    </button>
-    <!-- Un posto solo per le cose che valgono in tutte le sezioni: prima erano
-         cinque icone in testata più il ⋯ e il ? sulla mappa, e nessuna diceva
-         cosa faceva. -->
+    <!-- il Menù vale per tutta l'app: sta con i tab, non in testata (dove
+         spariva col pannello) né appiccicato ai comandi della mappa -->
     <button id="tabMenu" title="Menù: viaggi, condivisione, guida" aria-label="Menù">
       <svg class="tab-ic" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4.4 7.4h15.2M4.4 12h15.2M4.4 16.6h15.2"/>
@@ -2086,31 +2273,32 @@ body.hide-legs .leg-lab{display:none}
 <div class="veil" id="moreVeil" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="moreTitle">
     <h2 id="moreTitle">Menù del viaggio</h2>
-    <p class="hint" style="padding:0 0 12px">Le cose che valgono per tutto il viaggio, non per la sezione che hai davanti.</p>
+    <!-- v97 — o tutte le righe si spiegano, o nessuna: metà spiegate e metà no
+         sembrava un elenco lasciato a metà. Una riga sola per voce, corta. -->
     <div class="menu-list">
       <button class="hub-row" id="btnMineHub" type="button">
-        <span class="hub-ic">◎</span>
-        <span><h3>I miei posti</h3><p>Ogni tappa che salvi finisce anche qui, e qui puoi segnarne di nuovi senza decidere subito in che viaggio.</p></span>
+        <span class="hub-ic"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round"><path d="M12 21s-7.5-4.7-7.5-10A4.2 4.2 0 0 1 12 8.1 4.2 4.2 0 0 1 19.5 11c0 5.3-7.5 10-7.5 10Z"/></svg></span>
+        <span><h3>I miei posti</h3><p>I posti salvati, raccolti da tutti i viaggi.</p></span>
       </button>
       <button class="hub-row" id="btnTripsHub" type="button">
         <span class="hub-ic">🧳</span>
-        <span><h3>I tuoi viaggi</h3><p>Apri un altro viaggio, rinominalo, creane uno nuovo o salva una copia del file.</p></span>
+        <span><h3>I tuoi viaggi</h3><p>Apri un altro viaggio o creane uno nuovo.</p></span>
       </button>
       <button class="hub-row" id="btnShareHub" type="button">
         <span class="hub-ic">🔗</span>
-        <span><h3>Viaggiate insieme</h3><p>Manda questo viaggio a chi parte con te, o unisciti al suo con il codice che ti ha passato.</p></span>
+        <span><h3>Viaggiate insieme</h3><p>Manda il viaggio a chi parte con te, o unisciti al suo.</p></span>
       </button>
       <button class="hub-row" id="btnOffline" type="button">
         <span class="hub-ic">⤓</span>
-        <span><h3>Mappa senza rete</h3><p>Scarica la zona del viaggio: in giro la mappa resta anche dove non prende.</p></span>
+        <span><h3>Mappa senza rete</h3><p>Scarica la zona: resta anche dove non prende.</p></span>
       </button>
       <button class="hub-row" id="btnInstall" type="button" hidden>
         <span class="hub-ic">📲</span>
-        <span><h3>Installa Waynder</h3><p>Sulla schermata iniziale del telefono, e si apre a schermo pieno come le altre app.</p></span>
+        <span><h3>Installa Waynder</h3><p>Aggiungi l'app alla schermata del telefono.</p></span>
       </button>
       <button class="hub-row" id="btnGuideHub" type="button">
         <span class="hub-ic">📘</span>
-        <span><h3>Rivedi la guida</h3><p>Il giro di presentazione e i suggerimenti di ogni sezione, da rileggere quando vuoi.</p></span>
+        <span><h3>Rivedi la guida</h3><p>Le schermate dei primi passi, da capo.</p></span>
       </button>
     </div>
     <!-- comandi veri, azionati dalle righe qui sopra e dal riquadro "Viaggiate
@@ -2125,9 +2313,11 @@ body.hide-legs .leg-lab{display:none}
       <button class="chip" id="btnReplayGuide" type="button">Rivedi la guida</button>
     </div>
     <p class="more-ver mono">Waynder <span id="verTag"></span></p>
-    <div class="sheet-actions">
-      <button class="btn ghost" id="moreClose" style="flex:1">Chiudi</button>
-    </div>
+    <!-- si esce toccando fuori o con la ✕ in alto, come negli altri pannelli:
+         una riga in meno da scorrere per arrivare in fondo -->
+    <button class="sheet-x" id="moreClose" type="button" title="Chiudi" aria-label="Chiudi">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
   </div>
 </div>
 
@@ -2173,18 +2363,23 @@ body.hide-legs .leg-lab{display:none}
       <button id="baseHintCancel" type="button">Annulla</button>
       <span class="base-hint-note">La base è l'alloggio della giornata. «Parte da» è quello dove ti sei svegliato, «Arriva a» quello dove dormirai: se sono lo stesso, la giornata è un giro; se sono diversi, è un trasferimento — e l'app conta chilometri e tempo da un capo all'altro.</span>
     </div>
-    <button class="dest-pill" id="addDest" type="button" title="Scegli in quale giorno finiscono le tappe che aggiungi adesso">
-      <span class="dest-dot" id="addDestDot"></span>
-      <span class="dest-tx">in <b id="addDestName">—</b></span>
-      <span class="dest-caret">cambia ▾</span>
-    </button>
+    <!-- v97 — il campo per primo: la scheda si apre per cercare, e il cursore è
+         già lì. Le due righe di servizio (dove atterra, dove cerco) stanno sotto
+         i risultati: si guardano quando qualcosa non torna, non prima. -->
     <div style="position:relative">
       <input class="field" id="q" placeholder="Cerca un luogo…" autocomplete="off">
       <div class="results" id="results" hidden></div>
     </div>
-    <button class="q-scope" id="qScope" type="button" title="Scegli in quale paese cercare">
-      <span>cerco <b>in tutto il mondo</b></span><span class="dest-caret">cambia ▾</span>
-    </button>
+    <div class="q-scopes">
+      <button class="dest-pill" id="addDest" type="button" title="Scegli in quale giorno finiscono le tappe che aggiungi adesso">
+        <span class="dest-dot" id="addDestDot"></span>
+        <span class="dest-tx">in <b id="addDestName">—</b></span>
+        <span class="dest-caret">cambia ▾</span>
+      </button>
+      <button class="q-scope" id="qScope" type="button" title="Scegli in quale paese cercare">
+        <span>cerco <b>in tutto il mondo</b></span><span class="dest-caret">cambia ▾</span>
+      </button>
+    </div>
     <div class="added-box" id="addedList" hidden></div>
     <div class="add-ways">
       <button class="chip" id="btnPickInline" title="Tocca un punto sulla mappa">✛ Tocca la mappa</button>
@@ -2277,7 +2472,7 @@ body.hide-legs .leg-lab{display:none}
     <div class="sheet-actions">
       <button class="btn" id="save">Salva</button>
       <button class="btn ghost" id="cancel">Annulla</button>
-      <button class="danger" id="del">Elimina</button>
+      <button class="danger" id="del"><svg class="ic-trash" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 7.2h13.2M9.6 7.2V5.6a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2v1.6"/><path d="M7 7.2l.8 11a1.4 1.4 0 0 0 1.4 1.3h5.6a1.4 1.4 0 0 0 1.4-1.3l.8-11"/><path d="M10.6 10.6v5.6M13.4 10.6v5.6"/></svg>Elimina</button>
     </div>
   </div>
 </div>
@@ -2461,7 +2656,7 @@ body.hide-legs .leg-lab{display:none}
     <div class="sheet-actions">
       <button class="btn" id="bSave">Salva</button>
       <button class="btn ghost" id="bCancel">Annulla</button>
-      <button class="danger" id="bDel" hidden>Elimina</button>
+      <button class="danger" id="bDel" hidden><svg class="ic-trash" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 7.2h13.2M9.6 7.2V5.6a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2v1.6"/><path d="M7 7.2l.8 11a1.4 1.4 0 0 0 1.4 1.3h5.6a1.4 1.4 0 0 0 1.4-1.3l.8-11"/><path d="M10.6 10.6v5.6M13.4 10.6v5.6"/></svg>Elimina</button>
     </div>
   </div>
 </div>
@@ -2487,10 +2682,15 @@ body.hide-legs .leg-lab{display:none}
   <div class="sheet" role="dialog" aria-modal="true">
     <h2 id="svTitle">Tappa</h2>
     <div id="svBody"></div>
+    <div class="sv-acts">
+      <button type="button" class="sv-act" id="svDone"></button>
+      <button type="button" class="sv-act" id="svMap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.6 3.6 6v14.4L9 18l6 2.4 5.4-2.4V3.6L15 6 9 3.6z"/><path d="M9 3.6V18M15 6v14.4"/></svg><span>Sulla mappa</span></button>
+      <button type="button" class="sv-act" id="svMove"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 6.4h14.8v13H4.6z"/><path d="M4.6 10.2h14.8"/><path d="M8.6 4.4v3.2M15.4 4.4v3.2"/></svg><span>Cambia giorno</span></button>
+      <button type="button" class="sv-act del" id="svDel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 7.2h13.2M9.6 7.2V5.6a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2v1.6"/><path d="M7 7.2l.8 11a1.4 1.4 0 0 0 1.4 1.3h5.6a1.4 1.4 0 0 0 1.4-1.3l.8-11"/><path d="M10.6 10.6v5.6M13.4 10.6v5.6"/></svg><span>Elimina</span></button>
+    </div>
     <div class="sheet-actions">
-      <button class="btn ghost" id="svEdit" style="flex:1">✎ Modifica</button>
       <button class="btn ghost" id="svClose" style="flex:1">Chiudi</button>
-      <button class="danger" id="svDel">✕</button>
+      <button class="btn" id="svEdit" style="flex:1">✎ Modifica</button>
     </div>
   </div>
 </div>
@@ -2533,7 +2733,7 @@ body.hide-legs .leg-lab{display:none}
     <div class="sheet-actions">
       <button class="btn" id="xSave">Salva spesa</button>
       <button class="btn ghost" id="xCancel">Annulla</button>
-      <button class="danger" id="xDel" hidden>Elimina</button>
+      <button class="danger" id="xDel" hidden><svg class="ic-trash" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 7.2h13.2M9.6 7.2V5.6a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2v1.6"/><path d="M7 7.2l.8 11a1.4 1.4 0 0 0 1.4 1.3h5.6a1.4 1.4 0 0 0 1.4-1.3l.8-11"/><path d="M10.6 10.6v5.6M13.4 10.6v5.6"/></svg>Elimina</button>
     </div>
   </div>
 </div>
@@ -2557,7 +2757,19 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v95';
+const APP_VERSION = 'v104';
+/* v98 — un segno solo per "elimina": il cestino. Nelle righe di elenco è il
+   cestino da solo, nei riquadri è cestino + la parola «Elimina». La ✕ resta
+   riservata a "chiudi" e a "togli questo dall'elenco che sto componendo"
+   (un allegato, una foto, una riga di collegamento, un'etichetta dell'area):
+   quella non cancella un dato, annulla qualcosa che non è ancora salvato. */
+const TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+  '<path d="M5.4 7.2h13.2M9.6 7.2V5.6a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2v1.6"/>' +
+  '<path d="M7 7.2l.8 11a1.4 1.4 0 0 0 1.4 1.3h5.6a1.4 1.4 0 0 0 1.4-1.3l.8-11"/>' +
+  '<path d="M10.6 10.6v5.6M13.4 10.6v5.6"/></svg>';
+/* e una matita sola per "modifica" */
+const PENCIL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+  '<path d="M4.6 19.4h4l10-10a2.1 2.1 0 0 0-3-3l-10 10z"/><path d="M14.4 6.6l3 3"/></svg>';
 (() => {
   const v = document.getElementById('verTag');
   if(v) v.textContent = APP_VERSION;
@@ -2615,13 +2827,38 @@ function autoFocus(el, select){
 
 /* messaggino di conferma in basso: dura poco e non chiede niente */
 let toastTimer = null;
+function toastHide(){
+  const t = document.getElementById('toast');
+  if(!t) return;
+  clearTimeout(toastTimer);
+  t.classList.remove('show','swipe');
+  t.style.transform = '';
+}
+let toastWired = false;
 function toast(msg){
   const t = document.getElementById('toast');
   if(!t) return;
   t.textContent = msg;
+  t.style.transform = '';
+  t.classList.remove('swipe');
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  if(toastWired) return;
+  toastWired = true;
+  /* v96 — un tocco lo zittisce, il dito che lo trascina di lato lo porta via:
+     un messaggio che si può scacciare non ha bisogno di restare tanto */
+  t.addEventListener('click', toastHide);
+  let x0 = null;
+  t.addEventListener('pointerdown', e => { x0 = e.clientX; t.classList.add('swipe'); });
+  t.addEventListener('pointermove', e => {
+    if(x0 === null) return;
+    const dx = e.clientX - x0;
+    t.style.transform = 'translateX(calc(-50% + ' + dx + 'px))';
+    if(Math.abs(dx) > 60){ x0 = null; toastHide(); }
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev =>
+    t.addEventListener(ev, () => { x0 = null; t.style.transform = ''; }));
 }
 let tripIndex = [];
 const routeCache = new Map();
@@ -2681,8 +2918,14 @@ const fresh = () => ({
 /* ============ mappa ============ */
 const map = L.map('map',{zoomControl:false}).setView([45,9],5);
 L.control.zoom({position:'bottomright'}).addTo(map);
-const tileL = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-  maxZoom:19, attribution:'© OpenStreetMap · © CARTO'
+/* v104 — via da CARTO: i loro riquadri ora vogliono una chiave e la mappa si
+   riempiva di «API KEY REQUIRED» in diagonale. Questi sono i riquadri ufficiali
+   di OpenStreetMap, senza chiave e senza registrazione. Non hanno la versione
+   @2x, quindi niente {r}, e il sottodominio non si usa più: l'indirizzo è uno.
+   Chi aveva scaricato le mappe offline le deve riscaricare — le vecchie stanno
+   in cache sotto l'indirizzo di CARTO e non verranno più chieste. */
+const tileL = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19, attribution:'© OpenStreetMap'
 }).addTo(map);
 const layer = L.layerGroup().addTo(map);
 
@@ -3307,7 +3550,7 @@ function drawTrips(){
       '<span class="who-n" data-open="'+t.id+'">'+esc(t.title||'Senza nome')+
         (t.id===state.id ? ' <b style="color:var(--moss);font-weight:600">· attivo</b>' : '')+
         '<i class="trip-when mono">'+fmtTripDate(t.updatedAt)+'</i></span>'+
-      '<button class="icon-btn" data-del="'+t.id+'" title="Elimina">✕</button>'+
+      '<button class="icon-btn" data-del="'+t.id+'" title="Elimina il viaggio" aria-label="Elimina il viaggio">'+TRASH_SVG+'</button>'+
     '</div>'
   )).join('') || '<p class="empty fill">Nessun viaggio.</p>';
   box.querySelectorAll('[data-open]').forEach(el => el.onclick = () => switchTrip(el.dataset.open));
@@ -4200,6 +4443,56 @@ const TYPES = {
 /* glifo passeggino: contrassegno per le tappe adatte a Francesco */
 const KID_D = 'M13 3.2c3.6.5 6.4 3.5 6.7 7.2h-6.7V3.2zM11.4 4v6.4H4.7A7.7 7.7 0 0 1 11.4 4zM4.6 12h14.9a7.5 7.5 0 0 1-3.3 5.2l1.4 2.3-1.5.9-1.5-2.5c-.8.3-1.7.4-2.6.4s-1.8-.1-2.6-.4l-1.5 2.5-1.5-.9 1.4-2.3A7.5 7.5 0 0 1 4.6 12zm3.6 8.8a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2zm7.7 0a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2z';
 const typeOf = p => TYPES[p.type] || TYPES.place;
+
+/* ============ il tipo si indovina dal nome ============ */
+/* Diciotto icone in griglia sono diciotto decisioni per una cosa che il nome
+   dice quasi sempre da sé: «Trattoria da Nino» è un posto dove si mangia.
+   guessType() legge il nome, la scheda propone quattro pastiglie (quella
+   indovinata per prima) e «Altro…» apre l'elenco completo per gruppi. */
+const TYPE_GROUPS = [
+  {t:'Da vedere',          k:['monument','museum','church','ruins','castle','square']},
+  {t:'Fuori, all\u2019aperto', k:['nature','beach','view','trek','walk']},
+  {t:'Mangiare e dormire', k:['food','sleep']},
+  {t:'In giro',            k:['city','market','shop','transit']},
+  {t:'Senza tipo',         k:['place']}
+];
+/* le parole si cercano nel nome ripulito; vince la prima riga che combacia,
+   quindi l'ordine conta: «tempio» prima di «teatro romano» ecc. */
+const TYPE_HINTS = [
+  ['sleep',   ['hotel','albergo','ostello','hostel','pensione','resort','agriturismo','b&b','bed and breakfast','camping','campeggio','relais','locanda','guesthouse','airbnb','masseria']],
+  ['food',    ['ristorante','trattoria','osteria','pizzeria','birreria','taverna','bistrot','bistro','enoteca','gelateria','pasticceria','caffe','caff\u00e8','cafe','caf\u00e9','bar ','ristoro','restaurant','steakhouse','sushi','braceria','friggitoria','paninoteca']],
+  ['church',  ['chiesa','duomo','basilica','cattedrale','santuario','abbazia','monastero','convento','cappella','pieve','eremo','moschea','sinagoga','tempio','church','cathedral','chapel','mosque','temple']],
+  ['museum',  ['museo','museum','pinacoteca','galleria','gallery','mostra','collezione','esposizione']],
+  ['castle',  ['castello','castel ','fortezza','rocca','forte ','maniero','castle','fort ','ch\u00e2teau']],
+  ['ruins',   ['rovine','scavi','archeolog','anfiteatro','foro romano','necropoli','acropoli','ruins','terme romane']],
+  ['market',  ['mercato','mercatino','market','bazar','souk','fiera']],
+  ['square',  ['piazza','piazzale','plaza','square','largo ']],
+  ['beach',   ['spiaggia','beach','lido','baia','cala ','playa','scogliera','caletta','sabbia']],
+  ['nature',  ['parco','park','giardin','riserva','orto botanico','bosco','foresta','oasi','cascat','lago','laguna','grotta','grotte','canyon','vulcano','valle','ghiacciaio']],
+  ['view',    ['panoram','belvedere','mirador','viewpoint','terrazza','punto di vista']],
+  ['trek',    ['sentiero','trekking','escursion','cammino','via ferrata','rifugio','vetta','cima ','monte ','trail','hike']],
+  ['walk',    ['passeggiata','lungomare','lungolago','promenade','corso ']],
+  ['transit', ['aeroporto','airport','stazione','station','porto','terminal','autostazione','molo','imbarco','traghetto','funivia','cabinovia','noleggio','parcheggio']],
+  ['shop',    ['negozio','boutique','centro commerciale','outlet','libreria','shop','store','mall']],
+  ['monument',['monumento','statua','obelisco','arco di','campanile','torre','fontana','ponte','mausoleo','memoriale','faro','palazzo','villa ','pantheon','colosseo']],
+  ['city',    ['citt\u00e0','borgo','villaggio','quartiere','centro storico','town','old town']]
+];
+function guessType(name){
+  const s = ' ' + String(name||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') + ' ';
+  for(const [k, words] of TYPE_HINTS)
+    if(words.some(w => s.includes(w.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))) return k;
+  return '';
+}
+/* le quattro pastiglie: il tipo scelto (o indovinato) davanti, poi i vicini di
+   gruppo, poi i più usati. Mai doppioni, mai meno di quattro. */
+function typeChips(sel){
+  const out = [sel];
+  const g = TYPE_GROUPS.find(x => x.k.includes(sel));
+  if(g) g.k.forEach(k => { if(!out.includes(k)) out.push(k); });
+  ['place','food','sleep','museum','nature'].forEach(k => { if(!out.includes(k)) out.push(k); });
+  return out.slice(0, 4);
+}
 /* segnaposto quadrato per le tappe senza foto: icona del tipo su sfondo tenue */
 function thumbPlaceholderHTML(p){
   const t = typeOf(p);
@@ -4343,7 +4636,10 @@ document.getElementById('baseHintCancel').onclick = cancelAddBase;
 let addDayId = undefined;                       // undefined = non ancora scelto
 function addTargetDay(){
   if(addDayId !== undefined && (addDayId === null || dayOf(addDayId))) return addDayId;
-  return lastUsedDayId ?? state.days[0]?.id ?? null;
+  /* v98 — di default si atterra in Brainstorming, non nel Giorno 1: una tappa
+     appena trovata è un'idea, e smistarla è un gesto dopo. Resta il giorno
+     toccato per ultimo, che è una scelta vera di chi sta lavorando a quel giorno. */
+  return lastUsedDayId ?? null;
 }
 function destName(id){
   return id ? (dayOf(id)?.name || 'un giorno') : 'Brainstorming';
@@ -4392,8 +4688,8 @@ function addedPaint(){
       return '<div class="added-row" data-id="' + p.id + '">' +
         '<span class="dest-dot" style="background:' + (d ? (d.grad || d.color) : 'var(--ink-4)') + '"></span>' +
         '<span class="added-nm">' + esc(p.name) + '<span>' + esc(destName(p.dayId)) + '</span></span>' +
-        '<button type="button" class="ed" title="Apri i dettagli" aria-label="Apri i dettagli">✎</button>' +
-        '<button type="button" class="rm" title="Togli questa tappa" aria-label="Togli questa tappa">✕</button>' +
+        '<button type="button" class="ed" title="Apri la scheda della tappa">' + PENCIL_SVG + 'Dettagli</button>' +
+        '<button type="button" class="rm" title="Togli questa tappa" aria-label="Togli questa tappa">' + TRASH_SVG + '</button>' +
       '</div>';
     }).join('');
   box.querySelectorAll('.added-row').forEach(r => {
@@ -5704,7 +6000,7 @@ async function inspFetchStatic(t, mode){
       name: c.name, lat: c.lat, lng: c.lng, type: 'city',
       desc: c.region || '', langs: 0, len: 0,
       thumb: (c.attractions || []).find(p => p.photo_url)?.photo_url || null,
-      wiki: null, pop: (c.attractions || []).length
+      wiki: null, pop: (c.attractions || []).length, attr: (c.attractions || []).length
     }));
     const attrItems = attrPool.map(inspiraPlaceToItem);
     const combined = await fillMissingThumbs([...cityItems, ...attrItems]);
@@ -5839,7 +6135,8 @@ async function inspLoadPool(mode){
 }
 
 async function inspSearch(mode){
-  const q = document.getElementById('inspQ').value.trim();
+  const raw = document.getElementById('inspQ').value.trim();
+  const q = stripDays(raw) || raw;
   if(q.length < 3) return;
   const list = document.getElementById('inspList');
   document.getElementById('inspMore').hidden = true;
@@ -5924,7 +6221,7 @@ function alreadyInTrip(it){
     return d < .15 || (n && inspNorm(p.name) === n && d < 3);
   }) || (state.bases || []).some(b => km(b, it) < .15);
 }
-function addInspItems(items){
+function addInspItems(items, dayId){
   let n = 0;
   items.forEach(it => {
     if(!it) return;
@@ -5951,7 +6248,7 @@ function addInspItems(items){
     if(note) note = note.charAt(0).toUpperCase() + note.slice(1);
     if(it.source && it.srcThin) note += (note ? '\n\n' : '') + 'Fonte: ' + srcHost(it.source);
     state.places.push({
-      id:uid(), name:it.name, lat:it.lat, lng:it.lng, dayId:null, img: big,
+      id:uid(), name:it.name, lat:it.lat, lng:it.lng, dayId: dayId || null, img: big,
       notes: note, links, type:it.type, chain:true,
       /* al coperto: restano una buona idea anche se piove */
       rain: it.type === 'museum' || it.type === 'church' || it.type === 'market', city:false
@@ -6031,6 +6328,21 @@ function inspTakeAll(){
   });
 }
 document.getElementById('inspTakeAll').onclick = inspTakeAll;
+
+/* «Marocco 5 giorni»: l'itinerario automatico è uscito dall'app (v103, non era
+   maturo — dava un giorno a Marrakech e uno a un paese di passaggio). Il numero
+   di giorni si continua a togliere dalla domanda: senza, il geocodificatore
+   cerca la frase intera e non trova niente. */
+const NUM_IT = {uno:1,due:2,tre:3,quattro:4,cinque:5,sei:6,sette:7,otto:8,nove:9,dieci:10,undici:11,dodici:12,quattordici:14,quindici:15};
+const DAYS_RE = /(\d{1,2})\s*(?:gg|giorn[oi]|days?)\b/i;
+const DAYS_WORD_RE = new RegExp('\\b(' + Object.keys(NUM_IT).join('|') + ')\\s+giorni\\b', 'i');
+function stripDays(t){
+  return String(t || '')
+    .replace(DAYS_RE, ' ').replace(DAYS_WORD_RE, ' ')
+    .replace(/\b(in|per|da|di)\s*$/i, '')
+    .replace(/[,;]\s*$/, '')
+    .replace(/\s{2,}/g, ' ').trim();
+}
 document.getElementById('btnEmptyInspire').onclick = () => openInspire(true);
 document.getElementById('btnInsp').onclick = () => openInspire(true);
 
@@ -6285,8 +6597,12 @@ async function refreshWeather(){
 function wxIconBtnHTML(d){
   /* quando il meteo non c'è, il posto non resta vuoto: un "?" dice in una riga
      cosa manca perché arrivi — la data, un luogo, o solo il calendario */
+  /* v98 — un "?" da solo non si capisce di cosa parli: la nuvoletta dice che
+     si sta parlando del meteo, il punto di domanda che non c'è ancora. */
   const help = t => '<button class="icon-btn wx-help" type="button" data-help="'+esc(t)+'"'
-    + ' title="Perché non c\'è il meteo" aria-label="Perché non c\'è il meteo">?</button>';
+    + ' title="Perché non c\'è il meteo" aria-label="Perché non c\'è il meteo">'
+    + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 17h9a3.3 3.3 0 0 0 .2-6.6 4.9 4.9 0 0 0-9.4-1.2A3.5 3.5 0 0 0 7.2 17z"/></svg>'
+    + '<i>?</i></button>';
   if(!d.date) return help('Il meteo arriva quando il giorno ha una data: toccala qui accanto e scegli il giorno sul calendario.');
   const today = new Date(); today.setHours(0,0,0,0);
   const daysAhead = Math.round((new Date(d.date+'T00:00:00') - today) / 86400000);
@@ -6589,7 +6905,7 @@ function marker(p, n, color, brain){
   if(p.notes) h += '<span class="pop-n">'+esc(p.notes)+'</span>';
   (p.links||[]).forEach(l => h += '<a class="pop-l" href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||l.url)+' ↗</a>');
   h += '<a class="pop-b" href="#" onclick="showInList(\''+p.id+'\');return false">Vedi in elenco</a>';
-  h += '<a class="pop-b" href="#" onclick="edit(\''+p.id+'\');return false">Modifica</a>';  m.bindPopup(h);
+  h += '<a class="pop-b" href="#" onclick="viewStop(\''+p.id+'\');return false">Apri la tappa</a>';  m.bindPopup(h);
   return m;
 }
 
@@ -6673,30 +6989,12 @@ const ICON_HOUSE_IN  = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" 
 function dayInfoText(d, list, tot, totMin, onFoot){
   return list.length + (list.length === 1 ? ' tappa' : ' tappe') + (tot ? ' · ' + fmt(tot) : '');
 }
-/* tutti i dettagli del giorno, uno per riga: si aprono al tocco sulla riga */
-function dayInfoRows(d, list, tot, totMin, onFoot){
-  const rows = [];
-  const add = (k, v) => rows.push('<div class="di-row"><span class="di-k">' + k + '</span><span class="di-v mono">' + v + '</span></div>');
-  const pois = all(d.id).filter(p => isPoi(p)).length;
-  add('Tappe', list.length + (pois ? ' · ' + pois + ' segnaposto' : ''));
-  if(tot) add('Spostamenti', fmt(tot) + ' · ' + dur(totMin));
-  if(onFoot) add('A piedi', fmt(onFoot) + ' su ' + fmt(tot));
-  const done = list.filter(p => p.visited).length;
-  if(done) add('Visitate', done + ' su ' + list.length);
-  const rain = list.filter(p => p.rain).length, kid = list.filter(p => p.kid).length;
-  const adatte = n => n + (n === 1 ? ' adatta' : ' adatte');
-  if(rain) add('Con meteo avverso', adatte(rain));
-  if(kid) add('Con bimbo', adatte(kid));
-  const bf = baseOf(d.baseFromId), bt = baseOf(d.baseToId);
-  if(bf) add('Parte da', esc(bf.name));
-  if(bt) add('Arriva a', esc(bt.name));
-  if(d.date) add('Data', new Date(d.date + 'T00:00:00').toLocaleDateString('it-IT', {weekday:'long', day:'numeric', month:'long'}));
-  return rows.join('');
-}
 
 function drawList(){
   const box = document.getElementById('list');
   box.innerHTML = '';
+  const strip = todayStrip();
+  if(strip) box.appendChild(strip);
   const orphans = state.places.filter(p=>!p.dayId || !dayOf(p.dayId));
   state.days.forEach(d => box.appendChild(dayBlock(d, stops(d.id))));
   /* "Brainstorming" in fondo: i giorni veri sono quello che si vuole vedere
@@ -6709,6 +7007,43 @@ function drawList(){
     {id:null, name: mine ? MINE_TITLE : 'Brainstorming', color:BRAIN_SOLID, grad:BRAIN_GRAD},
     mine ? mineByArea(orphans) : orphans));
   areaHeads = null;
+}
+
+/* Durante il viaggio l’unica domanda è «e adesso?». Se un giorno cade oggi, in
+   cima all’elenco c’è una striscia che lo dice: quante tappe restano e qual è la
+   prossima. Toccarla apre quel giorno e ce lo porta. Fuori dai giorni con data
+   — e nei Miei posti — non compare, così non ruba spazio quando non serve. */
+function todayStrip(){
+  if(isMine() || !state.days.length) return null;
+  const d = state.days.find(x => x.date === isoToday());
+  if(!d) return null;
+  const list = stops(d.id);
+  const done = list.filter(p => p.visited).length;
+  const next = list.find(p => !p.visited);
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.className = 'today-strip';
+  el.style.setProperty('--c', d.color || '#54636D');
+  el.innerHTML =
+    '<span class="ts-dot"></span>' +
+    '<span class="ts-tx">' +
+      '<b>Oggi · ' + esc(d.name) + '</b>' +
+      '<i>' + (list.length
+        ? (next ? 'Prossima: ' + esc(next.name) : 'Tutte fatte · ' + done + ' su ' + list.length)
+        : 'Nessuna tappa in programma') + '</i>' +
+    '</span>' +
+    (list.length ? '<span class="ts-n mono">' + done + '/' + list.length + '</span>' : '') +
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 5.5 7 6.5-7 6.5"/></svg>';
+  el.onclick = () => {
+    collapsedDays.delete(d.id);
+    render();
+    requestAnimationFrame(() => {
+      const b = document.getElementById('list');
+      const sec = b && b.querySelector('.day[data-day="' + d.id + '"]');
+      if(sec) b.scrollTop += sec.getBoundingClientRect().top - b.getBoundingClientRect().top - 6;
+    });
+  };
+  return el;
 }
 
 /* Nei Miei posti l'ordine è geografico, non cronologico: si ordina per paese e
@@ -6870,71 +7205,55 @@ function dayBlock(d, list){
   head.innerHTML =
     '<div class="day-head-top">' +
       (d.id
-        ? '<span class="day-date-wrap"><button type="button" class="swatch sw-btn" title="Cambia il colore del giorno" aria-label="Cambia il colore del giorno" style="background:'+d.color+'"></button><input type="date" class="day-date mono" value="'+(d.date||'')+'"></span>'
+        ? '<span class="day-date-wrap'+(d.date?'':' no-date')+'"><button type="button" class="swatch sw-btn" title="Cambia il colore del giorno" aria-label="Cambia il colore del giorno" style="background:'+d.color+'"></button>' +
+          '<input type="date" class="day-date mono" value="'+(d.date||'')+'" title="Metti la data a questo giorno">' +
+          (d.date ? '' :
+            '<span class="day-date-ph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.6 6.4h14.8v13H4.6z"/><path d="M4.6 10.2h14.8"/><path d="M8.6 4.4v3.2M15.4 4.4v3.2"/></svg>Data</span>') +
+          '</span>'
         : '<span class="swatch" style="background:'+(d.grad||d.color)+'"></span>') +
       (d.id
-        ? '<span class="day-name">'+esc(d.name)+'</span><button class="icon-btn day-edit" data-act="ren" title="Rinomina il giorno" aria-label="Rinomina il giorno">✎</button>'
+        ? '<span class="day-name">'+esc(d.name)+'</span><button class="icon-btn day-edit" data-act="ren" title="Rinomina il giorno" aria-label="Rinomina il giorno">'+PENCIL_SVG+'</button>'
         : '<span class="day-name">'+d.name+'</span>') +
       (d.id ?
         '<div class="day-head-actions">' +
           wxIconBtnHTML(d) +
-          '<button class="icon-btn day-del" data-act="del" title="Elimina il giorno" aria-label="Elimina il giorno">' +
-            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 7.2h13.2M9.6 7.2V5.6a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2v1.6"/>' +
-            '<path d="M7 7.2l.8 11a1.4 1.4 0 0 0 1.4 1.3h5.6a1.4 1.4 0 0 0 1.4-1.3l.8-11"/><path d="M10.6 10.6v5.6M13.4 10.6v5.6"/></svg>' +
-          '</button>' +
+          '<button class="icon-btn day-del" data-act="del" title="Elimina il giorno" aria-label="Elimina il giorno">' + TRASH_SVG + '</button>' +
         '</div>'
         : '') +
     '</div>' +
     '<div class="day-head-meta">' +
-      (d.id
-        ? '<button type="button" class="day-stat mono day-stat-btn" aria-expanded="false" title="Tutti i dettagli del giorno">' + metaLine + '<i>▾</i></button>' +
-          '<div class="day-info" hidden></div>'
-        : '<span class="day-stat mono">' + metaLine + '</span>') +
+      '<span class="day-stat mono">' + metaLine + '</span>' +
     '</div>';
   sec.appendChild(head);
 
   if(d.id){
-    const statB = head.querySelector('.day-stat-btn'), info = head.querySelector('.day-info');
-    if(statB) statB.onclick = e => {
-      e.stopPropagation();
-      const opening = info.hidden;
-      if(opening && !info.dataset.filled){
-        info.innerHTML = dayInfoRows(d, list, tot, totMin, onFoot);
-        info.dataset.filled = '1';
-      }
-      info.hidden = !opening;
-      statB.classList.toggle('on', opening);
-      statB.setAttribute('aria-expanded', String(opening));
-    };
     const sw = head.querySelector('.sw-btn');
     if(sw) sw.onclick = e => { e.stopPropagation(); openColorPop(sw, d.color, c => { d.color = c; save(); render(); }); };
     /* il nome si modifica solo dalla matita: così un tocco sulla testata
        apre e chiude il giorno senza far comparire la tastiera per sbaglio */
+    /* v98 — rinominare il giorno e cambiare l'area del viaggio sono la stessa
+       cosa (dai un nome a qualcosa), quindi chiedono nello stesso modo: un
+       riquadro con il campo, non un campo che compare al posto del titolo. */
     const renB = head.querySelector('[data-act="ren"]');
     renB.onclick = ev => {
       ev.stopPropagation();
-      const span = head.querySelector('span.day-name');
-      if(!span) return;
-      const inp = document.createElement('input');
-      inp.className = 'day-name';
-      inp.value = d.name;
-      span.replaceWith(inp);
-      inp.focus(); inp.select();
-      inp.onclick = e2 => e2.stopPropagation();
-      let done = false;
-      const commit = () => {
-        if(done) return; done = true;
-        const v = inp.value.trim();
-        if(v && v !== d.name){ d.name = v; save(); }
-        render();
-      };
-      inp.onblur = commit;
-      inp.onkeydown = e2 => {
-        if(e2.key === 'Enter'){ e2.preventDefault(); commit(); }
-        if(e2.key === 'Escape'){ done = true; render(); }
-      };
+      promptCard({
+        ic: 'list',
+        t: 'Come si chiama questo giorno?',
+        p: ['Un nome al posto di «Giorno ' + (state.days.indexOf(d)+1) + '»: «Arrivo a Lisbona», «Giro dei fiordi».'],
+        value: d.name,
+        placeholder: 'Giorno ' + (state.days.indexOf(d)+1),
+        no: 'Lascia stare', yes: 'Salva',
+        onYes: v => {
+          const t = v.trim();
+          if(t && t !== d.name){ d.name = t; save(); render(); }
+        }
+      });
     };
-    head.querySelector('.day-date').onchange = e => {
+    /* v98 — a giorno senza data il campo mostrava solo "gg/mm/aaaa" in grigio:
+       ora sopra c'è l'etichetta "Data" col calendario, ma sotto il dito trova
+       il campo vero, che apre il calendario del telefono come sempre. */
+    const onDate = e => {
       const v = e.target.value || null;
       d.date = v;
       const primo = state.days[0] && state.days[0].id === d.id && v && state.days.length > 1;
@@ -6951,9 +7270,14 @@ function dayBlock(d, list){
         }
       });
     };
-    /* le altre tre azioni stanno in fondo al giorno, in chiaro: qui era
-       rimasto un menù di una voce sola, e un menù di una voce non è un menù.
-       Il cestino chiede conferma da sé. */
+    const dateInp = head.querySelector('.day-date');
+    if(dateInp){
+      dateInp.onchange = onDate;
+      dateInp.onclick = e => {
+        e.stopPropagation();
+        if(!d.date && dateInp.showPicker){ try{ dateInp.showPicker(); }catch(_){} }
+      };
+    }
     const delB = head.querySelector('[data-act="del"]');
     delB.onclick = e => {
       e.stopPropagation();
@@ -7063,28 +7387,16 @@ function dayBlock(d, list){
             (links ? '<div class="links">'+links+'</div>' : '') +
           '</div>' +
         '</div>' +
-        '<button class="icon-btn stop-menu" title="Altre azioni" aria-label="Altre azioni">⋯</button>' +
       '</div>' +
       (i < list.length-1 ? segHTML(p, list[i+1])
         : (d.id && baseOf(d.baseToId) ? segHTML(p, {...baseOf(d.baseToId), isBase:true}) : ''));
 
-    const top = li.querySelector('.stop-top'), menuB = li.querySelector('.stop-menu');
+    const top = li.querySelector('.stop-top');
     const thumbImg = li.querySelector('img.thumb');
     if(thumbImg) thumbImg.onerror = () => { thumbImg.outerHTML = thumbPlaceholderHTML(p); };
     const openDetail = () => viewStop(p.id);
     top.onclick = e => { if(e.target.closest('a')) return; openDetail(); };
     top.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openDetail(); } };
-    menuB.onclick = e => {
-      e.stopPropagation();
-      showActionMenu(menuB, [
-        {label:'Mostra sulla mappa', onClick: () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); }},
-        {label:'Seleziona (per spostarne più di una)', onClick: () => selEnter(p.id)},
-        {label:'Sposta su', onClick: () => move(p, -1)},
-        {label:'Sposta giù', onClick: () => move(p, 1)},
-        {label:'Modifica', onClick: () => edit(p.id)},
-        {label:'Elimina', danger:true, onClick: () => deletePlace(p.id)}
-      ]);
-    };
     ol.appendChild(li);
   });
   if(d.id) ol.appendChild(baseStopLi(d, 'baseToId', 'Arriva a', ICON_HOUSE_IN));
@@ -7118,8 +7430,8 @@ function dayBlock(d, list){
             (p.notes ? '<p class="stop-note">'+esc(p.notes)+'</p>' : '') +
             (links ? '<div class="links">'+links+'</div>' : '') +
           '</div>' +
-          '<button class="icon-btn" title="Modifica">✎</button>' +
-          '<button class="icon-btn" title="Elimina">✕</button>';
+          '<button class="icon-btn" title="Modifica">'+PENCIL_SVG+'</button>' +
+          '<button class="icon-btn" title="Elimina">'+TRASH_SVG+'</button>';
         row.querySelector('.stop-name').onclick = () => { map.flyTo([p.lat,p.lng], Math.max(map.getZoom(),14)); closeSheetMobile(); };
         const [edB2, delB2] = row.querySelectorAll('.icon-btn');
         edB2.onclick = () => edit(p.id);
@@ -7423,14 +7735,14 @@ function dayAllWalk(d, on){
 let selMode = false;
 const selIds = new Set();
 
-/* Le quattro azioni della selezione, disegnate a linea come le altre icone
-   dell'app: giorno con la freccia (sposta), valigia con la freccia (copia in un
-   altro viaggio), aeroplanino di carta (manda a qualcuno), cestino. Stesso peso
-   visivo: qui non c'è un'azione più importante delle altre. */
+/* Le azioni della selezione, disegnate a linea come le altre icone dell'app, e
+   dalla v96 con la parola sotto: un calendario col numero delle tappe scelte
+   (è il numero che dice che si sceglie un giorno), la spunta di «Fatte», il
+   Condividi del sistema operativo che apre le due strade scritte, il cestino. */
 const SEL_IC = {
-  move:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15h6m0 0-2.2-2.2M15 15l-2.2 2.2"/></svg>',
-  copy:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.2A1.2 1.2 0 0 1 10.2 4h3.6A1.2 1.2 0 0 1 15 5.2V7"/><path d="M8.5 13.5h6m0 0-2.3-2.3M14.5 13.5l-2.3 2.3"/></svg>',
-  send:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11.2l6.3 2.1L21 4Z"/><path d="M21 4l-7.4 16-2.3-6.3L21 4Z"/><path d="M9.3 13.3 11.3 20"/></svg>',
+  day:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><text class="selbar-day-n" id="selDayN" x="12" y="18" text-anchor="middle" fill="currentColor">1</text></svg>',
+  done:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="m8.2 12.2 2.6 2.6 5-5.4"/></svg>',
+  share:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4"/><path d="m8.4 7.4 3.6-3.5 3.6 3.5"/><path d="M5 13.5v5.6A1.9 1.9 0 0 0 6.9 21h10.2a1.9 1.9 0 0 0 1.9-1.9v-5.6"/></svg>',
   trash:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2M6.5 7l.9 12.1A1.9 1.9 0 0 0 9.3 21h5.4a1.9 1.9 0 0 0 1.9-1.9L17.5 7"/><path d="M10.5 11v6M13.5 11v6"/></svg>',
   close:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
 };
@@ -7443,19 +7755,21 @@ function selBar(){
   b.hidden = true;
   b.innerHTML =
     '<div class="selbar-in">' +
-      '<span class="selbar-n" id="selCount">1 tappa</span>' +
-      '<span class="selbar-acts">' +
-        '<button type="button" id="selMove" title="Sposta in un giorno" aria-label="Sposta in un giorno">' + SEL_IC.move + '</button>' +
-        '<button type="button" id="selCopy" title="Copia in un altro viaggio" aria-label="Copia in un altro viaggio">' + SEL_IC.copy + '</button>' +
-        '<button type="button" id="selShare" title="Condividi con qualcuno" aria-label="Condividi con qualcuno">' + SEL_IC.send + '</button>' +
-        '<button type="button" class="trash" id="selDel" title="Elimina le tappe selezionate" aria-label="Elimina le tappe selezionate">' + SEL_IC.trash + '</button>' +
-      '</span>' +
-      '<button type="button" class="selbar-x" id="selDone" title="Esci dalla selezione" aria-label="Esci dalla selezione">' + SEL_IC.close + '</button>' +
+      '<div class="selbar-hd">' +
+        '<span class="selbar-n" id="selCount">1 tappa</span>' +
+        '<button type="button" class="selbar-x" id="selDone" title="Esci dalla selezione" aria-label="Esci dalla selezione">' + SEL_IC.close + '</button>' +
+      '</div>' +
+      '<div class="selbar-acts">' +
+        '<button type="button" id="selDay" title="Sposta in un giorno">' + SEL_IC.day + '<i>Al giorno</i></button>' +
+        '<button type="button" id="selVisit" title="Segna come fatte" hidden>' + SEL_IC.done + '<i>Fatte</i></button>' +
+        '<button type="button" id="selShare" title="Condividi">' + SEL_IC.share + '<i>Condividi</i></button>' +
+        '<button type="button" class="trash" id="selDel" title="Elimina">' + SEL_IC.trash + '<i>Elimina</i></button>' +
+      '</div>' +
     '</div>';
   document.body.appendChild(b);
-  b.querySelector('#selMove').onclick = selMoveAsk;
-  b.querySelector('#selCopy').onclick = () => copyToTrip([...selIds]);
-  b.querySelector('#selShare').onclick = () => sharePack([...selIds]);
+  b.querySelector('#selDay').onclick = selMoveAsk;
+  b.querySelector('#selVisit').onclick = selMarkDone;
+  b.querySelector('#selShare').onclick = selShareAsk;
   b.querySelector('#selDel').onclick = selDelAsk;
   b.querySelector('#selDone').onclick = () => selExit();
   return b;
@@ -7468,7 +7782,9 @@ function selEnter(id){
   document.body.classList.add('selmode');
   selBar().hidden = false;
   paintSel();
-  toast('Tappa selezionata · tocca le altre da aggiungere');
+  /* v96 — niente messaggio a comparsa: l'istruzione ha già il suo posto nella
+     barra, che è lì e resta lì. Un avviso opaco di 2,6 s per dire una cosa
+     scritta due centimetri sotto era solo un ostacolo. */
 }
 function selExit(){
   if(!selMode) return;
@@ -7494,13 +7810,33 @@ function paintSel(){
     if(!on) r.style.removeProperty('--seli');
   });
   const c = document.getElementById('selCount');
-  if(c) c.textContent = selIds.size + (selIds.size === 1 ? ' tappa' : ' tappe');
+  if(c) c.innerHTML = selIds.size + (selIds.size === 1 ? ' tappa <i>· tocca le altre</i>' : ' tappe');
+  const dn = document.getElementById('selDayN');
+  if(dn) dn.textContent = selIds.size > 9 ? '9+' : String(selIds.size);
+  /* «Fatte» compare solo quando ha senso: tappe dentro un giorno e non ancora
+     visitate. È la cosa che si vuole fare la sera in albergo. */
+  const fv = document.getElementById('selVisit');
+  if(fv){
+    const chosen = state.places.filter(p => selIds.has(p.id));
+    fv.hidden = !(selMode && chosen.length && chosen.every(p => p.dayId && !p.visited));
+  }
 }
 /* in quale giorno finiscono: un giorno per riga, col suo colore e quante tappe
    ha già, più Brainstorming per tirarle fuori dal percorso */
 function selMoveAsk(){
   const picked = [...selIds];
   if(!picked.length) return;
+  pickCard({
+    ic:'list',
+    t:'Sposta ' + picked.length + (picked.length === 1 ? ' tappa' : ' tappe'),
+    p:['Vanno in fondo al giorno che scegli, nell’ordine in cui sono adesso.'],
+    items: dayPickItems(), no:'Annulla',
+    onPick: dayId => selMoveTo(dayId, picked)
+  });
+}
+/* l'elenco dei giorni più Brainstorming: lo usano la selezione multipla e la
+   singola tappa dalla sua scheda */
+function dayPickItems(){
   const items = state.days.map(d => {
     const n = all(d.id).length;
     return {
@@ -7511,13 +7847,7 @@ function selMoveAsk(){
     };
   });
   items.push({label:'Brainstorming', sub:'fuori dai giorni', ic:'○', value:null});
-  pickCard({
-    ic:'list',
-    t:'Sposta ' + picked.length + (picked.length === 1 ? ' tappa' : ' tappe'),
-    p:['Vanno in fondo al giorno che scegli, nell’ordine in cui sono adesso.'],
-    items, no:'Annulla',
-    onPick: dayId => selMoveTo(dayId, picked)
-  });
+  return items;
 }
 /* Eliminare in blocco: chi incolla dodici tappe per errore le deve poter
    togliere in un colpo, non una conferma alla volta. Il riquadro dice quali,
@@ -7549,6 +7879,36 @@ function selDelAsk(){
       save(); render();
       toast(n === 1 ? '“' + nome + '” eliminata' : n + ' tappe eliminate');
     }
+  });
+}
+/* La sera in albergo si segnano fatte tutte insieme: oggi va fatta una per una,
+   riga per riga. Le tappe fuori dai giorni non entrano: non sono un percorso. */
+function selMarkDone(){
+  const picked = state.places.filter(p => selIds.has(p.id) && p.dayId);
+  if(!picked.length) return;
+  picked.forEach(p => { p.visited = true; if(!p.visitedAt) p.visitedAt = Date.now(); });
+  const n = picked.length, nome = picked[0].name;
+  selExit();
+  save(); render();
+  toast(n === 1 ? '“' + nome + '” segnata come fatta' : n + ' tappe segnate come fatte');
+}
+/* Un solo Condividi — il quadrato con la freccia che esce, quello che tutti
+   conoscono dal sistema operativo — e sotto le due strade scritte: la valigia
+   con la freccia e l'aeroplanino di carta non si distinguevano, e nessuno dei
+   due diceva se mandava un file, un messaggio o un collegamento. */
+function selShareAsk(){
+  const picked = [...selIds];
+  if(!picked.length) return;
+  pickCard({
+    ic:'list',
+    t:'Cosa ne faccio?',
+    p:[picked.length + (picked.length === 1 ? ' tappa scelta.' : ' tappe scelte.')],
+    items:[
+      {label:'Copia in un altro viaggio', sub:'restano anche qui', ic:'⧉', value:'copy'},
+      {label:'Manda a un amico', sub:'un collegamento da aprire', ic:'↱', value:'send'}
+    ],
+    no:'Annulla',
+    onPick: v => { if(v === 'copy') copyToTrip(picked); else sharePack(picked); }
   });
 }
 function selMoveTo(dayId, ids){
@@ -8150,7 +8510,7 @@ function shortestOrder(mid, from, to){
 function sortDay(d){
   const seq = stops(d.id);
   if(seq.length < 3){
-    noteCard('Poco da ordinare', 'Con meno di tre tappe in sequenza l\'ordine è già quello: sposta le tappe a mano dal ⋯ della tappa.');
+    noteCard('Poco da ordinare', 'Con meno di tre tappe in sequenza l\'ordine è già quello: per cambiarlo, tieni premuta una tappa e trascinala.');
     return;
   }
   const from = baseOf(d.baseFromId), to = baseOf(d.baseToId);
@@ -8466,29 +8826,45 @@ async function drawStopCard(p, fmt){
   const M = 56, pw = F.w - M*2, ph = F.photo;
   const d = dayOf(p.dayId);
   const col = d ? (d.color || BRAIN_SOLID) : BRAIN_SOLID;
-  /* la foto del diario ha la precedenza su quella suggerita: è il ricordo vero */
-  const src = (p.diaryPhotos && p.diaryPhotos[0]) || p.img;
-  const im = await loadImgSafe(src);
-  ctx.save();
-  roundRect(ctx, M, M, pw, ph, 30);
-  if(im){
-    ctx.clip();
-    const r = Math.max(pw/im.width, ph/im.height);
-    const iw = im.width*r, ih = im.height*r;
-    ctx.drawImage(im, M + (pw-iw)/2, M + (ph-ih)/2, iw, ih);
+  /* le foto del diario hanno la precedenza su quella suggerita: sono il ricordo
+     vero. Fino a tre, e il riquadro cambia forma invece di buttarne via due. */
+  const srcs = ((p.diaryPhotos && p.diaryPhotos.length) ? p.diaryPhotos : [p.img]).filter(Boolean).slice(0, 3);
+  const ims = await Promise.all(srcs.map(loadImgSafe));
+  const shots = ims.filter(Boolean);
+  const G = 14;
+  const tiles = shots.length === 3
+    ? [[M, M, pw*0.62 - G/2, ph, 26],
+       [M + pw*0.62 + G/2, M, pw*0.38 - G/2, (ph-G)/2, 26],
+       [M + pw*0.62 + G/2, M + (ph-G)/2 + G, pw*0.38 - G/2, (ph-G)/2, 26]]
+    : shots.length === 2
+    ? [[M, M, (pw-G)/2, ph, 26], [M + (pw-G)/2 + G, M, (pw-G)/2, ph, 26]]
+    : [[M, M, pw, ph, 30]];
+  if(shots.length){
+    shots.forEach((im, i) => {
+      const [x, y0, w, h, r] = tiles[i];
+      ctx.save();
+      roundRect(ctx, x, y0, w, h, r);
+      ctx.clip();
+      const k = Math.max(w/im.width, h/im.height);
+      const iw = im.width*k, ih = im.height*k;
+      ctx.drawImage(im, x + (w-iw)/2, y0 + (h-ih)/2, iw, ih);
+      ctx.restore();
+    });
   } else {
     /* senza foto la cornice si comporta come i segnaposto dell'app:
        tratteggio e glifo del tipo nel colore del giorno */
+    ctx.save();
+    roundRect(ctx, M, M, pw, ph, 30);
     ctx.fillStyle = col + '1F'; ctx.fill();
     ctx.setLineDash([14,11]); ctx.lineWidth = 3; ctx.strokeStyle = col + '66'; ctx.stroke();
     ctx.setLineDash([]);
-    const t = typeOf(p), gs = Math.min(pw, ph) * 0.34;
+    const t0 = typeOf(p), gs = Math.min(pw, ph) * 0.34;
     ctx.translate(M + pw/2 - gs/2, M + ph/2 - gs/2);
     ctx.scale(gs/24, gs/24);
     ctx.fillStyle = col; ctx.globalAlpha = .62;
-    ctx.fill(new Path2D(t.d));
+    ctx.fill(new Path2D(t0.d));
+    ctx.restore();
   }
-  ctx.restore();
   /* numero della tappa nel percorso del giorno */
   const idx = d && d.id ? stops(d.id).findIndex(x => x.id === p.id) : -1;
   if(idx >= 0){
@@ -8786,7 +9162,7 @@ function drawCosts(){
       const lab = v > 0.005 ? 'deve avere' : v < -0.005 ? 'deve dare' : 'in pari';
       return '<div class="who"><span class="who-n">'+esc(p.name)+'</span>'+
              '<span class="who-b '+cls+'"><i>'+lab+'</i>'+money(Math.abs(v))+'</span>'+
-             '<button class="icon-btn" data-del="'+p.id+'" title="Rimuovi">✕</button></div>';
+             '<button class="icon-btn" data-del="'+p.id+'" title="Elimina" aria-label="Elimina">'+TRASH_SVG+'</button></div>';
     }).join('') + '</div>';
   }
   h += '<div class="add-row"><input class="field" id="newPerson" placeholder="Nome partecipante" autocomplete="off">'+
@@ -8807,8 +9183,8 @@ function drawCosts(){
         '<div class="exp-top">'+
         '<span class="exp-d">'+esc(e.desc||'Spesa')+'</span>'+
         '<span class="exp-a mono">'+money(e.amount)+'</span>'+
-        '<button class="icon-btn" data-edx="'+e.id+'" title="Modifica">✎</button>'+
-        '<button class="icon-btn" data-delx="'+e.id+'" title="Elimina">✕</button></div>'+
+        '<button class="icon-btn" data-edx="'+e.id+'" title="Modifica">'+PENCIL_SVG+'</button>'+
+        '<button class="icon-btn" data-delx="'+e.id+'" title="Elimina">'+TRASH_SVG+'</button></div>'+
         '<div class="exp-m mono">'+(e.date ? fmtDay(e.date)+' · ' : '')+esc(payLab)+(pay.length?verb:'')+' · per '+esc(who)+'</div></div>';
     }).join('');
   }
@@ -9977,18 +10353,14 @@ function edit(id){
   kidB.onclick = () => kidB.classList.toggle('on');
   walkB.onclick = () => walkB.classList.toggle('on');
 
-  const tg = document.getElementById('fType');  tg.innerHTML = '';
-  Object.entries(TYPES).forEach(([k,v]) => {
-    const b = document.createElement('button');
-    b.className = 'type-opt' + ((editing.type||'place') === k ? ' on' : '');
-    b.dataset.type = k;
-    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="'+v.d+'"/></svg><span>'+esc(v.label)+'</span>';
-    b.onclick = () => {
-      tg.querySelectorAll('.type-opt').forEach(x => x.classList.remove('on'));
-      b.classList.add('on');
-    };
-    tg.appendChild(b);
-  });
+  /* il tipo: quattro pastiglie e «Altro…». Su una tappa nuova la prima è quella
+     indovinata dal nome e si riaggiorna mentre si scrive, finché non si tocca
+     niente: chi ha scelto a mano non si vede cambiare la scelta sotto le dita. */
+  typeAuto = !editing.type || editing.type === 'place';
+  typeSel  = editing.type && editing.type !== 'place'
+    ? editing.type
+    : (guessType(editing.name || document.getElementById('fName').value) || 'place');
+  paintTypeChips();
   const box = document.getElementById('fLinks');
   box.innerHTML = '';
   (editing.links||[]).forEach(l => linkRow(l.label, l.url));
@@ -9997,6 +10369,55 @@ function edit(id){
   autoFocus(document.getElementById('fName'));
 }
 window.edit = edit;
+
+let typeSel = 'place', typeAuto = true;
+function paintTypeChips(){
+  const tg = document.getElementById('fType');
+  if(!tg) return;
+  tg.innerHTML = '';
+  typeChips(typeSel).forEach(k => {
+    const v = TYPES[k];
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'type-opt' + (k === typeSel ? ' on' : '');
+    b.dataset.type = k;
+    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="'+v.d+'"/></svg><span>'+esc(v.label)+'</span>';
+    b.onclick = () => { typeSel = k; typeAuto = false; paintTypeChips(); };
+    tg.appendChild(b);
+  });
+  const m = document.createElement('button');
+  m.type = 'button';
+  m.className = 'type-more';
+  m.textContent = 'Altro\u2026';
+  m.onclick = typeMoreAsk;
+  tg.appendChild(m);
+}
+/* l'elenco intero, ma per gruppi e a righe scritte: diciotto icone in griglia
+   erano un rebus, «Luogo di culto» sotto un tetto con la croce non si legge. */
+function typeMoreAsk(){
+  const items = [];
+  TYPE_GROUPS.forEach(g => {
+    items.push({head:true, label:g.t});
+    g.k.forEach(k => items.push({
+      label: TYPES[k].label, value: k,
+      ic:'<svg class="solid" viewBox="0 0 24 24" aria-hidden="true"><path d="'+TYPES[k].d+'"/></svg>'
+    }));
+  });
+  pickCard({
+    ic:'list', t:'Che tipo di posto è?',
+    items, no:'Lascia stare',
+    onPick: k => { typeSel = k; typeAuto = false; paintTypeChips(); }
+  });
+}
+(() => {
+  const f = document.getElementById('fName');
+  if(!f) return;
+  f.addEventListener('input', () => {
+    if(!typeAuto) return;
+    const g = guessType(f.value) || 'place';
+    if(g !== typeSel){ typeSel = g; paintTypeChips(); }
+  });
+})();
 
 /* Uscire dalla scheda con “indietro” o toccando fuori buttava via tutto senza
    dire niente. Stessa rete di spese e prenotazioni: la firma dei campi all'apertura,
@@ -10123,9 +10544,39 @@ function viewStop(id){
   if(!p) return;
   document.getElementById('svTitle').textContent = p.name;
   document.getElementById('svBody').innerHTML = stopDetailBody(p);
+  /* Le azioni della tappa stavano in tre posti: il ⋯ della riga, il popup del
+     pin e il fondo di questa scheda. Ora sono qui e basta, scritte. */
+  const done = document.getElementById('svDone');
+  done.classList.toggle('on', !!p.visited);
+  done.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.6 9.6 17 19 7.4"/></svg><span>' +
+    (p.visited ? 'Fatta' : 'Segna fatta') + '</span>';
+  done.onclick = () => {
+    p.visited = !p.visited;
+    if(p.visited && !p.visitedAt) p.visitedAt = Date.now();
+    save(); render(); viewStop(id);
+  };
+  const mv = document.getElementById('svMove');
+  mv.hidden = isMine() || !state.days.length;
+  mv.onclick = () => { stopViewVeil.hidden = true; stopMoveAsk(id); };
+  document.getElementById('svMap').onclick = () => {
+    stopViewVeil.hidden = true;
+    map.flyTo([p.lat, p.lng], Math.max(map.getZoom(), 14));
+    closeSheetMobile();
+  };
   document.getElementById('svEdit').onclick = () => { stopViewVeil.hidden = true; edit(id); };
   document.getElementById('svDel').onclick = () => { stopViewVeil.hidden = true; deletePlace(id); };
   stopViewVeil.hidden = false;
+}
+/* una tappa sola cambia giorno con lo stesso elenco della selezione multipla */
+function stopMoveAsk(id){
+  const p = state.places.find(x => x.id === id);
+  if(!p) return;
+  pickCard({
+    ic:'list', t:'In che giorno?',
+    p:['«' + esc(p.name) + '» va in fondo al giorno che scegli.'],
+    items: dayPickItems(), no:'Annulla',
+    onPick: dayId => selMoveTo(dayId, [id])
+  });
 }
 document.getElementById('svClose').onclick = () => { stopViewVeil.hidden = true; };
 stopViewVeil.onclick = e => { if(e.target === stopViewVeil) stopViewVeil.hidden = true; };
@@ -10386,7 +10837,49 @@ function setPick(v){
 
 /* ============ aggiungi un luogo (ricerca o tocco sulla mappa) ============ */
 const addVeil = document.getElementById('addVeil');
-document.getElementById('btnAddPlace').onclick = openAddVeil;
+/* v97 — tre tondi rossi uno sopra l'altro non dicevano cosa fanno, e il più
+   piccolo (Ispirami) era anche il meno visibile. Un ＋ solo, e le tre cose che
+   si possono aggiungere scritte per esteso. */
+const ADD_ICONS = {
+  place:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6.5-6.1 6.5-10.6A6.5 6.5 0 0 0 12 3.9a6.5 6.5 0 0 0-6.5 6.5C5.5 14.9 12 21 12 21z"/><circle class="dot" cx="12" cy="10.4" r="1.5"/></svg>',
+  day:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5h15v14h-15z"/><path d="M4.5 9.7h15"/><path d="M8.5 3.5v3.4M15.5 3.5v3.4"/></svg>',
+  insp:'<svg viewBox="0 0 24 24" aria-hidden="true" style="fill:currentColor;stroke:none"><path d="M10.4 3.4l1.35 3.65 3.65 1.35-3.65 1.35L10.4 13.4 9.05 9.75 5.4 8.4l3.65-1.35z"/><path d="M17.4 13.6l.72 1.94 1.94.72-1.94.72-.72 1.94-.72-1.94-1.94-.72 1.94-.72z"/></svg>'
+};
+function openAddMenu(){
+  pickCard({
+    t:'Cosa aggiungo?',
+    ic:'list',
+    items:[
+      {label:'Un posto', sub:'Cercalo per nome: atterra nel giorno che scegli.', ic:ADD_ICONS.place, value:'place'},
+      {label:'Un giorno', sub:'Giorno '+(state.days.length+1)+', in fondo all\'itinerario.', ic:ADD_ICONS.day, value:'day'},
+      {label:'Ispirami', sub:'Ti propongo cosa vedere nella zona del viaggio.', ic:ADD_ICONS.insp, value:'insp'}
+    ],
+    no:'Lascia stare',
+    onPick: v => {
+      if(v === 'place') openAddVeil();
+      else if(v === 'day') addDay();
+      else openInspire(true);
+    }
+  });
+}
+function openDiaryMenu(){
+  pickCard({
+    t:'Cosa faccio?',
+    ic:'diary',
+    items:[
+      {label:'Cartoline', sub:'Trasformo una tappa in un\'immagine con la sua foto, il nome e la data: la salvi sul telefono e la mandi a chi vuoi.', ic:DIARY_ICONS.cards, value:'cards'},
+      {label:'Sistema le foto', sub:'Scegli le foto del viaggio dalla galleria: le metto io nella tappa giusta, leggendo dove e quando le hai scattate.', ic:DIARY_ICONS.photos, value:'photos'}
+    ],
+    no:'Lascia stare',
+    onPick: v => document.getElementById(v === 'cards' ? 'btnCards' : 'btnPhotos').click()
+  });
+}
+const DIARY_ICONS = {
+  cards:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5" width="17.6" height="14" rx="2.2"/><path d="M3.8 15.6 9 10.6l3.3 3.2 2.5-2.4 5.4 5.1"/></svg>',
+  photos:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 9.2a1.8 1.8 0 0 1 1.8-1.8h1.9l1.1-1.9h6.2l1.1 1.9h1.9a1.8 1.8 0 0 1 1.8 1.8v7.8a1.8 1.8 0 0 1-1.8 1.8H5.4a1.8 1.8 0 0 1-1.8-1.8z"/><circle cx="12" cy="12.9" r="3.1"/></svg>'
+};
+document.getElementById('btnAddPlace').onclick = () =>
+  view === 'diary' ? openDiaryMenu() : openAddMenu();
 /* la lente rossa che portava in Itinerario è stata sostituita dalla riga di
    ricerca della mappa: vedi mapSearch, che naviga senza creare niente */
 document.getElementById('addVeilClose').onclick = closeAddVeil;
@@ -10428,6 +10921,7 @@ function anyOpen(){
 function updateFold(){
   const b = document.getElementById('btnFold');
   if(!b) return;
+  const lab = document.getElementById('foldLab');
   const vuoto = (view === 'cost' && !state.expenses.length)
              || (view === 'book' && !(state.bookings || []).length);
   if(vuoto){
@@ -10435,6 +10929,7 @@ function updateFold(){
     b.title = b.ariaLabel = 'Non c\'è ancora niente da comprimere';
     b.querySelector('.ic-fold').hidden = false;
     b.querySelector('.ic-unfold').hidden = true;
+    if(lab) lab.textContent = 'Comprimi tutto';
     return;
   }
   b.disabled = false;
@@ -10442,6 +10937,7 @@ function updateFold(){
   b.querySelector('.ic-fold').hidden = !open;
   b.querySelector('.ic-unfold').hidden = open;
   const what = FOLD_LABEL[view] || 'tutto';
+  if(lab) lab.textContent = open ? 'Comprimi tutto' : 'Espandi tutto';
   b.title = b.ariaLabel = (open ? 'Comprimi ' : 'Espandi ') + what;
 }
 /* Comprimi/espandi in tutte le sezioni, non solo nell'Itinerario. In Spese e
@@ -10478,7 +10974,7 @@ document.getElementById('btnFold').onclick = () => {
   redrawDays();
 };
 
-document.getElementById('btnDay').onclick = () => {
+function addDay(){
   const prev = state.days[state.days.length-1];
   const day = {id:uid(), name:'Giorno '+(state.days.length+1), color:PALETTE[state.days.length % PALETTE.length]};
   /* si riparte dalla stessa base dove si è finito ieri, finché non la si cambia */
@@ -10491,7 +10987,8 @@ document.getElementById('btnDay').onclick = () => {
   coach('day');
   save(); render();
   document.getElementById('list').scrollTop = 1e6;
-};
+}
+document.getElementById('btnDay').onclick = addDay;
 
 document.getElementById('btnExport').onclick = () => {
   const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
@@ -10560,34 +11057,48 @@ document.getElementById('file').onchange = e => {
 /* ============ navigazione ============ */
 /* Quattro viste di pari livello: Tappe · Spese · Prenot. · Diario, tutte
    mostrate nel pannello. La mappa è sempre presente dietro/accanto: non è
-   più una vista a sé, la si scopre nascondendo il pannello con il tab
-   Mappa (vedi tabMap più sotto). */
+   una vista a sé, la si scopre nascondendo il pannello con la pastiglia
+   Mappa in cima all'elenco (vedi tabMap più sotto). */
 const tabList = document.getElementById('tabList'),
       tabCost = document.getElementById('tabCost'),
       tabBook = document.getElementById('tabBook'),
-      tabDiary = document.getElementById('tabDiary'),
-      tabMap  = document.getElementById('tabMap');
+      tabDiary = document.getElementById('tabDiary');
 const listEl = document.getElementById('list'), costEl = document.getElementById('costs');
+/* v98 — la mappa è il cuore dell'app: è quello che si vede all'avvio, e ogni
+   tab è un interruttore. Toccato, apre la sua sezione sopra la mappa; toccato
+   di nuovo, il pannello si chiude e resta la mappa. */
+function toggleView(v){
+  const aperto = document.body.classList.contains('panel-open');
+  if(aperto && view === v){
+    document.body.classList.remove('panel-open');
+    updateTabsState();
+    map.invalidateSize();
+    setTimeout(() => map.invalidateSize(), 300);
+    return;
+  }
+  setView(v);
+}
 let view = 'list';
 
 
 /* Un solo tab acceso alla volta: o la vista sotto (Tappe/Spese/…) o Mappa. */
 function updateTabsState(){
   const mapOnly = !document.body.classList.contains('panel-open');
-  tabMap.classList.toggle('on', mapOnly);
+  /* acceso = pannello aperto su quella sezione. Col pannello chiuso non è
+     acceso niente: si sta guardando la mappa, e ritoccare il tab la copre. */
   [[tabList,'list'],[tabCost,'cost'],[tabBook,'book'],[tabDiary,'diary']]
-    .forEach(([b,k]) => b.classList.toggle('on', !mapOnly && view === k));
+    .forEach(([b,k]) => { b.classList.toggle('on', !mapOnly && view === k);
+      b.setAttribute('aria-pressed', String(!mapOnly && view === k)); });
 
   /* i due filtri della mappa vivono solo qui: fuori da "solo mappa" il resto
      dell'app (Itinerario, Diario…) deve sempre mostrare tutto senza sorprese,
      quindi si azzerano appena si riapre il pannello. */
-  /* su schermo largo la mappa si vede sempre, quindi i suoi comandi restano
-     sempre lì; su telefono compaiono solo quando la mappa è davvero visibile */
-  const phone = window.matchMedia('(max-width:880px)').matches;
-  const showMapCtl = mapOnly || !phone;
-  ['fltStopsWrap','fltDayWrap'].forEach(id => { document.getElementById(id).hidden = !showMapCtl; });
-  if(!showMapCtl) document.getElementById('mfTip').hidden = true;
-  if(phone && !mapOnly && (stopFilter !== 'all' || dayFilter !== null)){
+  /* v97 — i due filtri si vedono solo mentre si guarda la mappa: col pannello
+     aperto il resto dell'app deve mostrare tutto senza sorprese, e le pastiglie
+     starebbero sotto l'elenco senza che nessuno le stia guardando. */
+  ['fltStopsWrap','fltDayWrap'].forEach(id => { document.getElementById(id).hidden = !mapOnly; });
+  if(!mapOnly) document.getElementById('mfTip').hidden = true;
+  if(!mapOnly && (stopFilter !== 'all' || dayFilter !== null)){
     stopFilter = 'all'; dayFilter = null;
     renderMapFilters();
     drawMap();
@@ -10611,13 +11122,16 @@ function setView(v){
   /* un solo tondo per sezione in basso a destra; comprimi/espandi vive nella
      testata e c'è in tutte le sezioni: nell'Itinerario e nel Diario chiude i
      giorni, in Spese e Prenotazioni ritira il dettaglio delle righe. */
-  document.getElementById('btnAddPlace').hidden = v !== 'list';
-  document.getElementById('btnDay').hidden = v !== 'list';
-  /* le stelline restano in Tappe: è da lì che nasce un viaggio */
-  document.getElementById('btnInsp').hidden = v !== 'list';
-  /* foto e cartoline appartengono al Diario: è lì che il viaggio diventa ricordo */
-  document.getElementById('btnPhotos').hidden = v !== 'diary';
-  document.getElementById('btnCards').hidden = v !== 'diary';
+  /* v98 — un ＋ solo per sezione: in Tappe apre tre righe scritte, nel Diario
+     due (cartoline, sistema le foto). I tondi che facevano quelle cose restano
+     nel documento — i gestori sono attaccati a loro — ma non si vedono più. */
+  const add = document.getElementById('btnAddPlace');
+  add.hidden = !(v === 'list' || v === 'diary');
+  add.title = add.ariaLabel = diary ? 'Aggiungi al diario' : 'Aggiungi al viaggio';
+  document.getElementById('btnDay').hidden = true;
+  document.getElementById('btnInsp').hidden = true;
+  document.getElementById('btnPhotos').hidden = true;
+  document.getElementById('btnCards').hidden = true;
   document.getElementById('btnFold').hidden = false;
   /* l'icona del ⇅ dipende dalla sezione: senza questo restava quella di prima
      e prometteva il contrario di quello che poi fa */
@@ -10637,15 +11151,15 @@ function setView(v){
   map.invalidateSize();
   setTimeout(() => map.invalidateSize(), 300);
 }
-tabList.onclick = () => setView('list');
-tabCost.onclick = () => setView('cost');
-tabBook.onclick = () => setView('book');
-tabDiary.onclick = () => setView('diary');
+tabList.onclick = () => toggleView('list');
+tabCost.onclick = () => toggleView('cost');
+tabBook.onclick = () => toggleView('book');
+tabDiary.onclick = () => toggleView('diary');
 document.getElementById('btnBooking').onclick = () => openBooking(null);
 document.getElementById('btnExpense').onclick = openExpense;
 
-/* nasconde/mostra tutto il pannello, lasciando solo la mappa */
-tabMap.onclick = () => {
+/* rimasto per l'indietro di Android e la maniglia: chiude il pannello */
+function togglePanel(){
   document.body.classList.toggle('panel-open');
   updateTabsState();
   map.invalidateSize();
@@ -10699,42 +11213,32 @@ const MF_ICONS = {
 };
 
 const STOP_FILTER_CYCLE = ['all','days','brainstorm'];
-const STOP_FILTER_LABEL = {all:'Tutto', days:'Solo giornaliere', brainstorm:'Solo Brainstorming'};
+const STOP_FILTER_LABEL = {all:'Tutte le tappe', days:'Solo le giornaliere', brainstorm:'Solo Brainstorming'};
 const STOP_FILTER_CLASS = {all:'', days:'on-days', brainstorm:'on-brain'};
 
-let mfFlyTimer = null;
-function showFlyout(el, text){
-  el.textContent = text;
-  el.classList.add('show');
-  clearTimeout(mfFlyTimer);
-  mfFlyTimer = setTimeout(() => el.classList.remove('show'), 1400);
+/* la pastiglia dice sempre cosa si sta guardando: niente etichetta a comparsa
+   da leggere in tempo, e niente anello di progresso da interpretare. */
+function fbtnPaint(btn, icon, text){
+  btn.innerHTML = icon + '<span class="mf-lab"></span>';
+  btn.querySelector('.mf-lab').textContent = text;
 }
-
-const RING_CIRC = 2 * Math.PI * 21; // r=21 nel viewBox 48×48 di .mf-ring
 
 function renderMapFilters(){
   const btnStops = document.getElementById('fltStops');
   btnStops.className = 'map-fbtn ' + STOP_FILTER_CLASS[stopFilter];
-  btnStops.innerHTML = MF_ICONS[stopFilter];
-  btnStops.setAttribute('aria-label', 'Filtro tappe: '+STOP_FILTER_LABEL[stopFilter].toLowerCase());
+  fbtnPaint(btnStops, MF_ICONS[stopFilter], STOP_FILTER_LABEL[stopFilter]);
+  btnStops.setAttribute('aria-label', 'Filtro tappe: '+STOP_FILTER_LABEL[stopFilter].toLowerCase()+'. Tocca per cambiare');
 
   const btnDay = document.getElementById('fltDay');
-  const icSpan = btnDay.querySelector('.mf-ic');
-  const ring = btnDay.querySelector('.mf-ring circle');
   const n = state.days.length;
-  if(dayFilter == null || !n){
-    btnDay.classList.remove('on-day');
-    icSpan.className = 'mf-ic';
-    icSpan.innerHTML = MF_ICONS.calendar;
-    ring.style.strokeDashoffset = String(RING_CIRC);
-    btnDay.setAttribute('aria-label', 'Filtro giorno: tutti');
-  }else{
-    btnDay.classList.add('on-day');
-    icSpan.className = 'mf-ic mf-txt';
-    icSpan.textContent = 'G'+(dayFilter+1);
-    ring.style.strokeDashoffset = String(RING_CIRC * (1 - (dayFilter+1)/n));
-    btnDay.setAttribute('aria-label', 'Filtro giorno: giorno '+(dayFilter+1)+' di '+n);
-  }
+  const acceso = dayFilter != null && n > 0;
+  btnDay.className = 'map-fbtn' + (acceso ? ' on-day' : '');
+  btnDay.disabled = !n;
+  const nome = acceso ? ((state.days[dayFilter] || {}).name || 'Giorno '+(dayFilter+1)) : 'Tutti i giorni';
+  fbtnPaint(btnDay, MF_ICONS.calendar, nome);
+  btnDay.setAttribute('aria-label', acceso
+    ? 'Filtro giorno: '+nome+', '+(dayFilter+1)+' di '+n+'. Tocca per il prossimo'
+    : 'Filtro giorno: tutti');
 }
 
 document.getElementById('fltStops').onclick = () => {
@@ -10742,7 +11246,6 @@ document.getElementById('fltStops').onclick = () => {
   stopFilter = STOP_FILTER_CYCLE[(i+1) % STOP_FILTER_CYCLE.length];
   renderMapFilters();
   drawMap();
-  showFlyout(document.getElementById('fltStopsFly'), STOP_FILTER_LABEL[stopFilter]);
 };
 
 /* click = avanza di un giorno nel ciclo; long-press = azzera subito, utile
@@ -10757,7 +11260,6 @@ fltDayBtn.addEventListener('pointerdown', () => {
       dayFilter = null;
       renderMapFilters();
       drawMap();
-      showFlyout(document.getElementById('fltDayFly'), 'Tutti i giorni');
     }
   }, 550);
 });
@@ -10770,9 +11272,6 @@ fltDayBtn.onclick = () => {
   dayFilter = dayFilter == null ? 0 : (dayFilter + 1 >= n ? null : dayFilter + 1);
   renderMapFilters();
   drawMap();
-  const day = dayFilter != null ? state.days[dayFilter] : null;
-  const label = day ? 'G'+(dayFilter+1)+' · '+(day.date ? fmtCalDate(day.date) : day.name) : 'Tutti i giorni';
-  showFlyout(document.getElementById('fltDayFly'), label);
 };
 
 /* ============ installazione e funzionamento offline ============ */
@@ -10879,7 +11378,7 @@ function flagDel(key,v){
 }
 function markSeen(v){ flagAdd(SEEN_KEY, v); }
 
-const TAB_OF = {list:'tabList', cost:'tabCost', book:'tabBook', diary:'tabDiary', map:'tabMap'};
+const TAB_OF = {list:'tabList', cost:'tabCost', book:'tabBook', diary:'tabDiary'};
 
 /* l'icona del tip è quella del tab, clonata: un solo posto da modificare se
    un domani cambia il segno di una sezione */
@@ -10975,30 +11474,25 @@ function openWelcome(){
    esattamente dove quella spiegazione vive da quel momento in avanti, con la
    ✕ per togliersela. Così il tutorial non è una schermata a parte da leggere e
    dimenticare: mostra dove ritrovare le cose. */
+/* Tre schermate, non cinque, e circa centocinquanta parole in tutto: al primo
+   avvio nessuno legge quattro paragrafi per sezione. Spese, Prenotazioni e
+   Diario si presentano da sé con il loro tip di sezione, la prima volta che ci
+   si entra — spiegate lì, dove servono. Sull’ultima schermata c’è «Lasciati
+   ispirare»: prima arrivava da solo sei secondi dopo, come un popup a tradimento. */
 var tourRunning = false, tourReveal = false;
 const TOUR = [
   {view:'map', ic:'map', t:'La mappa è il viaggio',
    c:'linear-gradient(135deg,#3D5666,#22303A)', fg:'#fff', p:[
-    'Ogni tappa è rappresentata da un pin del colore del suo giorno. La linea che unisce i pin è il percorso: sopra trovi <b>durata e distanza</b> del tratto, in auto o a piedi.',
-    'Tocca un pin per aprire la tappa; tienilo premuto e trascinalo per correggerne la posizione. I due pulsanti tondi in alto scelgono cosa mostrare: tutto, solo i giorni, solo le idee, oppure un giorno alla volta.',
-    'Il campo di ricerca in alto <b>sposta la vista</b>: scrivi Tokyo e la mappa si porta su Tokyo, senza aggiungere nulla. Se il posto ti interessa, lo trasformi in tappa con un tocco.',
-    'Le mappe che visualizzi vengono salvate sul dispositivo: in viaggio restano disponibili anche senza connessione.']},
-  {view:'list', ic:'list', t:'Tappe: prima crea, poi ordina',
+    'Ogni pin è una tappa, del colore del suo giorno; la linea che li unisce è il percorso, con <b>distanza e durata</b>. Tocca un pin per aprirlo, tienilo premuto per spostarlo.',
+    'Le mappe che guardi restano sul dispositivo: in viaggio funzionano anche senza rete.']},
+  {view:'list', ic:'list', t:'Tappe: prima raccogli, poi ordina',
    c:'linear-gradient(135deg,#E0454B,#D3323A)', fg:'#fff', p:[
-    'Qui costruisci l\'itinerario. Raccogli tutte le idee in <b>Brainstorming</b> senza preoccuparti delle date: le troverai in fondo alla finestra. Sulla mappa le riconosci dall\'icona a più colori.',
-    'Quando il viaggio prende forma, tieni premuta un\'idea e <b>trascinala nel giorno</b> a cui appartiene. Per ogni giorno puoi indicare la base di partenza e quella di arrivo, che corrispondono ai tuoi alloggi.']},
-  {view:'cost', ic:'cost', t:'Spese: ogni spesa, una riga',
-   c:'linear-gradient(135deg,#F3C877,#E7A93C)', fg:'#3A2707', p:[
-    'Registra l\'importo, chi ha pagato e per chi: Waynder divide la spesa e calcola <b>quanto ciascuno deve agli altri</b>, senza fogli di calcolo la sera.',
-    'Puoi usarla anche solo per annotare una spesa già saldata da tutti.']},
-  {view:'book', ic:'book', t:'Prenotazioni: tutto pronto alla partenza',
-   c:'linear-gradient(135deg,#2A93BE,#1E7FA6)', fg:'#fff', p:[
-    'Voli, treni, hotel, biglietti: inserisci il codice e Waynder genera il <b>QR</b>, disponibile anche senza connessione. Puoi allegare la conferma o il PDF.',
-    'Le prenotazioni con una data compaiono nel giorno corrispondente dell\'itinerario.']},
-  {view:'diary', ic:'diary', t:'Diario: tieni traccia del tuo viaggio',
+    'Le idee si raccolgono in <b>Brainstorming</b>, in fondo all’elenco, senza pensare alle date. Quando il viaggio prende forma, tieni premuta un’idea e trascinala nel giorno giusto.',
+    'Striscia una tappa di lato per segnarla come <b>fatta</b>.']},
+  {view:'diary', ic:'diary', t:'E il resto del viaggio',
    c:'linear-gradient(135deg,#289073,#1B7A5E)', fg:'#fff', p:[
-    'Quando segni una tappa come <b>fatta</b>, qui si apre lo spazio per raccontare com\'è andata e aggiungere le foto di quel momento.',
-    'L\'itinerario resta il programma; il Diario raccoglie il ricordo.']}
+    '<b>Spese</b> divide i conti e dice chi deve cosa. <b>Prenotazioni</b> tiene codici e QR, anche senza rete. <b>Diario</b> raccoglie foto e racconto delle tappe che hai segnato come fatte.',
+    'Da qui in poi si fa tutto dai quattro tasti in basso.']}
 ];
 
 /* ============ invito al tutorial ============ */
@@ -11074,7 +11568,9 @@ function pickCard(o){
       cloneTabIcon(o.ic || 'book', '') + '</span><h3>' + o.t + '</h3></div>' +
     (o.p || []).map(x => '<p>' + x + '</p>').join('') +
     '<div class="pick-list">' + o.items.map((it,i) =>
-      '<button class="pick-item" type="button" data-i="' + i + '">' +
+      it.head
+      ? '<div class="pick-head">' + esc(it.label) + '</div>'
+      : '<button class="pick-item" type="button" data-i="' + i + '">' +
         '<span class="pick-ic">' + (it.ic || '') + '</span>' +
         '<span class="pick-tx"><b>' + esc(it.label) + '</b>' +
           (it.sub ? '<i>' + esc(it.sub) + '</i>' : '') + '</span>' +
@@ -11119,6 +11615,8 @@ function checkCard(o){
     '<div class="check-head"><span id="ckN"></span>' +
       '<button type="button" class="check-all" id="ckAll">Togli tutte</button></div>' +
     '<div class="pick-list">' + o.items.map((it, i) =>
+      (it.group !== undefined && (i === 0 || o.items[i-1].group !== it.group)
+        ? '<div class="pick-head" data-g="' + it.group + '"></div>' : '') +
       '<button class="insp-item on" type="button" data-i="' + i + '">' +
         '<span class="insp-tick">✓</span>' +
         (it.thumb
@@ -11143,9 +11641,17 @@ function checkCard(o){
     const n = sel.size;
     nEl.textContent = n + (n === 1 ? ' scelta su ' : ' scelte su ') + o.items.length;
     allB.textContent = n === o.items.length ? 'Togli tutte' : 'Prendi tutte';
-    yesB.textContent = n ? (o.yes || 'Aggiungi') + ' ' + n : (o.yes || 'Aggiungi');
+    yesB.textContent = o.yesText ? o.yesText(n, sel, o.items) : (n ? (o.yes || 'Aggiungi') + ' ' + n : (o.yes || 'Aggiungi'));
     yesB.disabled = !n;
     yesB.style.opacity = n ? '' : '.45';
+    /* con i titoli di gruppo l'elenco dice cosa diventa: togliendo una spunta
+       il conto del giorno si aggiorna sotto gli occhi, prima di accettare */
+    if(o.groupHead) card.querySelectorAll('.pick-head[data-g]').forEach(h => {
+      const g = +h.dataset.g;
+      const its = o.items.filter((it, i) => it.group === g && sel.has(i));
+      h.textContent = o.groupHead(g, its);
+      h.style.opacity = its.length ? '' : '.45';
+    });
   };
   paint();
   const close = () => {
@@ -11202,7 +11708,9 @@ function promptCard(o){
   card.style.top = Math.round(Math.max(16, (window.innerHeight - ch) / 2 - 20)) + 'px';
   veil.classList.add('show');
   const input = card.querySelector('#promptCardInput');
+  if(o.value){ input.value = o.value; }
   autoFocus(input);
+  if(o.value) setTimeout(() => input.select(), 60);
   const close = () => {
     veil.classList.remove('show');
     card.style.animation = 'none';
@@ -11278,7 +11786,7 @@ function startTour(){
     card.style.transition = '';
   };
 
-  const finish = () => {
+  const finish = (goInspire) => {
     tourRunning = false;
     tourReveal = false;
     veil.classList.remove('show');
@@ -11286,8 +11794,12 @@ function startTour(){
     card.remove();
     secTip.classList.remove('tour-target');
     lsSet(OB_KEY, '1');
-    /* il tip di sezione arriva proprio adesso: gli si lascia il campo libero */
-    setTimeout(maybeSuggestInspire, 2200);
+    /* l'invito a Ispirami non arriva più da solo qualche secondo dopo: è un
+       pulsante sull'ultima schermata. Lo segno come già proposto comunque,
+       così non spunta più tardi da un'altra strada. */
+    state.inspireSuggested = true;
+    save();
+    if(goInspire) setTimeout(() => openInspire(true), 340);
   };
 
   /* il volo: dal centro dello schermo al posto esatto del tip di sezione */
@@ -11336,11 +11848,13 @@ function startTour(){
       s.p.map(x => '<p>' + x + '</p>').join('') +
       '<div class="tour-foot">' +
         '<span class="tour-dots">' + TOUR.map((_, k) => '<i class="' + (k === i ? 'on' : '') + '"></i>').join('') + '</span>' +
-        (last ? '' : '<button class="tour-skip" type="button">Salta</button>') +
+        (last
+          ? '<button class="tour-skip" type="button" data-insp>✨ Lasciati ispirare</button>'
+          : '<button class="tour-skip" type="button">Salta</button>') +
         '<button class="tour-next" type="button">' + (last ? 'Inizia a viaggiare' : 'Avanti') + '</button>' +
       '</div>';
     const skip = card.querySelector('.tour-skip');
-    if(skip) skip.onclick = finish;
+    if(skip) skip.onclick = () => finish(skip.hasAttribute('data-insp'));
     card.querySelector('.tour-next').onclick = () => {
       if(s.view === 'map'){
         card.classList.remove('show');
@@ -11417,11 +11931,11 @@ function startupView(){
   const first = !lsGet(OB_KEY);
   const last = lsGet(LASTVIEW_KEY);
   setView(TIPS[last] ? last : 'list');
-  if(window.matchMedia('(max-width:880px)').matches){
-    document.body.classList.remove('panel-open');
-    updateTabsState();
-    map.invalidateSize();
-  }
+  /* v98 — si parte sempre dalla mappa, su ogni schermo: è il cuore dell'app.
+     Il tab della sezione dove si era resta pronto: un tocco e si riapre. */
+  document.body.classList.remove('panel-open');
+  updateTabsState();
+  map.invalidateSize();
   renderTabDots();
   if(first) askTour();
 }
