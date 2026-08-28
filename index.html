@@ -106,7 +106,13 @@ button:active{transform:scale(.97)}
   }
 }
 .map-wrap{position:relative;height:100%;width:100%}
-#map{height:100%;width:100%;background:var(--paper-2);filter:saturate(1.05) contrast(1.02)}
+#map{height:100%;width:100%;background:var(--paper-2)}
+/* v105 — i riquadri ufficiali di OpenStreetMap sono molto più carichi del
+   Voyager di CARTO che usavamo prima della v104: strade rosse, verdi pieni,
+   etichette dappertutto. Si smorzano qui, e solo loro: pin, tracciati e
+   etichette dell'app vivono in altri strati e restano pieni. Il filtro era
+   su #map e faceva l'opposto — alzava il contrasto di tutto. */
+.leaflet-tile-pane{filter:saturate(.5) brightness(1.08) contrast(.88)}
 @media (min-width:881px){
   #map{border-radius:var(--r-lg);box-shadow:0 40px 90px -30px rgba(0,0,0,.7)}
 }
@@ -998,8 +1004,36 @@ span.day-name{cursor:pointer}
   flex:none;width:44px;height:44px;object-fit:cover;border-radius:9px;
   margin:0;border:1px solid var(--ink-3);background:var(--ink-3)
 }
-.thumb-ph{display:grid;place-items:center;color:var(--c,var(--fog))}
-.thumb-ph svg{width:19px;height:19px;fill:currentColor}
+/* v106 — la miniatura della tappa è un segno di mappa, non un francobollo: una
+   goccia piena col colore del giorno, riempita con la foto del posto, e il tipo
+   di tappa in un tondino in basso a destra, dove la goccia si stringe e non
+   copre niente. Senza foto (o se la foto non arriva) resta la goccia piena col
+   glifo grande dentro la testa. Il glifo a linee usato come maschera della foto
+   è stato provato e scartato: a 46 px si spezzava in frammenti illeggibili. */
+.stop-card .thumb-pin{
+  position:relative;display:block;flex:none;width:46px;height:46px;
+  border:0;border-radius:0;background:none;
+  filter:drop-shadow(0 1.5px 2px rgba(34,48,58,.3))
+}
+.thumb-pin .tp-flat,.thumb-pin .tp-img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  -webkit-mask-size:contain;mask-size:contain;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:center;mask-position:center
+}
+.thumb-pin .tp-flat{background:var(--c,var(--fog))}
+/* Il tondino del tipo NON prende il colore del giorno: su miele il glifo bianco
+   scendeva a 2,2:1 e a 11 px non si leggeva più. Stesso trattamento del tondino
+   sui pin della mappa (`.pin-t`): fondo scuro, glifo chiaro, anello crema che lo
+   stacca dalla foto — leggibile sopra qualunque colore di giorno. */
+.thumb-pin .tp-badge{
+  position:absolute;right:-2px;bottom:4px;width:19px;height:19px;border-radius:50%;
+  background:var(--ink);display:grid;place-items:center;
+  box-shadow:0 0 0 1.6px var(--paper)
+}
+.thumb-pin .tp-badge svg{width:11px;height:11px;fill:var(--paper)}
+.thumb-pin .tp-glyph{position:absolute;left:0;right:0;top:8px;display:grid;place-items:center;pointer-events:none}
+.thumb-pin .tp-glyph svg{width:17px;height:17px;fill:#fff}
 .stop-body{flex:1;min-width:0}
 .stop-card .stop-name{
   display:block;margin:0;font-weight:600;font-size:12.5px;line-height:1.25;
@@ -1543,14 +1577,16 @@ body.hide-legs .leg-lab{display:none}
   content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
   border-radius:var(--r) 0 0 var(--r);background:var(--brain-tex-v)
 }
-/* le idee si fanno da parte: velate, contorno tratteggiato, tornano piene al tocco */
-.stop.brain{opacity:.62;transition:opacity .18s}
+/* le idee si fanno da parte: velate, contorno tratteggiato, tornano piene al tocco.
+   v105 — erano troppo velate: sopra la mappa il grigio su bianco al 62% non si
+   leggeva più. Restano indietro, ma si leggono. */
+.stop.brain{opacity:.84;transition:opacity .18s}
 .stop.brain:hover,.stop.brain:focus-within{opacity:1}
-.stop.brain .stop-card{border-style:dashed;background:rgba(255,255,255,.5)}
+.stop.brain .stop-card{border-style:dashed;background:rgba(255,255,255,.92)}
 .stop.brain .node{opacity:.95}
-.alt-item.brain{opacity:.68}
+.alt-item.brain{opacity:.86}
 .alt-item.brain:hover{opacity:1}
-.diary-stop.brain{opacity:.74;border-style:dashed}
+.diary-stop.brain{opacity:.88;border-style:dashed}
 .diary-stop.brain:hover,.diary-stop.brain:focus-within{opacity:1}
 .diary-stop.pending{opacity:1;background:rgba(255,255,255,.62);border-style:dashed}
 .diary-stop.pending .diary-top{opacity:1}
@@ -1633,6 +1669,26 @@ body.hide-legs .leg-lab{display:none}
   box-shadow:0 3px 7px rgba(0,0,0,.35)
 }
 .pin-t svg{width:11px;height:11px;fill:var(--paper)}
+/* v106 — la foto anche sul pin. Il quadrato è ruotato di -45°: l'immagine si
+   contro-ruota e si allarga di √2 abbondante, così copre gli angoli invece di
+   lasciare due triangoli di colore. Il glifo grande esce di scena e il tipo
+   passa nel tondino `.pin-t`, che è fuori dal riquadro ruotato e quindi resta
+   dritto. Col meteo avverso i due tondini si darebbero il posto (tutti e due in
+   basso a sinistra): quello del meteo sale. */
+.pin{overflow:hidden}
+/* la specificità alta non è un vezzo: leaflet.css impone `width:auto` a ogni
+   immagine nel riquadro dei marcatori (`.leaflet-container .leaflet-marker-pane
+   img`, 0-2-2), e una regola normale perdeva — la foto si dimensionava sul
+   proprio rapporto e una verticale diventava una striscia in diagonale, col
+   colore del giorno che spuntava ai due lati. `max-width:none` perché Leaflet
+   limita anche quello. */
+.pin-img,
+.leaflet-container .leaflet-marker-pane img.pin-img{
+  position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;
+  transform:rotate(45deg) scale(1.45)
+}
+.pin.has-img > svg{display:none}
+.pin-r.up{bottom:17px}
 .pin.rainpin svg{fill:var(--ink)}
 .cost-sec{padding:16px 19px;border-bottom:1px solid var(--ink-3)}
 .who-list{display:flex;flex-direction:column;gap:2px;margin-bottom:11px}
@@ -2757,7 +2813,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v104';
+const APP_VERSION = 'v106';
 /* v98 — un segno solo per "elimina": il cestino. Nelle righe di elenco è il
    cestino da solo, nei riquadri è cestino + la parola «Elimina». La ✕ resta
    riservata a "chiudi" e a "togli questo dall'elenco che sto componendo"
@@ -3041,7 +3097,7 @@ function badge(mode){
    viaggio e scade ogni sei ore, quindi bastava aprire l'app perché ogni
    giorno del viaggio risultasse "modificato da me" e l'altro dispositivo si
    ritrovasse modifiche da approvare che nessuno aveva fatto. */
-const NON_CONTENT = ['mAt','mBy','imgUrl','imgUrlSrc','fileUrl','fileUrlSrc','diaryPhotoCache','oh','ohNone','wx','wxDetail','cc','ccn'];
+const NON_CONTENT = ['mAt','mBy','imgUrl','imgUrlSrc','fileUrl','fileUrlSrc','diaryPhotoCache','oh','ohNone','wx','wxDetail','cc','ccn','autoImg','autoImgNo','imgBad'];
 function stripStamp(e){
   const rest = {...e};
   NON_CONTENT.forEach(k => delete rest[k]);
@@ -4494,9 +4550,35 @@ function typeChips(sel){
   return out.slice(0, 4);
 }
 /* segnaposto quadrato per le tappe senza foto: icona del tipo su sfondo tenue */
-function thumbPlaceholderHTML(p){
-  const t = typeOf(p);
-  return '<span class="thumb thumb-ph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+t.d+'"/></svg></span>';
+/* la goccia è disegnata larga fin quasi al bordo del riquadro 24x24: così la
+   testa resta grande e la foto dentro si vede davvero */
+const PIN_MASK_PATH = 'M12 1.2C6.6 1.2 2.2 5.6 2.2 11c0 6.9 9.8 11.8 9.8 11.8S21.8 17.9 21.8 11c0-5.4-4.4-9.8-9.8-9.8z';
+function maskCSS(d){
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="' + d + '"/></svg>';
+  const u = "url('data:image/svg+xml;utf8," + encodeURIComponent(svg) + "')";
+  return '-webkit-mask-image:' + u + ';mask-image:' + u + ';';
+}
+function typeGlyphSVG(p){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + typeOf(p).d + '"/></svg>';
+}
+/* la miniatura della riga: goccia col colore del giorno sotto (è anche il
+   ripiego se la foto non arriva), la foto sopra, il tipo nel tondino. */
+function thumbHTML(p){
+  const t = typeOf(p), mask = maskCSS(PIN_MASK_PATH), img = stopThumbSrc(p);
+  return '<span class="thumb thumb-pin" title="' + esc(t.label) + '">' +
+    '<span class="tp-flat" style="' + mask + '"></span>' +
+    (img
+      ? '<img class="tp-img"' + imgCreditAttr(p) + ' style="' + mask + '" src="' + esc(img) + '" alt="" onerror="this.remove()">' +
+        '<i class="tp-badge">' + typeGlyphSVG(p) + '</i>'
+      : '<i class="tp-glyph">' + typeGlyphSVG(p) + '</i>') +
+  '</span>';
+}
+function thumbPlaceholderHTML(p){ return thumbHTML(Object.assign({}, p, {img:null, autoImg:null})); }
+/* la foto buona per la goccia: quella scelta a mano, se il suo indirizzo
+   risponde ancora (`imgBad` ricorda i 404 — su Commons i file si rinominano),
+   altrimenti quella trovata da sola. */
+function stopThumbSrc(p){
+  return (p.img && !p.imgBad) ? p.img : (p.autoImg || null);
 }
 /* tipi che sono segnaposto di servizio: non entrano mai nel percorso numerato */
 const POI = {food:1, sleep:1, shop:1, transit:1};
@@ -5449,6 +5531,35 @@ const INSP_SUB = {city:'Città', castle:'Castello', museum:'Museo', church:'Luog
    si chiede a Wikipedia "cosa c'è a due passi da queste coordinate" — stesso
    principio di wikiNearby, ma una sola pagina (la più vicina) e già con
    l'anteprima dentro la stessa risposta, invece di due chiamate separate. */
+/* v106 — la foto più bella, non solo la più pertinente. Wikipedia una foto ce
+   l'ha quasi sempre, ma spesso è documentaria: un dettaglio, un interno, una
+   veduta notturna, una stampa antica. Non si può giudicare un'immagine senza
+   guardarla, ma il nome del file e le proporzioni dicono già molto, e sono
+   gratis. Criteri scelti dall'utente: il posto intero e non un dettaglio,
+   all'aperto col cielo, colori vivi, niente notturne. La "foto di apertura
+   della voce" è già garantita da `pageimages`, che restituisce proprio quella. */
+const IMG_NIGHT = /(night|notte|notturn|nacht|nuit|noche|nocturn|dusk|sunset|tramonto|twilight|illuminat|lights|christmas|natale)/i;
+const IMG_DETAIL = /(detail|dettagli|particolare|interior|interno|inside|ceiling|soffitto|altar|capitel|colonn|portal|window|finestr|inscription|iscrizion|targa|plaque|tomb|sarcofag|fresco|affresc|mosaic|statue|statua|bust|relief|rilievo|cartello)/i;
+const IMG_FLAT = /(bw|b_w|black_?and_?white|bianco_?e_?nero|grayscale|litho|litograf|incision|engraving|postcard|cartolina|drawing|disegno|1[6-9]\d\d|19[0-3]\d)/i;
+const IMG_WIDE = /(panoram|veduta|view|vista|skyline|aerial|aerea|overview|general|generale|landscape|paesagg)/i;
+/* punteggio: entra dopo la pertinenza del nome e prima della distanza, quindi
+   non fa mai vincere la foto di un altro posto */
+function imgNicety(file, thumb){
+  const f = String(file || '');
+  let s = 0;
+  if(IMG_WIDE.test(f)) s += 1;
+  if(IMG_NIGHT.test(f)) s -= 2;
+  if(IMG_DETAIL.test(f)) s -= 2;
+  if(IMG_FLAT.test(f)) s -= 2;
+  /* orizzontale: un posto intero ci sta dentro, e nel ritaglio quadrato della
+     goccia e del pin non si taglia via metà soggetto */
+  if(thumb && thumb.width && thumb.height){
+    const r = thumb.width / thumb.height;
+    if(r > 1.15) s += 1;
+    if(r < 0.8) s -= 1;
+  }
+  return s;
+}
 async function wikiThumbNear(lat, lng, radius, name){
   const words = imgWords(name || '');
   for(const lang of ['it', 'en']){
@@ -5465,8 +5576,9 @@ async function wikiThumbNear(lat, lng, radius, name){
         const c = p.coordinates?.[0];
         p._km = c ? km({lat, lng}, {lat: c.lat, lng: c.lon}) : 9;
         p._hits = imgNameHits(p.title, words);
+        p._nice = imgNicety(p.pageimage || '', p.thumbnail);
       });
-      pages.sort((a, b) => (b._hits - a._hits) || (a._km - b._km));
+      pages.sort((a, b) => (b._hits - a._hits) || (b._nice - a._nice) || (a._km - b._km));
       return pages[0].thumbnail.source;
     }catch(e){ /* si passa alla lingua successiva, o si rinuncia */ }
   }
@@ -6798,6 +6910,7 @@ function drawMap(){
      resterebbe senza padrone */
   sweepDragMark();
   layer.clearLayers();
+  fillStopThumbs();
   const showDays = stopFilter !== 'brainstorm';
   const showOrphans = stopFilter !== 'days';
 
@@ -6878,9 +6991,13 @@ const CLOUD_D = 'M6.5 18a4.5 4.5 0 0 1-.5-8.97A6 6 0 0 1 17.7 8.2 4.4 4.4 0 0 1 
 function marker(p, n, color, brain){
   const t = typeOf(p);
   const off = offRoute(p), poi = isPoi(p);
+  /* la foto del posto dentro il pin: un'idea di Brainstorming resta senza,
+     deve stare indietro (sbiadita e senza colore) e una fotografia la
+     porterebbe in primo piano */
+  const photo = brain ? null : stopThumbSrc(p);
   /* contrassegni cumulabili: meteo a sinistra, bimbo a destra */
   const bRain = p.rain
-    ? '<span class="pin-r" title="Adatta con meteo avverso">'
+    ? '<span class="pin-r' + (photo ? ' up' : '') + '" title="Adatta con meteo avverso">'
       + '<svg viewBox="0 0 24 24"><path d="'+CLOUD_D+'"/></svg><b>✓</b></span>'
     : '';
   const bKid = p.kid
@@ -6890,21 +7007,28 @@ function marker(p, n, color, brain){
   const badge = bRain + bKid;
   const tag = poi ? '' : (n === '' ? '' : '<span class="pin-n">'+n+'</span>');
   const icon = L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-32],
-    html:'<div class="pin'+(off?' alt':'')+(poi?' poi':'')+(brain?' brain':'')+'" style="background:'+color+'">' +
+    html:'<div class="pin'+(off?' alt':'')+(poi?' poi':'')+(brain?' brain':'')+(photo?' has-img':'')+'" style="background:'+color+'">' +
+           (photo ? '<img class="pin-img" src="'+esc(photo)+'" alt="" onerror="this.remove();this.parentNode.classList.remove(\'has-img\')">' : '') +
            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+t.d+'"/></svg>' +
-         '</div>' + tag + badge +
+         '</div>' +
+         (photo ? '<span class="pin-t" title="'+esc(t.label)+'"><svg viewBox="0 0 24 24"><path d="'+t.d+'"/></svg></span>' : '') +
+         tag + badge +
          '<span class="pin-lab'+(off||brain?' dim':'')+'">'+esc(p.name)+'</span>'});
   const m = L.marker([p.lat,p.lng],{icon, draggable:true,
     zIndexOffset: brain ? -600 : (off ? -400 : 0),
     opacity: brain ? .5 : (off ? .9 : 1)});
   m.on('add', () => armLongPress(m, p));
-  let h = (p.img ? '<img class="pop-img"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="" onerror="this.remove()">' : '')
+  let h = (stopThumbSrc(p) ? '<img class="pop-img"'+imgCreditAttr(p)+' src="'+esc(stopThumbSrc(p))+'" alt="" onerror="this.remove()">' : '')
         + '<span class="pop-k">'+(poi?'Segnaposto · ':'')+esc(t.label)
         + (p.rain?' · ☂ ok':'') + (p.kid?' · 👶 ok':'')+'</span>'
         + '<span class="pop-t">'+esc(p.name)+'</span>';
   if(p.notes) h += '<span class="pop-n">'+esc(p.notes)+'</span>';
   (p.links||[]).forEach(l => h += '<a class="pop-l" href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.label||l.url)+' ↗</a>');
   h += '<a class="pop-b" href="#" onclick="showInList(\''+p.id+'\');return false">Vedi in elenco</a>';
+  /* la foto la mette l'app, e non sempre è carina: il punto in cui ci si
+     accorge che non va è questo, non il fondo di una scheda di modifica */
+  h += '<a class="pop-b" href="#" onclick="changePhoto(\''+p.id+'\');return false">'
+     + (stopThumbSrc(p) ? 'Cambia la foto' : 'Metti una foto') + '</a>';
   h += '<a class="pop-b" href="#" onclick="viewStop(\''+p.id+'\');return false">Apri la tappa</a>';  m.bindPopup(h);
   return m;
 }
@@ -7007,7 +7131,67 @@ function drawList(){
     {id:null, name: mine ? MINE_TITLE : 'Brainstorming', color:BRAIN_SOLID, grad:BRAIN_GRAD},
     mine ? mineByArea(orphans) : orphans));
   areaHeads = null;
+  fillStopThumbs();
 }
+
+/* v106 — la goccia senza foto. La miniatura mostra la foto del posto, ma `p.img`
+   si riempie solo a mano o dalle schede di Ispirami: una tappa nata dalla
+   ricerca non ne ha nessuna, e in elenco erano quasi tutte gocce piatte. Qui si
+   chiede a Wikipedia la foto della voce che porta quel nome — la stessa
+   `wikiThumbNear()` che tappa i buchi di Ispirami, quindi già ordinata per
+   pertinenza del nome e non per vicinanza — una volta sola per tappa, e senza
+   mai toccare la foto scelta a mano. Sta in `autoImg`, che entra in
+   `NON_CONTENT` insieme a `wx` e `cc`: è un dato ricavato, non contenuto,
+   altrimenti basterebbe aprire l'app perché ogni tappa risultasse "modificata"
+   e l'altra persona ricevesse modifiche che nessuno ha fatto (v78). `autoImgNo`
+   ricorda il buco vero, così non si richiede a ogni apertura. Le Cartoline e il
+   Diario continuano a usare solo `p.img`: lì la foto è una scelta, non un
+   riempitivo. */
+let thumbFetching = false;
+async function fillStopThumbs(){
+  if(thumbFetching || navigator.onLine === false) return;
+  const todo = state.places.filter(p =>
+    !stopThumbSrc(p) && !p.autoImgNo &&
+    Number.isFinite(p.lat) && Number.isFinite(p.lng)
+  ).slice(0, 24);
+  if(!todo.length) return;
+  thumbFetching = true;
+  let got = 0;
+  try{
+    /* quattro per volta: Wikipedia non ama le raffiche, e le prime quattro
+       righe sono quelle che si stanno guardando */
+    for(let i = 0; i < todo.length; i += 4){
+      await Promise.all(todo.slice(i, i + 4).map(async p => {
+        let url = null;
+        try{ url = await wikiThumbNear(p.lat, p.lng, 700, p.name); }catch(e){}
+        if(url){ p.autoImg = url; got++; repaintThumb(p); } else p.autoImgNo = 1;
+      }));
+    }
+  } finally {
+    thumbFetching = false;
+  }
+  /* i pin non si possono ritoccare uno per uno (Leaflet li ricrea): se è
+     arrivata almeno una foto si ridisegna la mappa, che non tocca l'elenco */
+  if(got && map) drawMap();
+  write();
+}
+/* si ridisegna la sola goccia, non tutto l'elenco: un render intero mentre si
+   scorre farebbe saltare la posizione e chiuderebbe quello che è aperto */
+function repaintThumb(p){
+  const box = document.getElementById('list');
+  const li = box && box.querySelector('.stop[data-place="' + p.id + '"]');
+  const old = li && li.querySelector('.thumb-pin');
+  if(!old) return;
+  old.insertAdjacentHTML('afterend', thumbHTML(p));
+  const fresh = old.nextElementSibling;
+  old.remove();
+  const img = fresh.querySelector('img.tp-img');
+  if(img) img.onerror = () => {
+    /* l'indirizzo trovato non risponde: si torna alla goccia piena e non si
+       riprova, altrimenti a ogni apertura si ricomincia da capo */
+    p.autoImg = null; p.autoImgNo = 1;
+    fresh.outerHTML = thumbPlaceholderHTML(p);
+  };}
 
 /* Durante il viaggio l’unica domanda è «e adesso?». Se un giorno cade oggi, in
    cima all’elenco c’è una striscia che lo dice: quante tappe restano e qual è la
@@ -7377,9 +7561,7 @@ function dayBlock(d, list){
       '</span>' +
       '<div class="stop-card">' +
         '<div class="stop-top" role="button" tabindex="0">' +
-          (p.img
-            ? '<img class="thumb"'+imgCreditAttr(p)+' src="'+esc(p.img)+'" alt="">'
-            : thumbPlaceholderHTML(p)) +
+          thumbHTML(p) +
           '<div class="stop-body">' +
             '<p class="stop-name">'+esc(p.name)+(p.visited?' <i class="done-tag" title="Visitata">✓</i>':'')+(p.rain?' <i class="rain-tag" title="Adatta con meteo avverso">☂</i>':'')+(p.kid?' <i class="kid-tag" title="Adatta con bimbo">👶</i>':'')+ohClosedTag(p)+'</p>' +
             (isMine() && p.srcTitle ? '<p class="stop-from">da '+esc(p.srcTitle)+'</p>' : '') +
@@ -7392,8 +7574,18 @@ function dayBlock(d, list){
         : (d.id && baseOf(d.baseToId) ? segHTML(p, {...baseOf(d.baseToId), isBase:true}) : ''));
 
     const top = li.querySelector('.stop-top');
-    const thumbImg = li.querySelector('img.thumb');
-    if(thumbImg) thumbImg.onerror = () => { thumbImg.outerHTML = thumbPlaceholderHTML(p); };
+    /* foto che non arriva: si segna il buco e si torna alla goccia piena col
+       glifo. Se a mancare era la foto scelta a mano (indirizzo di Commons
+       cambiato), `imgBad` lascia il campo libero alla ricerca automatica, che
+       riproverà al prossimo disegno dell'elenco. */
+    const thumbImg = li.querySelector('.thumb-pin img.tp-img');
+    if(thumbImg) thumbImg.onerror = () => {
+      if(p.img && !p.imgBad) p.imgBad = 1;
+      else if(p.autoImg){ p.autoImg = null; p.autoImgNo = 1; }
+      const box = thumbImg.closest('.thumb-pin');
+      if(box) box.outerHTML = thumbPlaceholderHTML(p);
+      fillStopThumbs();
+    };
     const openDetail = () => viewStop(p.id);
     top.onclick = e => { if(e.target.closest('a')) return; openDetail(); };
     top.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openDetail(); } };
@@ -10370,6 +10562,31 @@ function edit(id){
 }
 window.edit = edit;
 
+/* Dal popup del pin: la foto è lì sotto gli occhi ed è lì che si vede se non
+   va bene. Apre la stessa scheda di modifica, ma portando in vista la riga
+   dell'immagine invece del nome, e con le alternative già in caricamento —
+   così «non mi piace» è due tocchi: questo e la foto scelta. Il ripiego resta
+   📁, che apre la galleria del telefono. */
+async function changePhoto(id){
+  edit(id);
+  if(!editing) return;
+  /* la misura va presa DOPO che la scheda si è impaginata, e di nuovo dopo che
+     le proposte sono arrivate: `#fImgPrev` passa da 120 a oltre 300 px e la
+     riga scende. Calcolata subito, la distanza era zero e non si muoveva
+     niente. `offsetTop` e non la differenza fra i rettangoli: quello è già
+     indipendente dallo scorrimento e non si somma due volte. */
+  const toImgRow = () => requestAnimationFrame(() => {
+    const row = document.querySelector('#veil .img-row');
+    const box = row && row.closest('.tour-card, .sheet, form, .veil-body');
+    if(!row || !box || box.scrollHeight <= box.clientHeight) return;
+    box.scrollTop = Math.max(0, row.offsetTop - 56);
+  });
+  toImgRow();
+  await autoImage(false);
+  toImgRow();
+}
+window.changePhoto = changePhoto;
+
 let typeSel = 'place', typeAuto = true;
 function paintTypeChips(){
   const tg = document.getElementById('fType');
@@ -11381,9 +11598,31 @@ function markSeen(v){ flagAdd(SEEN_KEY, v); }
 const TAB_OF = {list:'tabList', cost:'tabCost', book:'tabBook', diary:'tabDiary'};
 
 /* l'icona del tip è quella del tab, clonata: un solo posto da modificare se
-   un domani cambia il segno di una sezione */
+   un domani cambia il segno di una sezione.
+   v105 — «map» non è più un tab: dalla v97 la barra ha quattro voci e la mappa
+   è l'interruttore accanto all'elenco. Qui restava `TAB_OF['map']` undefined,
+   quindi getElementById(undefined) tornava null e .querySelector cadeva: ogni
+   riquadro che non passa un'icona (il default è 'map') moriva sul nascere —
+   «Rivedi la guida», «Condividi questo viaggio», «Unisciti a un viaggio» e
+   tutte le conferme senza `ic`. Il glifo della mappa sta qui dentro, e una
+   chiave sconosciuta ripiega su Tappe invece di far cadere il riquadro. */
+const MAP_GLYPH = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+  '<path d="M9.1 4.7 4.3 6.4v13l4.8-1.7 5.8 1.8 4.8-1.7v-13l-4.8 1.7z"/>' +
+  '<path d="M9.1 4.7v13.1M14.9 6.5v13.1"/></svg>';
 function cloneTabIcon(v, cls){
-  const src = document.getElementById(TAB_OF[v]).querySelector('.tab-ic');
+  const tab = document.getElementById(TAB_OF[v] || '');
+  let src = tab && tab.querySelector('.tab-ic');
+  if(!src && v !== 'map'){
+    const fb = document.getElementById(TAB_OF.list);
+    src = fb && fb.querySelector('.tab-ic');
+  }
+  if(!src){
+    const box = document.createElement('span');
+    box.innerHTML = MAP_GLYPH;
+    const g = box.firstElementChild;
+    g.setAttribute('class', cls);
+    return g.outerHTML;
+  }
   const c = src.cloneNode(true);
   c.setAttribute('class', cls);
   return c.outerHTML;
