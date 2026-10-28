@@ -17,6 +17,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Waynder">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -107,12 +108,21 @@ button:active{transform:scale(.97)}
 }
 .map-wrap{position:relative;height:100%;width:100%}
 #map{height:100%;width:100%;background:var(--paper-2)}
-/* v105 — i riquadri ufficiali di OpenStreetMap sono molto più carichi del
-   Voyager di CARTO che usavamo prima della v104: strade rosse, verdi pieni,
-   etichette dappertutto. Si smorzano qui, e solo loro: pin, tracciati e
-   etichette dell'app vivono in altri strati e restano pieni. Il filtro era
-   su #map e faceva l'opposto — alzava il contrasto di tutto. */
-.leaflet-tile-pane{filter:saturate(.5) brightness(1.08) contrast(.88)}
+/* v106 — la mappa è il fondo, non il soggetto. I riquadri ufficiali di
+   OpenStreetMap (v104) sono molto più carichi del Voyager di CARTO: strade
+   rosse, verdi pieni, e in Marocco tre etichette sovrapposte per ogni città
+   (latino, berbero, arabo). Smorzarli col solo filtro non bastava — restavano
+   scuri quanto i pin. Ora il riquadro dei tasselli è anche velato (`opacity`)
+   sopra il fondo crema di `#map`: le etichette di OSM sbiadiscono nella carta
+   mentre pin, tracciati ed etichette dell'app, che stanno in altri strati,
+   restano pieni. Cambiare fonte non era un'opzione: le alternative chiare
+   vogliono tutte una chiave. */
+/* v107 — il velo non c'è più: la mappa ora è vettoriale (OpenFreeMap Bright,
+   disegnata dal telefono) e il filtro sul riquadro dei tasselli la sporcava,
+   perché il livello vettoriale sta nello stesso riquadro. Un ritocco leggero
+   resta solo sulle piastrelle a immagine di OpenStreetMap, che si vedono
+   soltanto senza rete. */
+.leaflet-tile-pane img.leaflet-tile{filter:saturate(.55) brightness(1.05) contrast(.92)}
 @media (min-width:881px){
   #map{border-radius:var(--r-lg);box-shadow:0 40px 90px -30px rgba(0,0,0,.7)}
 }
@@ -1838,11 +1848,17 @@ body.hide-legs .leg-lab{display:none}
 .pin svg{width:17px;height:17px;transform:rotate(45deg);fill:var(--ink)}
 /* un'idea non smistata sulla mappa deve vedersi appena: nessun colore, contorno
    tratteggiato e molta trasparenza, così i giorni veri restano in primo piano */
+/* un'idea non smistata resta indietro rispetto ai giorni veri, ma «indietro»
+   non vuol dire illeggibile: sopra una mappa carica il grigio trasparente
+   diventava una macchia senza forma. Fondo chiaro pieno, contorno tratteggiato
+   scuro e glifo scuro — si legge, e il colore del giorno (che l'idea non ha)
+   resta la cosa che distingue una tappa smistata da una da smistare. */
 .pin.brain{
-  border-style:dashed;border-color:rgba(255,255,255,.75);
-  box-shadow:0 2px 5px rgba(34,48,58,.14)
+  background:#EDEFEA !important;
+  border-style:dashed;border-color:rgba(34,48,58,.5);
+  box-shadow:0 2px 6px rgba(34,48,58,.3)
 }
-.pin.brain svg{fill:#4E5A62;opacity:.92}
+.pin.brain svg{fill:#3A464E;opacity:1}
 .pin-n{
   position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 3px;
   border-radius:9px;background:var(--ink);color:#fff;border:1.5px solid #fff;
@@ -2805,6 +2821,8 @@ body.hide-legs .leg-lab{display:none}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <!-- Firebase (solo per la condivisione tra dispositivi): se FIREBASE_CONFIG resta
      vuoto più sotto, questi script restano semplicemente inutilizzati. -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -2813,7 +2831,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v106';
+const APP_VERSION = 'v107';
 /* v98 — un segno solo per "elimina": il cestino. Nelle righe di elenco è il
    cestino da solo, nei riquadri è cestino + la parola «Elimina». La ✕ resta
    riservata a "chiudi" e a "togli questo dall'elenco che sto componendo"
@@ -2980,9 +2998,62 @@ L.control.zoom({position:'bottomright'}).addTo(map);
    @2x, quindi niente {r}, e il sottodominio non si usa più: l'indirizzo è uno.
    Chi aveva scaricato le mappe offline le deve riscaricare — le vecchie stanno
    in cache sotto l'indirizzo di CARTO e non verranno più chieste. */
+/* v107 — il fondo è OpenFreeMap Bright, vettoriale: nitido a ogni zoom, senza
+   chiave. Le piastrelle a immagine di OpenStreetMap restano come ripiego e
+   come fonte della mappa senza rete (`offTileUrl` le compone da `tileL._url`):
+   senza rete, senza WebGL o se lo stile non arriva, si torna a quelle. */
 const tileL = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
   maxZoom:19, attribution:'© OpenStreetMap'
-}).addTo(map);
+});
+const GL_STYLE = 'https://tiles.openfreemap.org/styles/bright';
+let glL = null;
+map.setMaxZoom(19);
+/* nomi in italiano quando ci sono, altrimenti in alfabeto latino: Bright
+   impila latino e scrittura locale, e in Marocco ogni città aveva tre righe */
+function glItalian(mm){
+  const ls = (mm.getStyle() && mm.getStyle().layers) || [];
+  for(const l of ls){
+    if(l.type !== 'symbol') continue;
+    let tf; try{ tf = mm.getLayoutProperty(l.id, 'text-field'); }catch(e){ continue; }
+    if(tf == null) continue;
+    const s = JSON.stringify(tf);
+    if(!/name/.test(s) || /"ref"|\{ref\}|housenumber/.test(s)) continue;
+    try{ mm.setLayoutProperty(l.id, 'text-field', ['coalesce',['get','name:it'],['get','name:latin'],['get','name']]); }catch(e){}
+  }
+}
+function useBase(kind){
+  if(kind === 'gl' && L.maplibreGL && window.maplibregl){
+    try{
+      if(!glL) glL = L.maplibreGL({style:GL_STYLE, attribution:'© OpenFreeMap © OpenMapTiles © OpenStreetMap'});
+      if(!map.hasLayer(glL)){
+        glL.addTo(map);
+        const mm = glL.getMaplibreMap();
+        /* si ripiega solo se a non arrivare è lo stile: un riquadro, un
+           carattere o un'icona che falliscono portano `sourceId`/`tile` e non
+           sono fatali — MapLibre li richiede da sé. */
+        let styled = false;
+        mm.once('styledata', () => { styled = true; glItalian(mm); });
+        mm.on('error', e => {
+          console.warn('mappa vettoriale', e && e.error);
+          if(!styled && !(e && (e.sourceId || e.tile)) && !mm.isStyleLoaded()) useBase('raster');
+        });
+        setTimeout(() => {
+          if(!styled && glL && map.hasLayer(glL) && document.visibilityState === 'visible') useBase('raster');
+        }, 12000);
+      }
+      if(map.hasLayer(tileL)) map.removeLayer(tileL);
+      return;
+    }catch(e){
+      try{ if(glL && map.hasLayer(glL)) map.removeLayer(glL); }catch(_){}
+      glL = null;
+    }
+  }
+  if(glL && map.hasLayer(glL)){ try{ map.removeLayer(glL); }catch(e){} }
+  if(!map.hasLayer(tileL)) tileL.addTo(map);
+}
+useBase(navigator.onLine === false ? 'raster' : 'gl');
+addEventListener('offline', () => useBase('raster'));
+addEventListener('online', () => useBase('gl'));
 const layer = L.layerGroup().addTo(map);
 
 map.on('click', e => {

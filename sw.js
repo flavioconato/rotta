@@ -5,7 +5,7 @@
    I tile sono a numero chiuso: oltre il limite si buttano i più vecchi,
    altrimenti dopo qualche esplorazione l'app occuperebbe centinaia di MB. */
 
-const VERSION = 'v106';
+const VERSION = 'v107';
 const APP_CACHE = 'rotta-app-' + VERSION;
 /* La cache delle mappe NON porta la versione: le piastrelle scaricate prima di
    partire devono sopravvivere agli aggiornamenti dell'app, altrimenti un
@@ -28,6 +28,9 @@ const APP_FILES = [
   './ispira/index.json',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
+  'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css',
+  'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js',
+  'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js',
@@ -121,6 +124,10 @@ self.addEventListener('fetch', e => {
      solo rete. Servirli dalla cache non ha senso, e soprattutto la cache di
      ripiego confronta gli indirizzi IGNORANDO i parametri: due domande diverse
      allo stesso servizio si sarebbero scambiate la risposta. */
+  /* v107 — i dati della mappa vettoriale (stile, riquadri, caratteri) passano
+     dritti: nella cache dell'app si accumulerebbero senza tetto, e lo stile
+     punta a una versione dei dati che cambia ogni settimana. */
+  if(/tiles\.openfreemap\.org/.test(url.hostname)) return;
   if(/nominatim\.openstreetmap\.org|router\.project-osrm\.org|api\.open-meteo\.com|wikimedia\.org|wikipedia\.org|wikidata\.org|overpass/.test(url.hostname)) return;
 
   // Sincronizzazione condivisa (Firebase): solo rete, il worker non deve interferire
