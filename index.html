@@ -1840,9 +1840,9 @@ body.hide-legs .leg-lab{display:none}
 .leaflet-marker-icon{position:absolute}
 .pin{
   width:34px;height:34px;border-radius:11px 11px 11px 4px;transform:rotate(-45deg);
-  display:grid;place-items:center;border:2px solid rgba(255,255,255,.92);
+  display:grid;place-items:center;border:3px solid rgba(255,255,255,.92);
   background-image:linear-gradient(155deg, rgba(255,255,255,.28), transparent 60%);
-  box-shadow:0 4px 10px rgba(34,48,58,.22),0 0 0 2px rgba(255,255,255,.5);
+  box-shadow:0 4px 10px rgba(34,48,58,.22),0 0 0 1.5px #fff;
   transition:transform .18s var(--ease);
 }
 .pin svg{width:17px;height:17px;transform:rotate(45deg);fill:var(--ink)}
@@ -1853,10 +1853,13 @@ body.hide-legs .leg-lab{display:none}
    diventava una macchia senza forma. Fondo chiaro pieno, contorno tratteggiato
    scuro e glifo scuro — si legge, e il colore del giorno (che l'idea non ha)
    resta la cosa che distingue una tappa smistata da una da smistare. */
+/* v108 — un'idea si vede come una tappa vera, foto compresa: la distingue solo
+   il bordo, tratteggiato e scuro, mentre le tappe dei giorni hanno il bordo
+   pieno nel colore del giorno (inline, da `marker()`). */
 .pin.brain{
-  background:#EDEFEA !important;
-  border-style:dashed;border-color:rgba(34,48,58,.5);
-  box-shadow:0 2px 6px rgba(34,48,58,.3)
+  background:#FBFBFC !important;
+  border:3px dashed #22303A;
+  box-shadow:0 3px 8px rgba(34,48,58,.28),0 0 0 1.5px #fff
 }
 .pin.brain svg{fill:#3A464E;opacity:1}
 .pin-n{
@@ -2831,7 +2834,7 @@ body.hide-legs .leg-lab{display:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
 /* ============ stato ============ */
-const APP_VERSION = 'v107';
+const APP_VERSION = 'v108';
 /* v98 — un segno solo per "elimina": il cestino. Nelle righe di elenco è il
    cestino da solo, nei riquadri è cestino + la parola «Elimina». La ✕ resta
    riservata a "chiudi" e a "togli questo dall'elenco che sto componendo"
@@ -7062,10 +7065,9 @@ const CLOUD_D = 'M6.5 18a4.5 4.5 0 0 1-.5-8.97A6 6 0 0 1 17.7 8.2 4.4 4.4 0 0 1 
 function marker(p, n, color, brain){
   const t = typeOf(p);
   const off = offRoute(p), poi = isPoi(p);
-  /* la foto del posto dentro il pin: un'idea di Brainstorming resta senza,
-     deve stare indietro (sbiadita e senza colore) e una fotografia la
-     porterebbe in primo piano */
-  const photo = brain ? null : stopThumbSrc(p);
+  /* v108 — la foto anche sulle idee di Brainstorming: sbiadite e senza foto
+     sparivano nella mappa. Le distingue il bordo tratteggiato. */
+  const photo = stopThumbSrc(p);
   /* contrassegni cumulabili: meteo a sinistra, bimbo a destra */
   const bRain = p.rain
     ? '<span class="pin-r' + (photo ? ' up' : '') + '" title="Adatta con meteo avverso">'
@@ -7078,16 +7080,16 @@ function marker(p, n, color, brain){
   const badge = bRain + bKid;
   const tag = poi ? '' : (n === '' ? '' : '<span class="pin-n">'+n+'</span>');
   const icon = L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-32],
-    html:'<div class="pin'+(off?' alt':'')+(poi?' poi':'')+(brain?' brain':'')+(photo?' has-img':'')+'" style="background:'+color+'">' +
+    html:'<div class="pin'+(off?' alt':'')+(poi?' poi':'')+(brain?' brain':'')+(photo?' has-img':'')+'" style="background:'+color+(brain?'':';border-color:'+color)+'">' +
            (photo ? '<img class="pin-img" src="'+esc(photo)+'" alt="" onerror="this.remove();this.parentNode.classList.remove(\'has-img\')">' : '') +
            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+t.d+'"/></svg>' +
          '</div>' +
          (photo ? '<span class="pin-t" title="'+esc(t.label)+'"><svg viewBox="0 0 24 24"><path d="'+t.d+'"/></svg></span>' : '') +
          tag + badge +
-         '<span class="pin-lab'+(off||brain?' dim':'')+'">'+esc(p.name)+'</span>'});
+         '<span class="pin-lab'+(off?' dim':'')+'">'+esc(p.name)+'</span>'});
   const m = L.marker([p.lat,p.lng],{icon, draggable:true,
     zIndexOffset: brain ? -600 : (off ? -400 : 0),
-    opacity: brain ? .5 : (off ? .9 : 1)});
+    opacity: off ? .9 : 1});
   m.on('add', () => armLongPress(m, p));
   let h = (stopThumbSrc(p) ? '<img class="pop-img"'+imgCreditAttr(p)+' src="'+esc(stopThumbSrc(p))+'" alt="" onerror="this.remove()">' : '')
         + '<span class="pop-k">'+(poi?'Segnaposto · ':'')+esc(t.label)
